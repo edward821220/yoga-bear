@@ -1,8 +1,15 @@
 import Head from "next/head";
-import Link from "next/link";
 import styled from "styled-components";
+import Image from "next/image";
+import Bear from "../../public/bear-logo1.png";
 
-const Title = styled.h1``;
+const Title = styled.h1`
+  font-size: 60px;
+  text-align: center;
+`;
+const Wrapper = styled.div`
+  min-height: 80vh;
+`;
 
 export default function Home() {
   return (
@@ -11,10 +18,10 @@ export default function Home() {
         <title>Yoga Bear</title>
         <meta name="viewport" content="viewport-fit=cover" />
       </Head>
-      <Title>HomePage</Title>
-      <Link href="member">Member</Link>
-      <Link href="myCourse">My Courses</Link>
-      <Link href="classRoom">Class Room</Link>
+      <Wrapper>
+        <Title>HomePage</Title>
+        <Image src={Bear} alt="bear" width={600} />
+      </Wrapper>
     </>
   );
 }
