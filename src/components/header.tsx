@@ -18,7 +18,9 @@ const HeaderLink = styled.li`
 function Header() {
   return (
     <Wrapper>
-      <Image src={BearLogo} alt="logo" width={200} />
+      <Link href="/">
+        <Image src={BearLogo} alt="logo" width={200} />
+      </Link>
       <HeaderLinks>
         <HeaderLink>
           <Link href="myCourses">My Courses</Link>
