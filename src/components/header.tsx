@@ -10,9 +10,14 @@ const Wrapper = styled.header`
   display: flex;
   align-items: center;
   justify-content: space-around;
+  border-bottom: 2px solid gray;
+  margin-bottom: 36px;
+  position: sticky;
+  top: 0;
 `;
-const Logo = styled.div`
+const LogoWrapper = styled.div`
   margin-right: 100px;
+  width: 360px;
 `;
 const HeaderLinks = styled.ul`
   display: flex;
@@ -28,15 +33,19 @@ const Member = styled.ul`
   display: flex;
   align-items: center;
 `;
+const IconWrapper = styled.li`
+  margin-right: 36px;
+  width: 45px;
+`;
 
 function Header() {
   return (
     <Wrapper>
-      <Logo>
+      <LogoWrapper>
         <Link href="/">
-          <Image src={BearLogo} alt="logo" width={360} />
+          <Image src={BearLogo} alt="logo" />
         </Link>
-      </Logo>
+      </LogoWrapper>
       <HeaderLinks>
         <HeaderLink>
           <Link href="/videoCourses">影音課程</Link>
@@ -49,16 +58,16 @@ function Header() {
         </HeaderLink>
       </HeaderLinks>
       <Member>
-        <HeaderLink>
+        <IconWrapper>
           <Link href="/cart">
-            <Image src={CartLogo} alt="cart" width={40} />
+            <Image src={CartLogo} alt="cart" />
           </Link>
-        </HeaderLink>
-        <HeaderLink>
+        </IconWrapper>
+        <IconWrapper>
           <Link href="/member">
-            <Image src={MemberLogo} alt="member" width={40} />
+            <Image src={MemberLogo} alt="member" />
           </Link>
-        </HeaderLink>
+        </IconWrapper>
       </Member>
     </Wrapper>
   );

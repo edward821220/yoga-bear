@@ -10,6 +10,7 @@ const pusher = new Pusher({
 });
 
 export default function handler(req: NextApiRequest, res: NextApiResponse) {
+  console.log(req.body);
   const {
     socket_id: socketId,
     channel_name: channelName,

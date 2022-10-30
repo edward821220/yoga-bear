@@ -5,6 +5,8 @@ import styled from "styled-components";
 const FooterLinks = styled.ul`
   display: flex;
   justify-content: space-around;
+  border-top: 2px solid gray;
+  padding: 20px;
 `;
 const FooterLink = styled.li``;
 

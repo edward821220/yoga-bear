@@ -4,8 +4,8 @@ import styled from "styled-components";
 
 const Wrapper = styled.div`
   display: flex;
-  height: 50vh;
-  padding: 50px 0;
+  height: 60vh;
+  padding: 20px 0;
 `;
 const SideBar = styled.div`
   width: 20%;

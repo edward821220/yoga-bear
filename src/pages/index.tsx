@@ -9,6 +9,9 @@ const Title = styled.h1`
 `;
 const Wrapper = styled.div`
   min-height: 80vh;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
 `;
 
 export default function Home() {
