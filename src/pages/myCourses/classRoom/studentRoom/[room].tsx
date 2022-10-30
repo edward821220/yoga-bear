@@ -48,7 +48,7 @@ function StudentRoom() {
   const partnerVideo = useRef<HTMLVideoElement>(null);
 
   useEffect(() => {
-    if (!room) return undefined;
+    if (!room || typeof room !== "string") return undefined;
     const handleICECandidateEvent = (event: RTCPeerConnectionIceEvent) => {
       if (event.candidate) {
         // return sentToPusher('ice-candidate', event.candidate)
@@ -58,7 +58,9 @@ function StudentRoom() {
 
     const handleTrackEvent = (event: RTCTrackEvent) => {
       if (!partnerVideo.current) return;
-      partnerVideo.current.srcObject = event.streams[0];
+      const { streams } = event;
+      const [stream] = streams;
+      partnerVideo.current.srcObject = stream;
     };
     const createPeerConnection = () => {
       // We create a RTC Peer Connection
@@ -69,7 +71,7 @@ function StudentRoom() {
 
       // We implement our onTrack method for when we receive tracks
       connection.ontrack = handleTrackEvent;
-      connection.onicecandidateerror = (e) => console.log(e);
+      connection.onicecandidateerror = (e) => alert(e);
       return connection;
     };
     const handleRoomJoined = () => {
@@ -93,7 +95,7 @@ function StudentRoom() {
         })
         .catch((err) => {
           /* handle the error */
-          console.log(err);
+          alert(err);
         });
     };
     const handlePeerLeaving = () => {
@@ -130,7 +132,7 @@ function StudentRoom() {
             channelRef.current?.trigger("client-offer", offer);
           })
           .catch((error) => {
-            console.log(error);
+            alert(error);
           });
       }
     };
@@ -152,19 +154,20 @@ function StudentRoom() {
           channelRef.current?.trigger("client-answer", answer);
         })
         .catch((error) => {
-          console.log(error);
+          alert(error);
         });
     };
     const handleAnswerReceived = (answer: RTCSessionDescriptionInit) => {
-      rtcConnection.current?.setRemoteDescription(answer).catch((error) => console.log(error));
+      rtcConnection.current?.setRemoteDescription(answer).catch((error) => alert(error));
     };
     const handlerNewIceCandidateMsg = (incoming: RTCIceCandidate) => {
       // We cast the incoming candidate to RTCIceCandidate
       const candidate = new RTCIceCandidate(incoming);
       rtcConnection.current?.addIceCandidate(candidate).catch((error) => {
-        console.log(error);
+        alert(error);
       });
     };
+    // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
     pusherRef.current = new Pusher(process.env.NEXT_PUBLIC_PUSHER_KEY!, {
       authEndpoint: "/api/pusher/auth",
       auth: {
@@ -172,6 +175,7 @@ function StudentRoom() {
       },
       cluster: process.env.NEXT_PUBLIC_PUSHER_CLUSTER,
     });
+
     channelRef.current = pusherRef.current.subscribe(`presence-${room}`) as PresenceChannel;
     // when a users subscribe
     channelRef.current.bind("pusher:subscription_succeeded", (members: Members) => {
@@ -224,12 +228,12 @@ function StudentRoom() {
     return () => {
       if (pusherRef.current) pusherRef.current.unsubscribe(`presence-${room}`);
     };
-  }, [room]);
+  }, [room, router]);
 
   const toggleMediaStream = (type: "video" | "audio", state: boolean) => {
     userStream.current?.getTracks().forEach((track) => {
       if (track.kind === type) {
-        track.enabled = !state;
+        track.enabled = !state; // eslint-disable-line no-param-reassign
       }
     });
   };
@@ -244,7 +248,7 @@ function StudentRoom() {
     setCameraActive((prev) => !prev);
   };
   const leaveRoom = () => {
-    // socketRef.current.emit('leave', roomName); // Let's the server know that user has left the room.
+    // Let's the server know that user has left the room.
     if (userVideo.current?.srcObject) {
       (userVideo.current?.srcObject as MediaStream).getTracks().forEach((track) => track.stop()); // Stops sending all tracks of User.
     }
@@ -259,7 +263,6 @@ function StudentRoom() {
       rtcConnection.current.close();
       rtcConnection.current = null;
     }
-    // eslint-disable-next-line @typescript-eslint/no-floating-promises
     router.push("/");
   };
 
