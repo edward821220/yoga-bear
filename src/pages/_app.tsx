@@ -4,6 +4,7 @@ import { createGlobalStyle } from "styled-components";
 import { Reset } from "styled-reset";
 import Header from "../components/header";
 import Footer from "../components/footer";
+import { AuthContextProvider } from "../context/authContext";
 
 const GlobalStyle = createGlobalStyle`
 *,
@@ -36,9 +37,11 @@ export default function App({ Component, pageProps }: AppProps) {
       </Head>
       <Reset />
       <GlobalStyle />
-      <Header />
-      <Component {...pageProps} />
-      <Footer />
+      <AuthContextProvider>
+        <Header />
+        <Component {...pageProps} />
+        <Footer />
+      </AuthContextProvider>
     </>
   );
 }
