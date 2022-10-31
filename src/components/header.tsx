@@ -59,6 +59,15 @@ const FormInput = styled.input`
   margin-bottom: 10px;
   height: 30px;
 `;
+const RadioLabel = styled.label`
+  display: flex;
+  align-items: center;
+  margin-bottom: 10px;
+`;
+const RadioInput = styled.input`
+  margin-left: 5px;
+`;
+
 const Button = styled.button`
   display: block;
   margin-bottom: 10px;
@@ -103,26 +112,48 @@ function Header() {
     password: "",
   });
   const [signupData, setSignupData] = useState<Record<string, string>>({
-    name: "",
+    username: "",
     email: "",
     password: "",
     checkPassword: "",
+    identity: "student",
   });
-  const [identity, setIdentity] = useState("學生");
-  const { signup, isLogin } = useContext(AuthContext);
+
+  const [needSignup, setNeedSignup] = useState(false);
+  const { signup, isLogin, login, logout } = useContext(AuthContext);
   const handleClose = () => {
     setShowModal(false);
     setErrorMessage("");
   };
-  const handleLogin = () => {};
+  const handleLogin = async (e: React.FormEvent<HTMLFormElement>) => {
+    e.preventDefault();
+    const res = await login(loginData.email, loginData.password);
+    if (typeof res !== "string") return;
+    if (res !== "登入成功") {
+      setErrorMessage(res);
+      return;
+    }
+    handleClose();
+    alert("恭喜您登入成功!");
+  };
   const handleSignup = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
-    const res = await signup(signupData.email, signupData.password);
+    if (!signupData.email.match(isValidEmail)) {
+      setErrorMessage("請輸入正確的電子郵件格式");
+      return;
+    }
+    if (signupData.password !== signupData.checkPassword) {
+      setErrorMessage("請再次確認密碼是否輸入一致");
+      return;
+    }
+    const res = await signup(signupData.email, signupData.password, signupData.identity, signupData.username);
     if (typeof res !== "string") return;
     if (res !== "註冊成功") {
       setErrorMessage(res);
       return;
     }
+    setNeedSignup(false);
+    handleClose();
     alert("恭喜您註冊成功!");
   };
 
@@ -160,7 +191,7 @@ function Header() {
       </Member>
       {showModal && (
         <Modal handleClose={handleClose}>
-          {!isLogin && (
+          {!isLogin && !needSignup && (
             <Form onSubmit={handleLogin}>
               <FormTitle>歡迎回來</FormTitle>
               {loginForm.map((item) => (
@@ -180,11 +211,19 @@ function Header() {
                   />
                 </Label>
               ))}
-              <Button>登入</Button>
-              <Button>還沒加入我們嗎？前往註冊~</Button>
+              <Button type="submit">登入</Button>
+              <Button
+                type="button"
+                onClick={() => {
+                  setNeedSignup(true);
+                }}
+              >
+                還沒加入我們嗎？前往註冊~
+              </Button>
+              <ErrorMessage>{errorMessage}</ErrorMessage>
             </Form>
           )}
-          {!isLogin && (
+          {!isLogin && needSignup && (
             <Form onSubmit={handleSignup}>
               <FormTitle>歡迎加入</FormTitle>
               {signupForm.map((item) => (
@@ -204,11 +243,46 @@ function Header() {
                   />
                 </Label>
               ))}
-              <Label>
-                <LabelText>身分</LabelText>
-              </Label>
-              <Button>送出</Button>
+              <RadioLabel>
+                <LabelText>我是學生</LabelText>
+                <RadioInput
+                  type="radio"
+                  value="student"
+                  name="identity"
+                  onChange={(e) => {
+                    setSignupData({ ...signupData, identity: e.target.value });
+                  }}
+                />
+              </RadioLabel>
+              <RadioLabel>
+                <LabelText>我是老師</LabelText>
+                <RadioInput
+                  type="radio"
+                  value="teacher"
+                  name="identity"
+                  onChange={(e) => {
+                    setSignupData({ ...signupData, identity: e.target.value });
+                  }}
+                />
+              </RadioLabel>
+              <Button type="submit">送出</Button>
               <ErrorMessage>{errorMessage}</ErrorMessage>
+            </Form>
+          )}
+          {isLogin && (
+            <Form onSubmit={handleSignup}>
+              <FormTitle>會員資訊</FormTitle>
+              <Image src={MemberLogo} alt="avatar" width={200} />
+              <Button
+                type="submit"
+                onClick={() => {
+                  logout();
+                  setNeedSignup(false);
+                  handleClose();
+                }}
+              >
+                登出
+              </Button>
             </Form>
           )}
         </Modal>

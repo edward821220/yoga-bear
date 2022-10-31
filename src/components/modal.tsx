@@ -10,15 +10,14 @@ const ModalBackdrop = styled.div`
   left: 0;
   width: 100%;
   height: 100%;
-  overflow-y: auto;
   background-color: rgba(0, 0, 0, 0.5);
 `;
 const ModalContent = styled.div`
   position: relative;
   width: 24%;
-  height: 50%;
+  height: 60%;
   overflow-y: auto;
-  margin: 200px auto;
+  margin: 150px auto;
   background-color: #fff;
   padding: 20px;
 `;
