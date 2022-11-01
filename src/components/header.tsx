@@ -31,9 +31,12 @@ const HeaderLinks = styled.ul`
   margin-right: auto;
 `;
 const HeaderLink = styled.li`
-  margin-right: 36px;
+  margin-right: 66px;
   font-size: 24px;
   line-height: 40px;
+  a {
+    color: #01815b;
+  }
 `;
 const Member = styled.ul`
   display: flex;
@@ -274,10 +277,10 @@ function Header() {
           <Link href="/videoCourses">影音課程</Link>
         </HeaderLink>
         <HeaderLink>
-          <Link href="/reserve">預約上課</Link>
+          <Link href="/reserve">一對一找老師</Link>
         </HeaderLink>
         <HeaderLink>
-          <Link href="/myCourses">我的課程</Link>
+          <Link href="/myCourses/videoCourses">我的學習</Link>
         </HeaderLink>
       </HeaderLinks>
       <Member>

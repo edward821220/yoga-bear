@@ -1,4 +1,4 @@
-import Document, { DocumentContext, DocumentInitialProps, Html, Head, Main, NextScript } from "next/document";
+import Document, { DocumentContext, Html, Head, Main, NextScript } from "next/document";
 import { ServerStyleSheet } from "styled-components";
 
 class MyDocument extends Document {
