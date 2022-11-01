@@ -1,4 +1,4 @@
-import React, { useState, useContext } from "react";
+import React, { useState, useContext, Dispatch, SetStateAction } from "react";
 import Link from "next/link";
 import Image from "next/image";
 import styled from "styled-components";
@@ -7,6 +7,10 @@ import CartLogo from "../../public/cart.png";
 import MemberLogo from "../../public/member.png";
 import Modal from "./modal";
 import { AuthContext } from "../context/authContext";
+
+interface Props {
+  setShowModal: Dispatch<SetStateAction<boolean>>;
+}
 
 const Wrapper = styled.header`
   display: flex;
@@ -104,8 +108,7 @@ const signupForm = [
 ];
 const isValidEmail = /^[\w-.]+@([\w-]+\.)+[\w-]{2,4}$/g;
 
-function Header() {
-  const [showModal, setShowModal] = useState(false);
+function MemberModal({ setShowModal }: Props) {
   const [errorMessage, setErrorMessage] = useState("");
   const [loginData, setloginData] = useState<Record<string, string>>({
     email: "",
@@ -156,6 +159,108 @@ function Header() {
     handleClose();
     alert("恭喜您註冊成功!");
   };
+  return (
+    <Modal handleClose={handleClose}>
+      {!isLogin && !needSignup && (
+        <Form onSubmit={handleLogin}>
+          <FormTitle>歡迎回來</FormTitle>
+          {loginForm.map((item) => (
+            <Label key={item.key}>
+              <LabelText>{item.title}：</LabelText>
+              <FormInput
+                type={item.type}
+                placeholder={item.placeholder}
+                value={loginData[item.key]}
+                required
+                onChange={(e: React.ChangeEvent<HTMLInputElement>) => {
+                  setloginData({
+                    ...loginData,
+                    [item.key]: e.target.value,
+                  });
+                }}
+              />
+            </Label>
+          ))}
+          <Button type="submit">登入</Button>
+          <Button
+            type="button"
+            onClick={() => {
+              setNeedSignup(true);
+            }}
+          >
+            還沒加入我們嗎？前往註冊~
+          </Button>
+          <ErrorMessage>{errorMessage}</ErrorMessage>
+        </Form>
+      )}
+      {!isLogin && needSignup && (
+        <Form onSubmit={handleSignup}>
+          <FormTitle>歡迎加入</FormTitle>
+          {signupForm.map((item) => (
+            <Label key={item.key}>
+              <LabelText>{item.title}：</LabelText>
+              <FormInput
+                type={item.type}
+                placeholder={item.placeholder}
+                value={signupData[item.key]}
+                required
+                onChange={(e: React.ChangeEvent<HTMLInputElement>) => {
+                  setSignupData({
+                    ...signupData,
+                    [item.key]: e.target.value,
+                  });
+                }}
+              />
+            </Label>
+          ))}
+          <RadioLabel>
+            <LabelText>我是學生</LabelText>
+            <RadioInput
+              type="radio"
+              value="student"
+              name="identity"
+              onChange={(e) => {
+                setSignupData({ ...signupData, identity: e.target.value });
+              }}
+            />
+          </RadioLabel>
+          <RadioLabel>
+            <LabelText>我是老師</LabelText>
+            <RadioInput
+              type="radio"
+              value="teacher"
+              name="identity"
+              onChange={(e) => {
+                setSignupData({ ...signupData, identity: e.target.value });
+              }}
+            />
+          </RadioLabel>
+          <Button type="submit">送出</Button>
+          <ErrorMessage>{errorMessage}</ErrorMessage>
+        </Form>
+      )}
+      {isLogin && (
+        <Form onSubmit={handleSignup}>
+          <FormTitle>會員資訊</FormTitle>
+          <Image src={MemberLogo} alt="avatar" width={200} />
+          <Button
+            type="submit"
+            onClick={() => {
+              logout();
+              setNeedSignup(false);
+              handleClose();
+            }}
+          >
+            登出
+          </Button>
+        </Form>
+      )}
+    </Modal>
+  );
+}
+
+function Header() {
+  const [showModal, setShowModal] = useState(false);
 
   return (
     <Wrapper>
@@ -189,104 +294,7 @@ function Header() {
           <Image src={MemberLogo} alt="member" />
         </IconWrapper>
       </Member>
-      {showModal && (
-        <Modal handleClose={handleClose}>
-          {!isLogin && !needSignup && (
-            <Form onSubmit={handleLogin}>
-              <FormTitle>歡迎回來</FormTitle>
-              {loginForm.map((item) => (
-                <Label key={item.key}>
-                  <LabelText>{item.title}：</LabelText>
-                  <FormInput
-                    type={item.type}
-                    placeholder={item.placeholder}
-                    value={loginData[item.key]}
-                    required
-                    onChange={(e: React.ChangeEvent<HTMLInputElement>) => {
-                      setloginData({
-                        ...loginData,
-                        [item.key]: e.target.value,
-                      });
-                    }}
-                  />
-                </Label>
-              ))}
-              <Button type="submit">登入</Button>
-              <Button
-                type="button"
-                onClick={() => {
-                  setNeedSignup(true);
-                }}
-              >
-                還沒加入我們嗎？前往註冊~
-              </Button>
-              <ErrorMessage>{errorMessage}</ErrorMessage>
-            </Form>
-          )}
-          {!isLogin && needSignup && (
-            <Form onSubmit={handleSignup}>
-              <FormTitle>歡迎加入</FormTitle>
-              {signupForm.map((item) => (
-                <Label key={item.key}>
-                  <LabelText>{item.title}：</LabelText>
-                  <FormInput
-                    type={item.type}
-                    placeholder={item.placeholder}
-                    value={signupData[item.key]}
-                    required
-                    onChange={(e: React.ChangeEvent<HTMLInputElement>) => {
-                      setSignupData({
-                        ...signupData,
-                        [item.key]: e.target.value,
-                      });
-                    }}
-                  />
-                </Label>
-              ))}
-              <RadioLabel>
-                <LabelText>我是學生</LabelText>
-                <RadioInput
-                  type="radio"
-                  value="student"
-                  name="identity"
-                  onChange={(e) => {
-                    setSignupData({ ...signupData, identity: e.target.value });
-                  }}
-                />
-              </RadioLabel>
-              <RadioLabel>
-                <LabelText>我是老師</LabelText>
-                <RadioInput
-                  type="radio"
-                  value="teacher"
-                  name="identity"
-                  onChange={(e) => {
-                    setSignupData({ ...signupData, identity: e.target.value });
-                  }}
-                />
-              </RadioLabel>
-              <Button type="submit">送出</Button>
-              <ErrorMessage>{errorMessage}</ErrorMessage>
-            </Form>
-          )}
-          {isLogin && (
-            <Form onSubmit={handleSignup}>
-              <FormTitle>會員資訊</FormTitle>
-              <Image src={MemberLogo} alt="avatar" width={200} />
-              <Button
-                type="submit"
-                onClick={() => {
-                  logout();
-                  setNeedSignup(false);
-                  handleClose();
-                }}
-              >
-                登出
-              </Button>
-            </Form>
-          )}
-        </Modal>
-      )}
+      {showModal && <MemberModal setShowModal={setShowModal} />}
     </Wrapper>
   );
 }
