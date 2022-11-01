@@ -47,6 +47,7 @@ const LauchFormLabel = styled.label`
   flex-direction: column;
   justify-content: center;
   align-items: center;
+  margin-bottom: 20px;
 `;
 const LauchFormLabelText = styled.p`
   margin-bottom: 10px;
@@ -60,7 +61,7 @@ const LauchFormLabelInput = styled.input`
 `;
 const LauchFormLabelTextarea = styled.textarea`
   width: 500px;
-  height: 300px;
+  height: 200px;
   margin-bottom: 20px;
   resize: none;
 `;
@@ -77,131 +78,177 @@ function LaunchedVideoCourses() {
   return <MainTitle>已上架影音課程</MainTitle>;
 }
 function LaunchVideoCourse() {
+  const [courseName, setCourseName] = useState("");
+  const [price, setPrice] = useState("");
+  const [detail, setDetail] = useState<{ courseIntroduction: string; teacherIntroduction: string }>({
+    courseIntroduction: "",
+    teacherIntroduction: "",
+  });
   const [coverPreview, setCoverPreview] = useState("");
-  const [step, setStep] = useState(1);
   const [chapters, setChapters] = useState<
     { serial: number; title: string; units: { serial: number; title: string; video: string }[] }[]
   >([]);
 
   const handleSubmit = (e: React.SyntheticEvent) => {
     e.preventDefault();
-    console.log(e.target);
+
+    const fileInputs = Array.from(document.querySelectorAll("input[type=file]"));
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    fileInputs.forEach((input: any, index) => {
+      /* eslint-disable @typescript-eslint/no-unsafe-member-access */
+      /* eslint-disable @typescript-eslint/no-unsafe-argument */
+      /* eslint-disable @typescript-eslint/restrict-template-expressions */
+      const file = input.files[0];
+      const storageRef = ref(storage, `${courseName}/${file.name}`);
+      const uploadTask = uploadBytesResumable(storageRef, file);
+      uploadTask.on(
+        "state_changed",
+        (snapshot) => {
+          const progress = (snapshot.bytesTransferred / snapshot.totalBytes) * 100;
+          console.log(`Upload is ${progress}% done`);
+        },
+        (error) => {
+          alert(error);
+        },
+        async () => {
+          const downloadUrl = await getDownloadURL(uploadTask.snapshot.ref);
+          console.log(downloadUrl);
+          // setChapters(
+          //   produce((draft) => {
+          //     const newChapter = draft.find((_, chapterIndex) => index === chapterIndex);
+          //     if (!newChapter) return;
+          //     newChapter.units[index].video = downloadUrl;
+          //   })
+          // );
+        }
+      );
+    });
   };
 
   return (
     <>
       <MainTitle>影音課程上架</MainTitle>
       <LauchForm onSubmit={handleSubmit}>
-        {step === 1 && (
-          <>
-            <LauchFormLabel>
-              <LauchFormLabelText>課程標題</LauchFormLabelText>
-              <LauchFormLabelInput />
-            </LauchFormLabel>
-            <LauchFormLabel>
-              <LauchFormLabelText>課程描述</LauchFormLabelText>
-              <LauchFormLabelTextarea />
-            </LauchFormLabel>
-            <LauchFormLabel>
-              <LauchFormLabelText>上傳課程封面</LauchFormLabelText>
-              <LauchFormLabelInput
-                type="file"
-                accept="image/*"
-                onChange={(e) => {
-                  if (!e.target.files) return;
-                  setCoverPreview(URL.createObjectURL(e.target.files[0]));
-                }}
-              />
-              {coverPreview && <Image src={coverPreview} alt="cover" width={500} height={300} />}
-            </LauchFormLabel>
-            <Button
-              type="button"
-              onClick={() => {
-                setStep((prev) => prev + 1);
+        <LauchFormLabel>
+          <LauchFormLabelText>課程標題</LauchFormLabelText>
+          <LauchFormLabelInput
+            value={courseName}
+            // required
+            onChange={(e) => {
+              setCourseName(e.target.value);
+            }}
+          />
+        </LauchFormLabel>
+        <LauchFormLabel>
+          <LauchFormLabelText>課程價格</LauchFormLabelText>
+          <LauchFormLabelInput
+            value={price}
+            // required
+            onChange={(e) => {
+              setPrice(e.target.value);
+            }}
+          />
+        </LauchFormLabel>
+        <LauchFormLabel>
+          <LauchFormLabelText>課程描述</LauchFormLabelText>
+          <LauchFormLabelTextarea
+            value={detail.courseIntroduction}
+            // required
+            onChange={(e) => {
+              setDetail({ ...detail, courseIntroduction: e.target.value });
+            }}
+          />
+        </LauchFormLabel>
+        <LauchFormLabel>
+          <LauchFormLabelText>老師介紹</LauchFormLabelText>
+          <LauchFormLabelTextarea
+            value={detail.teacherIntroduction}
+            // required
+            onChange={(e) => {
+              setDetail({ ...detail, teacherIntroduction: e.target.value });
+            }}
+          />
+        </LauchFormLabel>
+        <LauchFormLabel>
+          <LauchFormLabelText>上傳課程封面</LauchFormLabelText>
+          <LauchFormLabelInput
+            type="file"
+            accept="image/*"
+            // required
+            onChange={(e) => {
+              if (!e.target.files) return;
+              setCoverPreview(URL.createObjectURL(e.target.files[0]));
+            }}
+          />
+          {coverPreview && <Image src={coverPreview} alt="cover" width={500} height={300} />}
+        </LauchFormLabel>
+        <Button
+          type="button"
+          onClick={() => {
+            setChapters([
+              ...chapters,
+              { serial: chapters.length + 1, title: "", units: [{ serial: 1, title: "", video: "" }] },
+            ]);
+          }}
+        >
+          課程章節++
+        </Button>
+        {chapters.map((chapter, chapterIndex) => (
+          <LauchFormLabel key={chapter.serial}>
+            <LauchFormLabelText>
+              章節{chapter.serial}：{chapter.title}
+            </LauchFormLabelText>
+            <LauchFormLabelInput
+              value={chapter.title}
+              // required
+              onChange={(e) => {
+                setChapters(
+                  produce((draft) => {
+                    const newChapter = draft.find((_, index) => index === chapterIndex);
+                    if (!newChapter) return;
+                    newChapter.title = e.target.value;
+                  })
+                );
               }}
-            >
-              下一步
-            </Button>
-          </>
-        )}
-        {step === 2 && (
-          <>
-            <Button
-              type="button"
-              onClick={() => {
-                setStep((prev) => prev - 1);
-              }}
-            >
-              回上一步
-            </Button>
-            <LauchFormLabelText style={{ textAlign: "center" }}>上傳影片</LauchFormLabelText>
-            <Button
-              type="button"
-              onClick={() => {
-                setChapters([
-                  ...chapters,
-                  { serial: chapters.length + 1, title: "", units: [{ serial: 1, title: "", video: "" }] },
-                ]);
-              }}
-            >
-              新增章節
-            </Button>
-            {chapters.map((chapter, chapterIndex) => (
-              <LauchFormLabel key={chapter.serial}>
+            />
+            {chapter.units.map((unit, unitIndex) => (
+              <div key={unit.serial}>
                 <LauchFormLabelText>
-                  章節{chapter.serial}：{chapter.title}
+                  單元{unit.serial}：{unit.title}
                 </LauchFormLabelText>
                 <LauchFormLabelInput
-                  value={chapter.title}
+                  value={unit.title}
+                  // required
                   onChange={(e) => {
                     setChapters(
                       produce((draft) => {
                         const newChapter = draft.find((_, index) => index === chapterIndex);
                         if (!newChapter) return;
-                        newChapter.title = e.target.value;
+                        newChapter.units[unitIndex].title = e.target.value;
                       })
                     );
                   }}
                 />
-                {chapter.units.map((unit, unitIndex) => (
-                  <div key={unit.serial}>
-                    <LauchFormLabelText>
-                      單元{unit.serial}：{unit.title}
-                    </LauchFormLabelText>
-                    <LauchFormLabelInput
-                      value={unit.title}
-                      onChange={(e) => {
-                        setChapters(
-                          produce((draft) => {
-                            const newChapter = draft.find((_, index) => index === chapterIndex);
-                            if (!newChapter) return;
-                            newChapter.units[unitIndex].title = e.target.value;
-                          })
-                        );
-                      }}
-                    />
-                    <LauchFormLabelInput type="file" accept="video/mp4,video/x-m4v,video/*" />
-                  </div>
-                ))}
-                <Button
-                  type="button"
-                  onClick={() => {
-                    setChapters(
-                      produce((draft) => {
-                        const newChapter = draft.find((_, index) => index === chapterIndex);
-                        if (!newChapter) return;
-                        newChapter.units.push({ serial: newChapter.units.length + 1, title: "", video: "" });
-                      })
-                    );
-                  }}
-                >
-                  新增單元
-                </Button>
-              </LauchFormLabel>
+                <LauchFormLabelInput type="file" accept="video/mp4,video/x-m4v,video/*" />
+              </div>
             ))}
-            <Button type="submit">確認送出</Button>
-          </>
-        )}
+            <Button
+              type="button"
+              onClick={() => {
+                setChapters(
+                  produce((draft) => {
+                    const newChapter = draft.find((_, index) => index === chapterIndex);
+                    if (!newChapter) return;
+                    newChapter.units.push({ serial: newChapter.units.length + 1, title: "", video: "" });
+                  })
+                );
+              }}
+            >
+              單元++
+            </Button>
+          </LauchFormLabel>
+        ))}
+        <Button type="submit">確認送出</Button>
       </LauchForm>
     </>
   );

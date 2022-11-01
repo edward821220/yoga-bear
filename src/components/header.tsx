@@ -42,10 +42,39 @@ const Member = styled.ul`
   display: flex;
   align-items: center;
 `;
-const IconWrapper = styled.li`
+const CartIconWrapper = styled.li`
   margin-right: 36px;
-  width: 45px;
+  width: 66px;
+  position: relative;
   cursor: pointer;
+  &:after {
+    content: "";
+    width: 60px;
+    height: 60px;
+    position: absolute;
+    bottom: 0;
+    transform: translateY(-5px) translateX(1px);
+    background-color: yellow;
+    border-radius: 50%;
+    z-index: -1;
+  }
+`;
+const MemberIconWrapper = styled.li`
+  margin-right: 36px;
+  width: 50px;
+  position: relative;
+  cursor: pointer;
+  &:after {
+    content: "";
+    width: 60px;
+    height: 60px;
+    bottom: 0;
+    transform: translateY(5px) translateX(-5px);
+    position: absolute;
+    background-color: yellow;
+    border-radius: 50%;
+    z-index: -1;
+  }
 `;
 const Form = styled.form`
   display: flex;
@@ -284,18 +313,18 @@ function Header() {
         </HeaderLink>
       </HeaderLinks>
       <Member>
-        <IconWrapper>
+        <CartIconWrapper>
           <Link href="/cart">
             <Image src={CartLogo} alt="cart" />
           </Link>
-        </IconWrapper>
-        <IconWrapper
+        </CartIconWrapper>
+        <MemberIconWrapper
           onClick={() => {
             setShowModal(true);
           }}
         >
           <Image src={MemberLogo} alt="member" />
-        </IconWrapper>
+        </MemberIconWrapper>
       </Member>
       {showModal && <MemberModal setShowModal={setShowModal} />}
     </Wrapper>
