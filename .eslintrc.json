@@ -22,10 +22,19 @@
   "plugins": ["react", "@typescript-eslint", "prettier"],
   "rules": {
     "no-alert": "off",
+    "consistent-return": "off",
     "react/jsx-props-no-spreading": "off",
     "import/prefer-default-export": "off",
+    "@typescript-eslint/unbound-method": "off",
     "@typescript-eslint/no-unsafe-assignment": "off",
     "@typescript-eslint/no-floating-promises": "off",
+    "@typescript-eslint/await-thenable": "off",
+    "@typescript-eslint/no-misused-promises": [
+      "error",
+      {
+        "checksVoidReturn": false
+      }
+    ],
     "prettier/prettier": [
       "warn",
       {
