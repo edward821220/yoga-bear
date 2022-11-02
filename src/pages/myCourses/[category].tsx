@@ -1,11 +1,11 @@
-import React, { useContext, useState } from "react";
+import React, { useContext, useEffect, useState } from "react";
 import styled from "styled-components";
 import produce from "immer";
 import Link from "next/link";
 import Image from "next/image";
 import { useRouter } from "next/router";
 import { ref, getDownloadURL, uploadBytesResumable } from "firebase/storage";
-import { collection, doc, setDoc } from "firebase/firestore";
+import { collection, doc, setDoc, getDocs, query, where } from "firebase/firestore";
 import { flushSync } from "react-dom";
 import { AuthContext } from "../../context/authContext";
 import { storage, db } from "../../../lib/firebase";
@@ -79,9 +79,59 @@ const Button = styled.button`
 const RemoveIcon = styled.div`
   margin-bottom: 10px;
 `;
+const MyCoursesList = styled.ul`
+  display: flex;
+`;
+const MyCourse = styled.li`
+  margin-right: 20px;
+`;
+const CourseCover = styled.div`
+  position: relative;
+  width: 320px;
+  height: 180px;
+  margin-bottom: 10px;
+`;
+const CourseTitle = styled.h3`
+  font-size: 24px;
+`;
 
 function VideoCourses() {
-  return <MainTitle>我的影音課程</MainTitle>;
+  const [courses, setCourses] = useState<{ name: string; cover: string; id: string }[]>();
+  useEffect(() => {
+    const getCourses = async () => {
+      const courseRef = collection(db, "video_courses");
+      const courseQuery = query(courseRef, where("name", "!=", null));
+      const querySnapshot = await getDocs(courseQuery);
+      const results: { name: string; cover: string; id: string }[] = [];
+      querySnapshot.forEach((data) => {
+        results.push({
+          id: data.data().id,
+          name: data.data().name,
+          cover: data.data().cover,
+        });
+      });
+      setCourses(results);
+    };
+    getCourses();
+  }, []);
+
+  return (
+    <>
+      <MainTitle>我的影音課程</MainTitle>
+      <MyCoursesList>
+        {courses?.map((course) => (
+          <MyCourse key={course.name}>
+            <CourseCover>
+              <Link href={`/myCourses/classRoom/videoRoom/${course.id}`}>
+                <Image src={course.cover} alt="cover" fill />
+              </Link>
+            </CourseCover>
+            <CourseTitle>{course.name}</CourseTitle>
+          </MyCourse>
+        ))}
+      </MyCoursesList>
+    </>
+  );
 }
 function LaunchedVideoCourses() {
   return <MainTitle>已上架影音課程</MainTitle>;
@@ -121,10 +171,7 @@ function UploadProgressModal({ progressBar }: { progressBar: { file: string; pro
 function LaunchVideoCourse() {
   const [courseName, setCourseName] = useState("");
   const [price, setPrice] = useState("");
-  const [detail, setDetail] = useState<{ courseIntroduction: string; teacherIntroduction: string }>({
-    courseIntroduction: "",
-    teacherIntroduction: "",
-  });
+  const [introduction, setIntroduction] = useState("");
   const [cover, setCover] = useState("");
   const [chapters, setChapters] = useState<
     { id: number; title: string; units: { id: number; title: string; video: string }[] }[]
@@ -178,10 +225,11 @@ function LaunchVideoCourse() {
     await Promise.all(promises);
     const newVideoCoursesRef = doc(collection(db, "video_courses"));
     await setDoc(newVideoCoursesRef, {
+      id: newVideoCoursesRef.id,
       name: courseName,
       cover,
       price,
-      detail,
+      introduction,
       teacher_id: userData.uid,
       chapters,
       reviews: [],
@@ -217,23 +265,14 @@ function LaunchVideoCourse() {
         <LauchFormLabel>
           <LauchFormLabelText>課程描述</LauchFormLabelText>
           <LauchFormLabelTextarea
-            value={detail.courseIntroduction}
+            value={introduction}
             required
             onChange={(e) => {
-              setDetail({ ...detail, courseIntroduction: e.target.value });
+              setIntroduction(e.target.value);
             }}
           />
         </LauchFormLabel>
-        <LauchFormLabel>
-          <LauchFormLabelText>老師介紹</LauchFormLabelText>
-          <LauchFormLabelTextarea
-            value={detail.teacherIntroduction}
-            required
-            onChange={(e) => {
-              setDetail({ ...detail, teacherIntroduction: e.target.value });
-            }}
-          />
-        </LauchFormLabel>
+
         <LauchFormLabel>
           <LauchFormLabelText>上傳課程封面</LauchFormLabelText>
           <LauchFormLabelInput
