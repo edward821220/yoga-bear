@@ -1,11 +1,14 @@
-import React, { useState } from "react";
+import React, { useContext, useState } from "react";
 import styled from "styled-components";
 import produce from "immer";
 import Link from "next/link";
 import Image from "next/image";
 import { useRouter } from "next/router";
 import { ref, getDownloadURL, uploadBytesResumable } from "firebase/storage";
-import { storage } from "../../../lib/firebase";
+import { collection, doc, setDoc } from "firebase/firestore";
+import { flushSync } from "react-dom";
+import { AuthContext } from "../../context/authContext";
+import { storage, db } from "../../../lib/firebase";
 import Modal from "../../components/modal";
 import Bear from "../../../public/bear.png";
 import Trash from "../../../public/trash.png";
@@ -73,6 +76,9 @@ const Button = styled.button`
   padding: 10px;
   width: 100px;
 `;
+const RemoveIcon = styled.div`
+  margin-bottom: 10px;
+`;
 
 function VideoCourses() {
   return <MainTitle>我的影音課程</MainTitle>;
@@ -125,11 +131,12 @@ function LaunchVideoCourse() {
   >([]);
   const [showModal, setShowModal] = useState(false);
   const [progressBar, setProgressBar] = useState<{ file: string; progress: number }>({ file: "", progress: 0 });
+  const { userData } = useContext(AuthContext);
 
   const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
     const fileInputs = Array.from(document.querySelectorAll("input[type=file]"));
-    // setShowModal(true);
+    setShowModal(true);
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     const promises: any[] = [];
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -138,7 +145,6 @@ function LaunchVideoCourse() {
       /* eslint-disable @typescript-eslint/no-unsafe-argument */
       /* eslint-disable @typescript-eslint/restrict-template-expressions */
       const file = input.files[0];
-      console.log(input.dataset);
       const storageRef = ref(storage, `${courseName}/${file.name}`);
       const uploadTask = uploadBytesResumable(storageRef, file);
       promises.push(uploadTask);
@@ -153,14 +159,33 @@ function LaunchVideoCourse() {
         },
         async () => {
           const downloadUrl = await getDownloadURL(uploadTask.snapshot.ref);
-          if (index === 0) setCover(downloadUrl);
-          // if (index !== 0) {
-          //   setChapters();
-          // }
+          if (index === 0) {
+            setCover(downloadUrl);
+            return;
+          }
+          flushSync(() => {
+            setChapters(
+              produce((draft) => {
+                const targetChapter = draft.find((_, i) => i === Number(input.dataset.chapter));
+                if (!targetChapter) return;
+                targetChapter.units[input.dataset.unit].video = downloadUrl;
+              })
+            );
+          });
         }
       );
     });
     await Promise.all(promises);
+    const newVideoCoursesRef = doc(collection(db, "video_courses"));
+    await setDoc(newVideoCoursesRef, {
+      name: courseName,
+      cover,
+      price,
+      detail,
+      teacher_id: userData.uid,
+      chapters,
+      reviews: [],
+    });
     setShowModal(false);
     alert("課程上架完成！");
   };
@@ -173,7 +198,7 @@ function LaunchVideoCourse() {
           <LauchFormLabelText>課程標題</LauchFormLabelText>
           <LauchFormLabelInput
             value={courseName}
-            // required
+            required
             onChange={(e) => {
               setCourseName(e.target.value);
             }}
@@ -183,7 +208,7 @@ function LaunchVideoCourse() {
           <LauchFormLabelText>課程價格</LauchFormLabelText>
           <LauchFormLabelInput
             value={price}
-            // required
+            required
             onChange={(e) => {
               setPrice(e.target.value);
             }}
@@ -193,7 +218,7 @@ function LaunchVideoCourse() {
           <LauchFormLabelText>課程描述</LauchFormLabelText>
           <LauchFormLabelTextarea
             value={detail.courseIntroduction}
-            // required
+            required
             onChange={(e) => {
               setDetail({ ...detail, courseIntroduction: e.target.value });
             }}
@@ -203,7 +228,7 @@ function LaunchVideoCourse() {
           <LauchFormLabelText>老師介紹</LauchFormLabelText>
           <LauchFormLabelTextarea
             value={detail.teacherIntroduction}
-            // required
+            required
             onChange={(e) => {
               setDetail({ ...detail, teacherIntroduction: e.target.value });
             }}
@@ -214,7 +239,7 @@ function LaunchVideoCourse() {
           <LauchFormLabelInput
             type="file"
             accept="image/*"
-            // required
+            required
             onChange={(e) => {
               if (!e.target.files) return;
               setCover(URL.createObjectURL(e.target.files[0]));
@@ -240,7 +265,7 @@ function LaunchVideoCourse() {
             </LauchFormLabelText>
             <LauchFormLabelInput
               value={chapter.title}
-              // required
+              required
               onChange={(e) => {
                 setChapters(
                   produce((draft) => {
@@ -251,14 +276,16 @@ function LaunchVideoCourse() {
                 );
               }}
             />
-            <Image
-              src={Trash}
-              alt="trash"
-              width={24}
-              onClick={() => {
-                setChapters(chapters.filter((_, index) => index !== chapterIndex));
-              }}
-            />
+            <RemoveIcon>
+              <Image
+                src={Trash}
+                alt="trash"
+                width={24}
+                onClick={() => {
+                  setChapters(chapters.filter((_, index) => index !== chapterIndex));
+                }}
+              />
+            </RemoveIcon>
             {chapter.units.map((unit, unitIndex) => (
               <div key={unit.id}>
                 <LauchFormLabelText>
@@ -266,7 +293,7 @@ function LaunchVideoCourse() {
                 </LauchFormLabelText>
                 <LauchFormLabelInput
                   value={unit.title}
-                  // required
+                  required
                   onChange={(e) => {
                     setChapters(
                       produce((draft) => {
@@ -280,24 +307,26 @@ function LaunchVideoCourse() {
                 <LauchFormLabelInput
                   type="file"
                   accept="video/mp4,video/x-m4v,video/*"
-                  data-chapter={chapterIndex + 1}
-                  data-unit={unitIndex + 1}
+                  data-chapter={chapterIndex}
+                  data-unit={unitIndex}
                 />
-                <Image
-                  src={Trash}
-                  alt="trash"
-                  width={24}
-                  onClick={() => {
-                    setChapters(
-                      produce((draft) => {
-                        const newChapter = draft.find((_, index) => index === chapterIndex);
-                        if (!newChapter) return;
-                        const newUnits = newChapter.units.filter((_, index) => index !== unitIndex);
-                        newChapter.units = newUnits;
-                      })
-                    );
-                  }}
-                />
+                <RemoveIcon>
+                  <Image
+                    src={Trash}
+                    alt="trash"
+                    width={24}
+                    onClick={() => {
+                      setChapters(
+                        produce((draft) => {
+                          const newChapter = draft.find((_, index) => index === chapterIndex);
+                          if (!newChapter) return;
+                          const newUnits = newChapter.units.filter((_, index) => index !== unitIndex);
+                          newChapter.units = newUnits;
+                        })
+                      );
+                    }}
+                  />
+                </RemoveIcon>
               </div>
             ))}
             <Button
