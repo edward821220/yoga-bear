@@ -6,6 +6,7 @@ import Image from "next/image";
 import { useRouter } from "next/router";
 import { ref, getDownloadURL, uploadBytesResumable } from "firebase/storage";
 import { storage } from "../../../lib/firebase";
+import Modal from "../../components/modal";
 
 const Wrapper = styled.div`
   display: flex;
@@ -77,6 +78,27 @@ function VideoCourses() {
 function LaunchedVideoCourses() {
   return <MainTitle>已上架影音課程</MainTitle>;
 }
+function UploadProgressModal({ progressBar }: { progressBar: { file: string; progress: number } }) {
+  const handleClose = () => {
+    alert("課程上傳中，請勿關閉視窗！");
+  };
+  return (
+    <Modal handleClose={handleClose}>
+      <div
+        style={{
+          height: "100%",
+          display: "flex",
+          flexDirection: "column",
+          justifyContent: "center",
+          alignItems: "center",
+        }}
+      >
+        <h2 style={{ textAlign: "center", fontSize: "24px" }}>{`Uploading ${progressBar.file}`}</h2>
+        <h2 style={{ textAlign: "center", fontSize: "24px" }}>{`Upload is ${progressBar.progress}% done`}</h2>
+      </div>
+    </Modal>
+  );
+}
 function LaunchVideoCourse() {
   const [courseName, setCourseName] = useState("");
   const [price, setPrice] = useState("");
@@ -84,15 +106,19 @@ function LaunchVideoCourse() {
     courseIntroduction: "",
     teacherIntroduction: "",
   });
-  const [coverPreview, setCoverPreview] = useState("");
+  const [cover, setCover] = useState("");
   const [chapters, setChapters] = useState<
     { serial: number; title: string; units: { serial: number; title: string; video: string }[] }[]
   >([]);
+  const [showModal, setShowModal] = useState(false);
+  const [progressBar, setProgressBar] = useState<{ file: string; progress: number }>({ file: "", progress: 0 });
 
-  const handleSubmit = (e: React.SyntheticEvent) => {
+  const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
-
     const fileInputs = Array.from(document.querySelectorAll("input[type=file]"));
+    setShowModal(true);
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    const promises: any[] = [];
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     fileInputs.forEach((input: any, index) => {
       /* eslint-disable @typescript-eslint/no-unsafe-member-access */
@@ -101,28 +127,28 @@ function LaunchVideoCourse() {
       const file = input.files[0];
       const storageRef = ref(storage, `${courseName}/${file.name}`);
       const uploadTask = uploadBytesResumable(storageRef, file);
+      promises.push(uploadTask);
       uploadTask.on(
         "state_changed",
         (snapshot) => {
-          const progress = (snapshot.bytesTransferred / snapshot.totalBytes) * 100;
-          console.log(`Upload is ${progress}% done`);
+          const progress = ((snapshot.bytesTransferred / snapshot.totalBytes) * 100).toFixed(2);
+          setProgressBar({ file: file.name, progress: Number(progress) });
         },
         (error) => {
           alert(error);
         },
         async () => {
           const downloadUrl = await getDownloadURL(uploadTask.snapshot.ref);
-          console.log(downloadUrl);
-          // setChapters(
-          //   produce((draft) => {
-          //     const newChapter = draft.find((_, chapterIndex) => index === chapterIndex);
-          //     if (!newChapter) return;
-          //     newChapter.units[index].video = downloadUrl;
-          //   })
-          // );
+          if (index === 0) setCover(downloadUrl);
+          // if (index !== 0) {
+          //   setChapters();
+          // }
         }
       );
     });
+    await Promise.all(promises);
+    setShowModal(false);
+    alert("課程上架完成！");
   };
 
   return (
@@ -177,10 +203,10 @@ function LaunchVideoCourse() {
             // required
             onChange={(e) => {
               if (!e.target.files) return;
-              setCoverPreview(URL.createObjectURL(e.target.files[0]));
+              setCover(URL.createObjectURL(e.target.files[0]));
             }}
           />
-          {coverPreview && <Image src={coverPreview} alt="cover" width={500} height={300} />}
+          {cover && <Image src={cover} alt="cover" width={500} height={300} />}
         </LauchFormLabel>
         <Button
           type="button"
@@ -250,6 +276,7 @@ function LaunchVideoCourse() {
         ))}
         <Button type="submit">確認送出</Button>
       </LauchForm>
+      {showModal && <UploadProgressModal progressBar={progressBar} />}
     </>
   );
 }
