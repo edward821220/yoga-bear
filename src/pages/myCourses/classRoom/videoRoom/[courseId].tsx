@@ -4,7 +4,7 @@ import { useRouter } from "next/router";
 import styled from "styled-components";
 import { db } from "../../../../../lib/firebase";
 
-interface courseDataInteface {
+interface CourseDataInteface {
   name: string;
   chapters: { id: number; title: string; units: { id: number; title: string; video: string }[] }[];
   introduction: string;
@@ -45,7 +45,7 @@ const Introduction = styled.p`
 function VideoRoom() {
   const router = useRouter();
   const { courseId } = router.query;
-  const [courseData, setCourseData] = useState<courseDataInteface | null>(null);
+  const [courseData, setCourseData] = useState<CourseDataInteface>();
 
   useEffect(() => {
     const getCourse = async () => {
