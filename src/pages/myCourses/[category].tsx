@@ -7,6 +7,8 @@ import { useRouter } from "next/router";
 import { ref, getDownloadURL, uploadBytesResumable } from "firebase/storage";
 import { storage } from "../../../lib/firebase";
 import Modal from "../../components/modal";
+import Bear from "../../../public/bear.png";
+import Trash from "../../../public/trash.png";
 
 const Wrapper = styled.div`
   display: flex;
@@ -93,8 +95,19 @@ function UploadProgressModal({ progressBar }: { progressBar: { file: string; pro
           alignItems: "center",
         }}
       >
-        <h2 style={{ textAlign: "center", fontSize: "24px" }}>{`Uploading ${progressBar.file}`}</h2>
-        <h2 style={{ textAlign: "center", fontSize: "24px" }}>{`Upload is ${progressBar.progress}% done`}</h2>
+        <h2
+          style={{ textAlign: "center", fontSize: "24px", marginBottom: "10px" }}
+        >{`Uploading ${progressBar.file}`}</h2>
+        <h2
+          style={{ textAlign: "center", fontSize: "24px", marginBottom: "10px" }}
+        >{`Upload is ${progressBar.progress}% done`}</h2>
+        <h2 style={{ textAlign: "center", fontSize: "20px", color: "#075866", marginBottom: "10px" }}>
+          頭倒立為體位法之王
+        </h2>
+        <h2 style={{ textAlign: "center", fontSize: "20px", color: "#075866", marginBottom: "10px" }}>
+          每天三分鐘，宿便、失眠不再有
+        </h2>
+        <Image src={Bear} alt="bear" width={400} />
       </div>
     </Modal>
   );
@@ -108,7 +121,7 @@ function LaunchVideoCourse() {
   });
   const [cover, setCover] = useState("");
   const [chapters, setChapters] = useState<
-    { serial: number; title: string; units: { serial: number; title: string; video: string }[] }[]
+    { id: number; title: string; units: { id: number; title: string; video: string }[] }[]
   >([]);
   const [showModal, setShowModal] = useState(false);
   const [progressBar, setProgressBar] = useState<{ file: string; progress: number }>({ file: "", progress: 0 });
@@ -116,7 +129,7 @@ function LaunchVideoCourse() {
   const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
     const fileInputs = Array.from(document.querySelectorAll("input[type=file]"));
-    setShowModal(true);
+    // setShowModal(true);
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     const promises: any[] = [];
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -125,6 +138,7 @@ function LaunchVideoCourse() {
       /* eslint-disable @typescript-eslint/no-unsafe-argument */
       /* eslint-disable @typescript-eslint/restrict-template-expressions */
       const file = input.files[0];
+      console.log(input.dataset);
       const storageRef = ref(storage, `${courseName}/${file.name}`);
       const uploadTask = uploadBytesResumable(storageRef, file);
       promises.push(uploadTask);
@@ -213,16 +227,16 @@ function LaunchVideoCourse() {
           onClick={() => {
             setChapters([
               ...chapters,
-              { serial: chapters.length + 1, title: "", units: [{ serial: 1, title: "", video: "" }] },
+              { id: chapters.length + 1, title: "", units: [{ id: 1, title: "", video: "" }] },
             ]);
           }}
         >
           課程章節++
         </Button>
         {chapters.map((chapter, chapterIndex) => (
-          <LauchFormLabel key={chapter.serial}>
+          <LauchFormLabel key={chapter.id}>
             <LauchFormLabelText>
-              章節{chapter.serial}：{chapter.title}
+              章節{chapterIndex + 1}：{chapter.title}
             </LauchFormLabelText>
             <LauchFormLabelInput
               value={chapter.title}
@@ -237,10 +251,18 @@ function LaunchVideoCourse() {
                 );
               }}
             />
+            <Image
+              src={Trash}
+              alt="trash"
+              width={24}
+              onClick={() => {
+                setChapters(chapters.filter((_, index) => index !== chapterIndex));
+              }}
+            />
             {chapter.units.map((unit, unitIndex) => (
-              <div key={unit.serial}>
+              <div key={unit.id}>
                 <LauchFormLabelText>
-                  單元{unit.serial}：{unit.title}
+                  單元{unitIndex + 1}：{unit.title}
                 </LauchFormLabelText>
                 <LauchFormLabelInput
                   value={unit.title}
@@ -255,7 +277,27 @@ function LaunchVideoCourse() {
                     );
                   }}
                 />
-                <LauchFormLabelInput type="file" accept="video/mp4,video/x-m4v,video/*" />
+                <LauchFormLabelInput
+                  type="file"
+                  accept="video/mp4,video/x-m4v,video/*"
+                  data-chapter={chapterIndex + 1}
+                  data-unit={unitIndex + 1}
+                />
+                <Image
+                  src={Trash}
+                  alt="trash"
+                  width={24}
+                  onClick={() => {
+                    setChapters(
+                      produce((draft) => {
+                        const newChapter = draft.find((_, index) => index === chapterIndex);
+                        if (!newChapter) return;
+                        const newUnits = newChapter.units.filter((_, index) => index !== unitIndex);
+                        newChapter.units = newUnits;
+                      })
+                    );
+                  }}
+                />
               </div>
             ))}
             <Button
@@ -265,7 +307,7 @@ function LaunchVideoCourse() {
                   produce((draft) => {
                     const newChapter = draft.find((_, index) => index === chapterIndex);
                     if (!newChapter) return;
-                    newChapter.units.push({ serial: newChapter.units.length + 1, title: "", video: "" });
+                    newChapter.units.push({ id: newChapter.units.length + 1, title: "", video: "" });
                   })
                 );
               }}
