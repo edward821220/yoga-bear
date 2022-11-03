@@ -1,20 +1,22 @@
-import React, { useState } from "react";
+import * as React from "react";
 import Paper from "@mui/material/Paper";
-import Radio from "@mui/material/Radio";
-import RadioGroup from "@mui/material/RadioGroup";
-import FormControlLabel from "@mui/material/FormControlLabel";
-import { ViewState, EditingState, IntegratedEditing } from "@devexpress/dx-react-scheduler";
+import {
+  ViewState,
+  EditingState,
+  IntegratedEditing,
+  ChangeSet,
+  AppointmentModel,
+} from "@devexpress/dx-react-scheduler";
 import {
   Scheduler,
-  WeekView,
   MonthView,
   Appointments,
-  AppointmentTooltip,
   AppointmentForm,
+  AppointmentTooltip,
   ConfirmationDialog,
 } from "@devexpress/dx-react-scheduler-material-ui";
 
-const appointments = [
+const appointments: Array<AppointmentModel> = [
   {
     title: "Website Re-Design Plan",
     startDate: new Date(2022, 10, 2, 9, 30),
@@ -24,24 +26,17 @@ const appointments = [
   },
 ];
 
-interface ViewSwitcherProps {
-  currentViewName: string;
-  onChange: (e: React.ChangeEvent<HTMLInputElement>) => void;
-}
-
-/* eslint-disable @typescript-eslint/no-explicit-any */
-function TextEditor(props: any) {
-  /*  eslint-disable @typescript-eslint/no-unsafe-member-access */
-  /*  eslint-disable react/destructuring-assignment */
+function TextEditor(props: AppointmentForm.TextEditorProps) {
+  // eslint-disable-next-line react/destructuring-assignment
   if (props.type === "multilineTextEditor") {
     return null;
   }
   return <AppointmentForm.TextEditor {...props} />;
 }
 
-function BasicLayout({ onFieldChange, appointmentData, ...restProps }: { onFieldChange: any; appointmentData: any }) {
+function BasicLayout({ onFieldChange, appointmentData, ...restProps }: AppointmentForm.BasicLayoutProps) {
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const onCustomFieldChange = (nextValue: any) => {
-    // eslint-disable-next-line @typescript-eslint/no-unsafe-call
     onFieldChange({ customField: nextValue });
   };
 
@@ -52,72 +47,67 @@ function BasicLayout({ onFieldChange, appointmentData, ...restProps }: { onField
         value={appointmentData.customField}
         onValueChange={onCustomFieldChange}
         placeholder="Custom field"
+        type="titleTextEditor"
+        readOnly
       />
     </AppointmentForm.BasicLayout>
   );
 }
 
-function ExternalViewSwitcher({ currentViewName, onChange }: ViewSwitcherProps) {
-  return (
-    <RadioGroup
-      aria-label="Views"
-      style={{ flexDirection: "row" }}
-      name="views"
-      value={currentViewName}
-      onChange={onChange}
-    >
-      <FormControlLabel value="Week" control={<Radio />} label="Week" />
-      <FormControlLabel value="Month" control={<Radio />} label="Month" />
-    </RadioGroup>
-  );
+interface State {
+  data: Array<AppointmentModel>;
+  currentDate: string;
 }
 
-const currentDate = new Date(Date.now()).toLocaleString().split(" ")[0].replaceAll("/", "-");
+export default class TeacherCalendar extends React.PureComponent<Array<AppointmentModel>, State> {
+  constructor(props: Array<AppointmentModel>) {
+    // eslint-disable-next-line @typescript-eslint/no-unsafe-argument
+    super(props);
+    this.state = {
+      data: appointments,
+      currentDate: new Date(Date.now()).toLocaleString().split(" ")[0].replaceAll("/", "-"),
+    };
 
-export default function TeacherCalendar() {
-  const [data, setData] = useState(appointments);
-  const [view, setView] = useState("Month");
+    this.commitChanges = this.commitChanges.bind(this);
+  }
 
-  const commitChanges = ({ added, changed, deleted }: { added: any; changed: any; deleted: any }) => {
-    if (added) {
-      const startingAddedId = data.length > 0 ? data[data.length - 1].id + 1 : 0;
-      setData([...data, { id: startingAddedId, ...added }]);
-    }
-    if (changed) {
-      setData(
-        data.map((appointment) => {
-          if (!appointment.id) return;
+  commitChanges({ added, changed, deleted }: ChangeSet): void {
+    this.setState((state) => {
+      let { data } = state;
+      if (added) {
+        const startingAddedId = data.length > 0 ? Number(data[data.length - 1].id) + 1 : 0;
+        data = [...data, { id: startingAddedId, ...added }];
+      }
+      if (changed) {
+        data = data.map((appointment) => {
+          if (appointment.id === undefined) return;
           // eslint-disable-next-line @typescript-eslint/no-unsafe-return
           return changed[appointment.id] ? { ...appointment, ...changed[appointment.id] } : appointment;
-        })
-      );
-    }
-    if (deleted !== undefined) {
-      setData(data.filter((appointment) => appointment.id !== deleted));
-    }
-  };
+        });
+      }
+      if (deleted !== undefined) {
+        data = data.filter((appointment) => appointment.id !== deleted);
+      }
+      return { data };
+    });
+  }
 
-  return (
-    <>
-      <ExternalViewSwitcher
-        currentViewName={view}
-        onChange={(e: React.ChangeEvent<HTMLInputElement>) => {
-          setView(e.target.value);
-        }}
-      />
+  render() {
+    const { currentDate, data } = this.state;
+
+    return (
       <Paper>
-        <Scheduler data={data} height={660}>
-          <ViewState defaultCurrentDate={currentDate} currentViewName={view} />
-          <EditingState onCommitChanges={commitChanges} />
+        <Scheduler data={data}>
+          <ViewState currentDate={currentDate} />
+          <EditingState onCommitChanges={this.commitChanges} />
           <IntegratedEditing />
-          <WeekView startDayHour={7} endDayHour={22} />
           <MonthView />
           <Appointments />
-          <AppointmentTooltip showCloseButton showOpenButton />
+          <AppointmentTooltip showOpenButton showDeleteButton />
           <ConfirmationDialog />
           <AppointmentForm basicLayoutComponent={BasicLayout} textEditorComponent={TextEditor} />
         </Scheduler>
       </Paper>
-    </>
-  );
+    );
+  }
 }
