@@ -87,7 +87,8 @@ function VideoRoom() {
     if (!courseData) return;
     if (courseData.chapters[selectChapter].units[selectUnit + 1]?.video) {
       setSelectUnit((prev) => prev + 1);
-    } else if (courseData.chapters[selectChapter + 1]?.units[selectUnit].video) {
+    } else if (courseData.chapters[selectChapter + 1]?.units[0].video) {
+      setSelectUnit(0);
       setSelectChpter((prev) => prev + 1);
     } else {
       alert("恭喜您完課!");

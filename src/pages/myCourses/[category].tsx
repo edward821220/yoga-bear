@@ -6,7 +6,6 @@ import Image from "next/image";
 import { useRouter } from "next/router";
 import { ref, getDownloadURL, uploadBytesResumable } from "firebase/storage";
 import { collection, doc, setDoc, getDocs, query, where } from "firebase/firestore";
-import { promises } from "stream";
 import { AuthContext } from "../../context/authContext";
 import { storage, db } from "../../../lib/firebase";
 import Modal from "../../components/modal";
@@ -171,6 +170,7 @@ function UploadProgressModal({ progressBar }: { progressBar: { file: string; pro
   );
 }
 function LaunchVideoCourse() {
+  const router = useRouter();
   const [courseName, setCourseName] = useState("");
   const [price, setPrice] = useState("");
   const [introduction, setIntroduction] = useState("");
@@ -184,7 +184,6 @@ function LaunchVideoCourse() {
 
   const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
-    const fileInputs = Array.from(document.querySelectorAll("input[type=file]"));
     setShowModal(true);
 
     let newChapters = [...chapters];
@@ -225,7 +224,7 @@ function LaunchVideoCourse() {
         );
       });
     }
-
+    const fileInputs = Array.from(document.querySelectorAll("input[type=file]"));
     await Promise.all(
       // eslint-disable-next-line @typescript-eslint/no-explicit-any
       fileInputs.map(async (input: any, index) => {
@@ -246,6 +245,7 @@ function LaunchVideoCourse() {
     });
     setShowModal(false);
     alert("課程上架完成！");
+    router.push("/myCourses/videoCourses");
   };
 
   return (
