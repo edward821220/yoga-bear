@@ -45,13 +45,14 @@ const ChapterTitle = styled.h4`
   color: #ff7b00;
   font-size: 20px;
   margin-bottom: 20px;
+  margin-top: 20px;
 `;
 const Units = styled.ul``;
 const Unit = styled.li`
   cursor: pointer;
 `;
 const UnitTitle = styled.h5`
-  color: #ddd903;
+  color: #056962;
   font-size: 16px;
   margin-bottom: 10px;
 `;
