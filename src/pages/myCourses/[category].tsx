@@ -1,12 +1,11 @@
-import React, { useContext, useState } from "react";
+import React, { useContext, useEffect, useState } from "react";
 import styled from "styled-components";
 import produce from "immer";
 import Link from "next/link";
 import Image from "next/image";
 import { useRouter } from "next/router";
 import { ref, getDownloadURL, uploadBytesResumable } from "firebase/storage";
-import { collection, doc, setDoc } from "firebase/firestore";
-import { flushSync } from "react-dom";
+import { collection, doc, setDoc, getDocs, query, where } from "firebase/firestore";
 import { AuthContext } from "../../context/authContext";
 import { storage, db } from "../../../lib/firebase";
 import Modal from "../../components/modal";
@@ -79,9 +78,61 @@ const Button = styled.button`
 const RemoveIcon = styled.div`
   margin-bottom: 10px;
 `;
+const MyCoursesList = styled.ul`
+  display: flex;
+  flex-wrap: wrap;
+`;
+const MyCourse = styled.li`
+  margin-right: 20px;
+  flex-basis: 48%;
+`;
+const CourseCover = styled.div`
+  position: relative;
+  width: 480px;
+  height: 270px;
+  margin-bottom: 10px;
+`;
+const CourseTitle = styled.h3`
+  font-size: 24px;
+`;
 
 function VideoCourses() {
-  return <MainTitle>我的影音課程</MainTitle>;
+  const [courses, setCourses] = useState<{ name: string; cover: string; id: string }[]>();
+  useEffect(() => {
+    const getCourses = async () => {
+      const courseRef = collection(db, "video_courses");
+      const courseQuery = query(courseRef, where("name", "!=", null));
+      const querySnapshot = await getDocs(courseQuery);
+      const results: { name: string; cover: string; id: string }[] = [];
+      querySnapshot.forEach((data) => {
+        results.push({
+          id: data.data().id,
+          name: data.data().name,
+          cover: data.data().cover,
+        });
+      });
+      setCourses(results);
+    };
+    getCourses();
+  }, []);
+
+  return (
+    <>
+      <MainTitle>我的影音課程</MainTitle>
+      <MyCoursesList>
+        {courses?.map((course) => (
+          <MyCourse key={course.name}>
+            <CourseCover>
+              <Link href={`/myCourses/classRoom/videoRoom/${course.id}`}>
+                <Image src={course.cover} alt="cover" fill />
+              </Link>
+            </CourseCover>
+            <CourseTitle>{course.name}</CourseTitle>
+          </MyCourse>
+        ))}
+      </MyCoursesList>
+    </>
+  );
 }
 function LaunchedVideoCourses() {
   return <MainTitle>已上架影音課程</MainTitle>;
@@ -113,19 +164,17 @@ function UploadProgressModal({ progressBar }: { progressBar: { file: string; pro
         <h2 style={{ textAlign: "center", fontSize: "20px", color: "#075866", marginBottom: "10px" }}>
           每天三分鐘，宿便、失眠不再有
         </h2>
-        <Image src={Bear} alt="bear" width={400} />
+        <Image src={Bear} alt="bear" width={300} />
       </div>
     </Modal>
   );
 }
 function LaunchVideoCourse() {
+  const router = useRouter();
   const [courseName, setCourseName] = useState("");
   const [price, setPrice] = useState("");
-  const [detail, setDetail] = useState<{ courseIntroduction: string; teacherIntroduction: string }>({
-    courseIntroduction: "",
-    teacherIntroduction: "",
-  });
-  const [cover, setCover] = useState("");
+  const [introduction, setIntroduction] = useState("");
+  const [coverPreview, setCoverPreview] = useState("");
   const [chapters, setChapters] = useState<
     { id: number; title: string; units: { id: number; title: string; video: string }[] }[]
   >([]);
@@ -135,59 +184,68 @@ function LaunchVideoCourse() {
 
   const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
-    const fileInputs = Array.from(document.querySelectorAll("input[type=file]"));
     setShowModal(true);
+
+    let newChapters = [...chapters];
+    let imageUrl = "";
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    const promises: any[] = [];
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    fileInputs.forEach((input: any, index) => {
-      /* eslint-disable @typescript-eslint/no-unsafe-member-access */
-      /* eslint-disable @typescript-eslint/no-unsafe-argument */
-      /* eslint-disable @typescript-eslint/restrict-template-expressions */
-      const file = input.files[0];
-      const storageRef = ref(storage, `${courseName}/${file.name}`);
-      const uploadTask = uploadBytesResumable(storageRef, file);
-      promises.push(uploadTask);
-      uploadTask.on(
-        "state_changed",
-        (snapshot) => {
-          const progress = ((snapshot.bytesTransferred / snapshot.totalBytes) * 100).toFixed(2);
-          setProgressBar({ file: file.name, progress: Number(progress) });
-        },
-        (error) => {
-          alert(error);
-        },
-        async () => {
-          const downloadUrl = await getDownloadURL(uploadTask.snapshot.ref);
-          if (index === 0) {
-            setCover(downloadUrl);
-            return;
+    async function uploadTaskPromise(input: any, index: number) {
+      return new Promise((resolve, reject) => {
+        /* eslint-disable @typescript-eslint/no-unsafe-member-access */
+        /* eslint-disable @typescript-eslint/no-unsafe-argument */
+        /* eslint-disable @typescript-eslint/restrict-template-expressions */
+        const file = input.files[0];
+        const storageRef = ref(storage, `${courseName}/${file.name}`);
+        const uploadTask = uploadBytesResumable(storageRef, file);
+        // promises.push(uploadTask);
+        uploadTask.on(
+          "state_changed",
+          (snapshot) => {
+            const progress = ((snapshot.bytesTransferred / snapshot.totalBytes) * 100).toFixed(2);
+            setProgressBar({ file: file.name, progress: Number(progress) });
+          },
+          (error) => {
+            reject(error);
+          },
+          async () => {
+            const downloadUrl = await getDownloadURL(uploadTask.snapshot.ref);
+            if (index === 0) {
+              imageUrl = downloadUrl;
+              resolve(downloadUrl);
+              return;
+            }
+            newChapters = produce(newChapters, (draft) => {
+              const targetChapter = draft.find((_, i) => i === Number(input.dataset.chapter));
+              if (!targetChapter) return;
+              targetChapter.units[input.dataset.unit].video = downloadUrl;
+            });
+            resolve(downloadUrl);
           }
-          flushSync(() => {
-            setChapters(
-              produce((draft) => {
-                const targetChapter = draft.find((_, i) => i === Number(input.dataset.chapter));
-                if (!targetChapter) return;
-                targetChapter.units[input.dataset.unit].video = downloadUrl;
-              })
-            );
-          });
-        }
-      );
-    });
-    await Promise.all(promises);
+        );
+      });
+    }
+    const fileInputs = Array.from(document.querySelectorAll("input[type=file]"));
+    await Promise.all(
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      fileInputs.map(async (input: any, index) => {
+        await uploadTaskPromise(input, index);
+      })
+    );
+
     const newVideoCoursesRef = doc(collection(db, "video_courses"));
     await setDoc(newVideoCoursesRef, {
+      id: newVideoCoursesRef.id,
       name: courseName,
-      cover,
+      cover: imageUrl,
       price,
-      detail,
+      introduction,
       teacher_id: userData.uid,
-      chapters,
+      chapters: newChapters,
       reviews: [],
     });
     setShowModal(false);
     alert("課程上架完成！");
+    router.push("/myCourses/videoCourses");
   };
 
   return (
@@ -217,23 +275,14 @@ function LaunchVideoCourse() {
         <LauchFormLabel>
           <LauchFormLabelText>課程描述</LauchFormLabelText>
           <LauchFormLabelTextarea
-            value={detail.courseIntroduction}
+            value={introduction}
             required
             onChange={(e) => {
-              setDetail({ ...detail, courseIntroduction: e.target.value });
+              setIntroduction(e.target.value);
             }}
           />
         </LauchFormLabel>
-        <LauchFormLabel>
-          <LauchFormLabelText>老師介紹</LauchFormLabelText>
-          <LauchFormLabelTextarea
-            value={detail.teacherIntroduction}
-            required
-            onChange={(e) => {
-              setDetail({ ...detail, teacherIntroduction: e.target.value });
-            }}
-          />
-        </LauchFormLabel>
+
         <LauchFormLabel>
           <LauchFormLabelText>上傳課程封面</LauchFormLabelText>
           <LauchFormLabelInput
@@ -242,10 +291,10 @@ function LaunchVideoCourse() {
             required
             onChange={(e) => {
               if (!e.target.files) return;
-              setCover(URL.createObjectURL(e.target.files[0]));
+              setCoverPreview(URL.createObjectURL(e.target.files[0]));
             }}
           />
-          {cover && <Image src={cover} alt="cover" width={500} height={300} />}
+          {coverPreview && <Image src={coverPreview} alt="cover" width={500} height={300} />}
         </LauchFormLabel>
         <Button
           type="button"
