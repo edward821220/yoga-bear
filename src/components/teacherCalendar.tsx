@@ -3,7 +3,7 @@ import Paper from "@mui/material/Paper";
 import Radio from "@mui/material/Radio";
 import RadioGroup from "@mui/material/RadioGroup";
 import FormControlLabel from "@mui/material/FormControlLabel";
-import { ViewState, EditingState, IntegratedEditing, AppointmentModel } from "@devexpress/dx-react-scheduler";
+import { ViewState, EditingState, IntegratedEditing } from "@devexpress/dx-react-scheduler";
 import {
   Scheduler,
   WeekView,
@@ -14,22 +14,40 @@ import {
   ConfirmationDialog,
 } from "@devexpress/dx-react-scheduler-material-ui";
 
-function TextEditor(props) {
-  // eslint-disable-next-line react/destructuring-assignment
+const appointments = [
+  {
+    title: "Website Re-Design Plan",
+    startDate: new Date(2022, 10, 2, 9, 30),
+    endDate: new Date(2022, 10, 2, 11, 30),
+    id: 0,
+    location: "Room 1",
+  },
+];
+
+interface ViewSwitcherProps {
+  currentViewName: string;
+  onChange: (e: React.ChangeEvent<HTMLInputElement>) => void;
+}
+
+/* eslint-disable @typescript-eslint/no-explicit-any */
+function TextEditor(props: any) {
+  /*  eslint-disable @typescript-eslint/no-unsafe-member-access */
+  /*  eslint-disable react/destructuring-assignment */
   if (props.type === "multilineTextEditor") {
     return null;
   }
   return <AppointmentForm.TextEditor {...props} />;
 }
 
-function BasicLayout({ onFieldChange, appointmentData, ...restProps }) {
-  const onCustomFieldChange = (nextValue) => {
+function BasicLayout({ onFieldChange, appointmentData, ...restProps }: { onFieldChange: any; appointmentData: any }) {
+  const onCustomFieldChange = (nextValue: any) => {
+    // eslint-disable-next-line @typescript-eslint/no-unsafe-call
     onFieldChange({ customField: nextValue });
   };
 
   return (
     <AppointmentForm.BasicLayout appointmentData={appointmentData} onFieldChange={onFieldChange} {...restProps}>
-      <AppointmentForm.Label text="Custom Field" type="title" />
+      <AppointmentForm.Label text="Custom Field" type="titleLabel" />
       <AppointmentForm.TextEditor
         value={appointmentData.customField}
         onValueChange={onCustomFieldChange}
@@ -37,19 +55,6 @@ function BasicLayout({ onFieldChange, appointmentData, ...restProps }) {
       />
     </AppointmentForm.BasicLayout>
   );
-}
-
-const appointments: Array<AppointmentModel> = [
-  {
-    title: "Website Re-Design Plan",
-    startDate: new Date(2022, 10, 2, 9, 30),
-    endDate: new Date(2022, 10, 2, 11, 30),
-  },
-];
-
-interface ViewSwitcherProps {
-  currentViewName: string;
-  onChange: (e: React.ChangeEvent<HTMLInputElement>) => void;
 }
 
 function ExternalViewSwitcher({ currentViewName, onChange }: ViewSwitcherProps) {
@@ -62,7 +67,6 @@ function ExternalViewSwitcher({ currentViewName, onChange }: ViewSwitcherProps) 
       onChange={onChange}
     >
       <FormControlLabel value="Week" control={<Radio />} label="Week" />
-      <FormControlLabel value="Work Week" control={<Radio />} label="Work Week" />
       <FormControlLabel value="Month" control={<Radio />} label="Month" />
     </RadioGroup>
   );
@@ -74,20 +78,21 @@ export default function TeacherCalendar() {
   const [data, setData] = useState(appointments);
   const [view, setView] = useState("Month");
 
-  const commitChanges = ({ added, changed, deleted }) => {
+  const commitChanges = ({ added, changed, deleted }: { added: any; changed: any; deleted: any }) => {
     if (added) {
       const startingAddedId = data.length > 0 ? data[data.length - 1].id + 1 : 0;
       setData([...data, { id: startingAddedId, ...added }]);
     }
     if (changed) {
       setData(
-        data.map((appointment) =>
-          changed[appointment.id] ? { ...appointment, ...changed[appointment.id] } : appointment
-        )
+        data.map((appointment) => {
+          if (!appointment.id) return;
+          // eslint-disable-next-line @typescript-eslint/no-unsafe-return
+          return changed[appointment.id] ? { ...appointment, ...changed[appointment.id] } : appointment;
+        })
       );
     }
     if (deleted !== undefined) {
-      console.log(deleted);
       setData(data.filter((appointment) => appointment.id !== deleted));
     }
   };

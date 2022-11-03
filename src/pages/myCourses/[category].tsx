@@ -408,7 +408,6 @@ function LaunchVideoCourse() {
 function TeacherCalendarPage() {
   return (
     <CalendarWrapper>
-      <MainTitle>行事曆</MainTitle>
       <TeacherCalendar />
     </CalendarWrapper>
   );
