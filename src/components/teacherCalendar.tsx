@@ -12,6 +12,7 @@ import {
 } from "@devexpress/dx-react-scheduler";
 import {
   Scheduler,
+  Resources,
   WeekView,
   MonthView,
   Appointments,
@@ -20,7 +21,31 @@ import {
   ConfirmationDialog,
 } from "@devexpress/dx-react-scheduler-material-ui";
 
-const appointments: Array<AppointmentModel> = [];
+const resourcesData = [
+  {
+    text: "初學者",
+    id: 1,
+    color: "#105861",
+  },
+  {
+    text: "一般練習者",
+    id: 2,
+    color: "#c76035",
+  },
+  {
+    text: "進階練習者",
+    id: 3,
+    color: "#cb4641",
+  },
+];
+
+const resources = [
+  {
+    fieldName: "Level",
+    title: "Level",
+    instances: resourcesData,
+  },
+];
 
 function TextEditor(props: AppointmentForm.TextEditorProps) {
   // eslint-disable-next-line react/destructuring-assignment
@@ -38,13 +63,21 @@ function BasicLayout({ onFieldChange, appointmentData, ...restProps }: Appointme
 
   return (
     <AppointmentForm.BasicLayout appointmentData={appointmentData} onFieldChange={onFieldChange} {...restProps}>
-      <AppointmentForm.Label text="Custom Field" type="titleLabel" />
+      <AppointmentForm.Label text="課程說明" type="titleLabel" />
       <AppointmentForm.TextEditor
         value={appointmentData.customField}
         onValueChange={onCustomFieldChange}
-        placeholder="Custom field"
-        type="titleTextEditor"
-        readOnly
+        placeholder="請輸入課程內容"
+        type="ordinaryTextEditor"
+        readOnly={false}
+      />
+      <AppointmentForm.Label text="注意事項" type="titleLabel" />
+      <AppointmentForm.TextEditor
+        value={appointmentData.customField}
+        onValueChange={onCustomFieldChange}
+        placeholder="請輸入注意事項"
+        type="ordinaryTextEditor"
+        readOnly={false}
       />
     </AppointmentForm.BasicLayout>
   );
@@ -74,7 +107,7 @@ function ExternalViewSwitcher({
 const currentDate = new Date(Date.now()).toLocaleString().split(" ")[0].replaceAll("/", "-");
 
 export default function TeacherCalendar() {
-  const [data, setData] = useState<AppointmentModel[]>(appointments);
+  const [data, setData] = useState<AppointmentModel[]>([]);
   const [view, setView] = useState("Month");
 
   const commitChanges = ({ added, changed, deleted }: ChangeSet): void => {
@@ -104,7 +137,7 @@ export default function TeacherCalendar() {
         }}
       />
       <Paper>
-        <Scheduler data={data}>
+        <Scheduler data={data} height={400}>
           <ViewState currentDate={currentDate} currentViewName={view} />
           <EditingState onCommitChanges={commitChanges} />
           <IntegratedEditing />
@@ -114,6 +147,7 @@ export default function TeacherCalendar() {
           <AppointmentTooltip showOpenButton showDeleteButton />
           <ConfirmationDialog />
           <AppointmentForm basicLayoutComponent={BasicLayout} textEditorComponent={TextEditor} />
+          <Resources data={resources} mainResourceName="Level" />
         </Scheduler>
       </Paper>
     </>
