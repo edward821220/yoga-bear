@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useState, useContext } from "react";
 import Paper from "@mui/material/Paper";
 import Radio from "@mui/material/Radio";
 import RadioGroup from "@mui/material/RadioGroup";
@@ -15,11 +15,15 @@ import {
   Resources,
   WeekView,
   MonthView,
+  AllDayPanel,
   Appointments,
   AppointmentForm,
   AppointmentTooltip,
   ConfirmationDialog,
 } from "@devexpress/dx-react-scheduler-material-ui";
+import { collection, doc, setDoc, updateDoc, deleteDoc } from "firebase/firestore";
+import { db } from "../../lib/firebase";
+import { AuthContext } from "../context/authContext";
 
 const resourcesData = [
   {
@@ -56,25 +60,27 @@ function TextEditor(props: AppointmentForm.TextEditorProps) {
 }
 
 function BasicLayout({ onFieldChange, appointmentData, ...restProps }: AppointmentForm.BasicLayoutProps) {
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  const onCustomFieldChange = (nextValue: any) => {
-    onFieldChange({ customField: nextValue });
+  const onDescriptionChange = (nextValue: string) => {
+    onFieldChange({ description: nextValue });
+  };
+  const onPrecautionChange = (nextValue: string) => {
+    onFieldChange({ precaution: nextValue });
   };
 
   return (
     <AppointmentForm.BasicLayout appointmentData={appointmentData} onFieldChange={onFieldChange} {...restProps}>
       <AppointmentForm.Label text="課程說明" type="titleLabel" />
       <AppointmentForm.TextEditor
-        value={appointmentData.customField}
-        onValueChange={onCustomFieldChange}
+        value={appointmentData.description}
+        onValueChange={onDescriptionChange}
         placeholder="請輸入課程內容"
         type="ordinaryTextEditor"
         readOnly={false}
       />
       <AppointmentForm.Label text="注意事項" type="titleLabel" />
       <AppointmentForm.TextEditor
-        value={appointmentData.customField}
-        onValueChange={onCustomFieldChange}
+        value={appointmentData.precaution}
+        onValueChange={onPrecautionChange}
         placeholder="請輸入注意事項"
         type="ordinaryTextEditor"
         readOnly={false}
@@ -109,16 +115,24 @@ const currentDate = new Date(Date.now()).toLocaleString().split(" ")[0].replaceA
 export default function TeacherCalendar() {
   const [data, setData] = useState<AppointmentModel[]>([]);
   const [view, setView] = useState("Month");
-
+  const { userData } = useContext(AuthContext);
+  console.log(data);
   const commitChanges = ({ added, changed, deleted }: ChangeSet): void => {
     if (added) {
-      const startingAddedId = data.length > 0 ? Number(data[data.length - 1].id) + 1 : 0;
-      setData([...data, { id: startingAddedId, startDate: added.startDate, ...added }]);
+      const newRoomRef = doc(collection(db, "rooms"));
+      setData([...data, { id: newRoomRef.id, startDate: added.startDate, ...added }]);
+      setDoc(newRoomRef, { id: newRoomRef.id, startDate: added.startDate, teacherId: userData.uid, ...added });
     }
     if (changed) {
       setData(
         data.map((appointment) => {
           if (appointment.id === undefined) return;
+          if (changed[appointment.id] && typeof appointment.id === "string") {
+            const roomRef = doc(db, "rooms", appointment.id);
+            updateDoc(roomRef, {
+              ...changed[appointment.id],
+            });
+          }
           // eslint-disable-next-line @typescript-eslint/no-unsafe-return
           return changed[appointment.id] ? { ...appointment, ...changed[appointment.id] } : appointment;
         })
@@ -126,6 +140,8 @@ export default function TeacherCalendar() {
     }
     if (deleted !== undefined) {
       setData(data.filter((appointment) => appointment.id !== deleted));
+      if (typeof deleted !== "string") return;
+      deleteDoc(doc(db, "rooms", deleted));
     }
   };
   return (
@@ -137,7 +153,7 @@ export default function TeacherCalendar() {
         }}
       />
       <Paper>
-        <Scheduler data={data} height={400}>
+        <Scheduler data={data} height={600}>
           <ViewState currentDate={currentDate} currentViewName={view} />
           <EditingState onCommitChanges={commitChanges} />
           <IntegratedEditing />
@@ -148,6 +164,7 @@ export default function TeacherCalendar() {
           <ConfirmationDialog />
           <AppointmentForm basicLayoutComponent={BasicLayout} textEditorComponent={TextEditor} />
           <Resources data={resources} mainResourceName="Level" />
+          <AllDayPanel />
         </Scheduler>
       </Paper>
     </>
