@@ -1,5 +1,8 @@
 import React, { useState } from "react";
 import Paper from "@mui/material/Paper";
+import Radio from "@mui/material/Radio";
+import RadioGroup from "@mui/material/RadioGroup";
+import FormControlLabel from "@mui/material/FormControlLabel";
 import {
   ViewState,
   EditingState,
@@ -46,11 +49,34 @@ function BasicLayout({ onFieldChange, appointmentData, ...restProps }: Appointme
     </AppointmentForm.BasicLayout>
   );
 }
-const currenDate = new Date(Date.now()).toLocaleString().split(" ")[0].replaceAll("/", "-");
+
+function ExternalViewSwitcher({
+  currentViewName,
+  onChange,
+}: {
+  currentViewName: string;
+  onChange: (e: React.ChangeEvent<HTMLInputElement>) => void;
+}) {
+  return (
+    <RadioGroup
+      aria-label="Views"
+      style={{ flexDirection: "row" }}
+      name="views"
+      value={currentViewName}
+      onChange={onChange}
+    >
+      <FormControlLabel value="Week" control={<Radio />} label="Week" />
+      <FormControlLabel value="Month" control={<Radio />} label="Month" />
+    </RadioGroup>
+  );
+}
+
+const currentDate = new Date(Date.now()).toLocaleString().split(" ")[0].replaceAll("/", "-");
 
 export default function TeacherCalendar() {
   const [data, setData] = useState<AppointmentModel[]>(appointments);
-  const [currentDate, setCurrentDate] = useState<string>();
+  const [view, setView] = useState("Month");
+
   const commitChanges = ({ added, changed, deleted }: ChangeSet): void => {
     if (added) {
       const startingAddedId = data.length > 0 ? Number(data[data.length - 1].id) + 1 : 0;
@@ -70,18 +96,26 @@ export default function TeacherCalendar() {
     }
   };
   return (
-    <Paper>
-      <Scheduler data={data}>
-        <ViewState currentDate={currentDate} />
-        <EditingState onCommitChanges={commitChanges} />
-        <IntegratedEditing />
-        {/* <MonthView /> */}
-        <WeekView startDayHour={8} endDayHour={22} />
-        <Appointments />
-        <AppointmentTooltip showOpenButton showDeleteButton />
-        <ConfirmationDialog />
-        <AppointmentForm basicLayoutComponent={BasicLayout} textEditorComponent={TextEditor} />
-      </Scheduler>
-    </Paper>
+    <>
+      <ExternalViewSwitcher
+        currentViewName={view}
+        onChange={(e: React.ChangeEvent<HTMLInputElement>): void => {
+          setView(e.target.value);
+        }}
+      />
+      <Paper>
+        <Scheduler data={data}>
+          <ViewState currentDate={currentDate} currentViewName={view} />
+          <EditingState onCommitChanges={commitChanges} />
+          <IntegratedEditing />
+          <MonthView />
+          <WeekView startDayHour={8} endDayHour={22} />
+          <Appointments />
+          <AppointmentTooltip showOpenButton showDeleteButton />
+          <ConfirmationDialog />
+          <AppointmentForm basicLayoutComponent={BasicLayout} textEditorComponent={TextEditor} />
+        </Scheduler>
+      </Paper>
+    </>
   );
 }
