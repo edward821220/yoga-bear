@@ -1,4 +1,4 @@
-import * as React from "react";
+import React, { useState } from "react";
 import Paper from "@mui/material/Paper";
 import {
   ViewState,
@@ -9,6 +9,7 @@ import {
 } from "@devexpress/dx-react-scheduler";
 import {
   Scheduler,
+  WeekView,
   MonthView,
   Appointments,
   AppointmentForm,
@@ -45,61 +46,42 @@ function BasicLayout({ onFieldChange, appointmentData, ...restProps }: Appointme
     </AppointmentForm.BasicLayout>
   );
 }
+const currenDate = new Date(Date.now()).toLocaleString().split(" ")[0].replaceAll("/", "-");
 
-interface State {
-  data: Array<AppointmentModel>;
-  currentDate: string;
-}
-
-export default class TeacherCalendar extends React.PureComponent<Array<AppointmentModel>, State> {
-  constructor(props: Array<AppointmentModel>) {
-    // eslint-disable-next-line @typescript-eslint/no-unsafe-argument
-    super(props);
-    this.state = {
-      data: appointments,
-      currentDate: new Date(Date.now()).toLocaleString().split(" ")[0].replaceAll("/", "-"),
-    };
-
-    this.commitChanges = this.commitChanges.bind(this);
-  }
-
-  commitChanges({ added, changed, deleted }: ChangeSet): void {
-    this.setState((state) => {
-      let { data } = state;
-      if (added) {
-        const startingAddedId = data.length > 0 ? Number(data[data.length - 1].id) + 1 : 0;
-        data = [...data, { id: startingAddedId, startDate: added.startDate, ...added }];
-      }
-      if (changed) {
-        data = data.map((appointment) => {
+export default function TeacherCalendar() {
+  const [data, setData] = useState<AppointmentModel[]>(appointments);
+  const [currentDate, setCurrentDate] = useState<string>();
+  const commitChanges = ({ added, changed, deleted }: ChangeSet): void => {
+    if (added) {
+      const startingAddedId = data.length > 0 ? Number(data[data.length - 1].id) + 1 : 0;
+      setData([...data, { id: startingAddedId, startDate: added.startDate, ...added }]);
+    }
+    if (changed) {
+      setData(
+        data.map((appointment) => {
           if (appointment.id === undefined) return;
           // eslint-disable-next-line @typescript-eslint/no-unsafe-return
           return changed[appointment.id] ? { ...appointment, ...changed[appointment.id] } : appointment;
-        });
-      }
-      if (deleted !== undefined) {
-        data = data.filter((appointment) => appointment.id !== deleted);
-      }
-      return { data };
-    });
-  }
-
-  render() {
-    const { currentDate, data } = this.state;
-
-    return (
-      <Paper>
-        <Scheduler data={data}>
-          <ViewState currentDate={currentDate} />
-          <EditingState onCommitChanges={this.commitChanges} />
-          <IntegratedEditing />
-          <MonthView />
-          <Appointments />
-          <AppointmentTooltip showOpenButton showDeleteButton />
-          <ConfirmationDialog />
-          <AppointmentForm basicLayoutComponent={BasicLayout} textEditorComponent={TextEditor} />
-        </Scheduler>
-      </Paper>
-    );
-  }
+        })
+      );
+    }
+    if (deleted !== undefined) {
+      setData(data.filter((appointment) => appointment.id !== deleted));
+    }
+  };
+  return (
+    <Paper>
+      <Scheduler data={data}>
+        <ViewState currentDate={currentDate} />
+        <EditingState onCommitChanges={commitChanges} />
+        <IntegratedEditing />
+        {/* <MonthView /> */}
+        <WeekView startDayHour={8} endDayHour={22} />
+        <Appointments />
+        <AppointmentTooltip showOpenButton showDeleteButton />
+        <ConfirmationDialog />
+        <AppointmentForm basicLayoutComponent={BasicLayout} textEditorComponent={TextEditor} />
+      </Scheduler>
+    </Paper>
+  );
 }
