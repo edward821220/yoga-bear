@@ -11,6 +11,7 @@ import { storage, db } from "../../../lib/firebase";
 import Modal from "../../components/modal";
 import Bear from "../../../public/bear.png";
 import Trash from "../../../public/trash.png";
+import TeacherCalendar from "../../components/teacherCalendar";
 
 const Wrapper = styled.div`
   display: flex;
@@ -95,7 +96,10 @@ const CourseCover = styled.div`
 const CourseTitle = styled.h3`
   font-size: 24px;
 `;
-
+const CalendarWrapper = styled.div`
+  width: 90%;
+  margin: 0 auto;
+`;
 function VideoCourses() {
   const [courses, setCourses] = useState<{ name: string; cover: string; id: string }[]>();
   useEffect(() => {
@@ -401,6 +405,14 @@ function LaunchVideoCourse() {
   );
 }
 
+function TeacherCalendarPage() {
+  return (
+    <CalendarWrapper>
+      <TeacherCalendar />
+    </CalendarWrapper>
+  );
+}
+
 function MyCourses() {
   const router = useRouter();
 
@@ -425,7 +437,7 @@ function MyCourses() {
             <Link href="/myCourses/launchVideoCourse">影音課程上架</Link>
           </SideBarLink>
           <SideBarLink>
-            <Link href="/myCourses/classRoom/teacherRoom/01">視訊課程教室</Link>
+            <Link href="/myCourses/teacherCalendar">課程行事曆</Link>
           </SideBarLink>
         </SideBarSection>
       </SideBar>
@@ -433,6 +445,7 @@ function MyCourses() {
         {router.query.category === "videoCourses" && <VideoCourses />}
         {router.query.category === "launchVideoCourse" && <LaunchVideoCourse />}
         {router.query.category === "launchedVideoCourses" && <LaunchedVideoCourses />}
+        {router.query.category === "teacherCalendar" && <TeacherCalendarPage />}
       </Main>
     </Wrapper>
   );
