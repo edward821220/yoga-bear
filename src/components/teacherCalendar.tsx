@@ -16,15 +16,7 @@ import {
   ConfirmationDialog,
 } from "@devexpress/dx-react-scheduler-material-ui";
 
-const appointments: Array<AppointmentModel> = [
-  {
-    title: "Website Re-Design Plan",
-    startDate: new Date(2022, 10, 2, 9, 30),
-    endDate: new Date(2022, 10, 2, 11, 30),
-    id: 0,
-    location: "Room 1",
-  },
-];
+const appointments: Array<AppointmentModel> = [];
 
 function TextEditor(props: AppointmentForm.TextEditorProps) {
   // eslint-disable-next-line react/destructuring-assignment
@@ -76,7 +68,7 @@ export default class TeacherCalendar extends React.PureComponent<Array<Appointme
       let { data } = state;
       if (added) {
         const startingAddedId = data.length > 0 ? Number(data[data.length - 1].id) + 1 : 0;
-        data = [...data, { id: startingAddedId, ...added }];
+        data = [...data, { id: startingAddedId, startDate: added.startDate, ...added }];
       }
       if (changed) {
         data = data.map((appointment) => {
