@@ -1,8 +1,9 @@
-import React, { useState, useContext } from "react";
+import React, { useState, useEffect, useContext } from "react";
 import Paper from "@mui/material/Paper";
 import Radio from "@mui/material/Radio";
 import RadioGroup from "@mui/material/RadioGroup";
 import FormControlLabel from "@mui/material/FormControlLabel";
+import Image from "next/image";
 import {
   ViewState,
   EditingState,
@@ -21,9 +22,27 @@ import {
   AppointmentTooltip,
   ConfirmationDialog,
 } from "@devexpress/dx-react-scheduler-material-ui";
-import { collection, doc, setDoc, updateDoc, deleteDoc } from "firebase/firestore";
+import { collection, doc, setDoc, updateDoc, deleteDoc, getDocs, query, where } from "firebase/firestore";
+import styled from "styled-components";
 import { db } from "../../lib/firebase";
 import { AuthContext } from "../context/authContext";
+import RoomButton from "../../public/room.png";
+
+const RoomButtonWrapper = styled.div`
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  width: 50px;
+  height: 50px;
+  border: 1px solid transparent;
+  border-radius: 50%;
+  margin-right: 10px;
+  margin-left: 5px;
+  cursor: pointer;
+  &:hover {
+    background-color: #eeeeee;
+  }
+`;
 
 const resourcesData = [
   {
@@ -73,7 +92,7 @@ function BasicLayout({ onFieldChange, appointmentData, ...restProps }: Appointme
       <AppointmentForm.TextEditor
         value={appointmentData.description}
         onValueChange={onDescriptionChange}
-        placeholder="請輸入課程內容"
+        placeholder="請輸入課程內容（若是實體課請填寫上課地點）"
         type="ordinaryTextEditor"
         readOnly={false}
       />
@@ -112,11 +131,42 @@ function ExternalViewSwitcher({
 
 const currentDate = new Date(Date.now()).toLocaleString().split(" ")[0].replaceAll("/", "-");
 
+function CommandButton({ ...restProps }) {
+  return (
+    <>
+      <AppointmentTooltip.CommandButton {...restProps} />
+      <RoomButtonWrapper>
+        <Image src={RoomButton} alt="room-btn" width={30} />
+      </RoomButtonWrapper>
+    </>
+  );
+}
+
 export default function TeacherCalendar() {
   const [data, setData] = useState<AppointmentModel[]>([]);
   const [view, setView] = useState("Month");
   const { userData } = useContext(AuthContext);
-  console.log(data);
+
+  useEffect(() => {
+    const getRooms = async () => {
+      const courseRef = collection(db, "rooms");
+      const courseQuery = query(courseRef, where("teacherId", "==", userData.uid));
+      const querySnapshot = await getDocs(courseQuery);
+      const results: AppointmentModel[] = [];
+      /* eslint-disable @typescript-eslint/no-unsafe-member-access */
+      querySnapshot.forEach((datas) => {
+        results.push({
+          ...datas.data(),
+          startDate: new Date(datas.data().startDate.seconds * 1000),
+          endDate: new Date(datas.data().endDate.seconds * 1000),
+        });
+      });
+      /* eslint-enable @typescript-eslint/no-unsafe-member-access */
+      setData(results);
+    };
+    getRooms();
+  }, [userData.uid]);
+
   const commitChanges = ({ added, changed, deleted }: ChangeSet): void => {
     if (added) {
       const newRoomRef = doc(collection(db, "rooms"));
@@ -160,7 +210,7 @@ export default function TeacherCalendar() {
           <MonthView />
           <WeekView startDayHour={8} endDayHour={22} />
           <Appointments />
-          <AppointmentTooltip showOpenButton showDeleteButton />
+          <AppointmentTooltip commandButtonComponent={CommandButton} showOpenButton />
           <ConfirmationDialog />
           <AppointmentForm basicLayoutComponent={BasicLayout} textEditorComponent={TextEditor} />
           <Resources data={resources} mainResourceName="Level" />
