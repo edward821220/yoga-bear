@@ -136,15 +136,7 @@ function CommandButton({ ...restProps }) {
     <>
       <AppointmentTooltip.CommandButton {...restProps} />
       <RoomButtonWrapper>
-        <Image
-          src={RoomButton}
-          alt="room-btn"
-          width={30}
-          onClick={(e) => {
-            console.log(e.target);
-            // console.log({ ...restProps });
-          }}
-        />
+        <Image src={RoomButton} alt="room-btn" width={30} onClick={() => {}} />
       </RoomButtonWrapper>
     </>
   );
