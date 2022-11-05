@@ -128,7 +128,7 @@ function VideoCourses() {
           <MyCourse key={course.name}>
             <CourseCover>
               <Link href={`/myCourses/classRoom/videoRoom/${course.id}`}>
-                <Image src={course.cover} alt="cover" fill />
+                <Image src={course.cover} alt="cover" fill sizes="cover" />
               </Link>
             </CourseCover>
             <CourseTitle>{course.name}</CourseTitle>
