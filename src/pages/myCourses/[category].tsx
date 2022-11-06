@@ -6,12 +6,12 @@ import Image from "next/image";
 import { useRouter } from "next/router";
 import { ref, getDownloadURL, uploadBytesResumable } from "firebase/storage";
 import { collection, doc, setDoc, getDocs, query, where } from "firebase/firestore";
-import { AuthContext } from "../../context/authContext";
+import { AuthContext } from "../../contexts/authContext";
 import { storage, db } from "../../../lib/firebase";
 import Modal from "../../components/modal";
 import Bear from "../../../public/bear.png";
 import Trash from "../../../public/trash.png";
-import TeacherCalendar from "../../components/teacherCalendar";
+import TeacherCalendar from "../../components/calendar/teacherCalendar";
 
 const Wrapper = styled.div`
   display: flex;

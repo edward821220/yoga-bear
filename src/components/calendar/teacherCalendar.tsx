@@ -24,9 +24,10 @@ import {
 } from "@devexpress/dx-react-scheduler-material-ui";
 import { collection, doc, setDoc, updateDoc, deleteDoc, getDocs, query, where } from "firebase/firestore";
 import styled from "styled-components";
-import { db } from "../../lib/firebase";
-import { AuthContext } from "../context/authContext";
-import RoomButton from "../../public/room.png";
+import { db } from "../../../lib/firebase";
+import { AuthContext } from "../../contexts/authContext";
+import RoomButton from "../../../public/room.png";
+import resources from "./resources";
 
 const RoomButtonWrapper = styled.div`
   display: flex;
@@ -43,32 +44,6 @@ const RoomButtonWrapper = styled.div`
     background-color: #eeeeee;
   }
 `;
-
-const resourcesData = [
-  {
-    text: "初學者",
-    id: 1,
-    color: "#105861",
-  },
-  {
-    text: "一般練習者",
-    id: 2,
-    color: "#c76035",
-  },
-  {
-    text: "進階練習者",
-    id: 3,
-    color: "#cb4641",
-  },
-];
-
-const resources = [
-  {
-    fieldName: "Level",
-    title: "Level",
-    instances: resourcesData,
-  },
-];
 
 function TextEditor(props: AppointmentForm.TextEditorProps) {
   // eslint-disable-next-line react/destructuring-assignment

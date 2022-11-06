@@ -6,7 +6,7 @@ import BearLogo from "../../public/bear-logo2.png";
 import CartLogo from "../../public/cart.png";
 import MemberLogo from "../../public/member.png";
 import Modal from "./modal";
-import { AuthContext } from "../context/authContext";
+import { AuthContext } from "../contexts/authContext";
 
 interface Props {
   setShowModal: Dispatch<SetStateAction<boolean>>;

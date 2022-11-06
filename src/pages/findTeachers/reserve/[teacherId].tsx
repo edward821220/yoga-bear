@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from "react";
-import { useRouter } from "next/router";
 import Paper from "@mui/material/Paper";
+import Image from "next/image";
+import { useRouter } from "next/router";
 import { ViewState, EditingState, IntegratedEditing, AppointmentModel } from "@devexpress/dx-react-scheduler";
 import {
   Scheduler,
@@ -12,35 +13,16 @@ import {
   AppointmentTooltip,
   ConfirmationDialog,
 } from "@devexpress/dx-react-scheduler-material-ui";
-import { collection, doc, updateDoc, getDocs, query, where } from "firebase/firestore";
-
+import { collection, getDocs, query, where } from "firebase/firestore";
+import styled from "styled-components";
 import { db } from "../../../../lib/firebase";
+import resources from "../../../components/calendar/resources";
 
-const resourcesData = [
-  {
-    text: "初學者",
-    id: 1,
-    color: "#105861",
-  },
-  {
-    text: "一般練習者",
-    id: 2,
-    color: "#c76035",
-  },
-  {
-    text: "進階練習者",
-    id: 3,
-    color: "#cb4641",
-  },
-];
-
-const resources = [
-  {
-    fieldName: "Level",
-    title: "Level",
-    instances: resourcesData,
-  },
-];
+const Wrapper = styled.div`
+  max-width: 1280px;
+  margin: 0 auto;
+  padding: 20px 0;
+`;
 
 function TextEditor(props: AppointmentForm.TextEditorProps) {
   // eslint-disable-next-line react/destructuring-assignment
@@ -82,15 +64,15 @@ function BasicLayout({ onFieldChange, appointmentData, ...restProps }: Appointme
 
 const currentDate = new Date(Date.now()).toLocaleString().split(" ")[0].replaceAll("/", "-");
 
-export default function Reserve() {
+export default function TeacherCalendar() {
   const [data, setData] = useState<AppointmentModel[]>([]);
   const router = useRouter();
   const { teacherId } = router.query;
 
   useEffect(() => {
-    console.log("hi");
     if (!teacherId) return;
     const getRooms = async () => {
+      console.log("hi");
       const courseRef = collection(db, "rooms");
       const courseQuery = query(courseRef, where("teacherId", "==", teacherId));
       const querySnapshot = await getDocs(courseQuery);
@@ -110,19 +92,21 @@ export default function Reserve() {
   }, [teacherId]);
 
   return (
-    <Paper>
-      <Scheduler data={data} height={600}>
-        <ViewState currentDate={currentDate} currentViewName="Month" />
-        <EditingState onCommitChanges={() => {}} />
-        <IntegratedEditing />
-        <WeekView startDayHour={8} endDayHour={22} />
-        <Appointments />
-        <AppointmentTooltip showOpenButton />
-        <ConfirmationDialog />
-        <AppointmentForm basicLayoutComponent={BasicLayout} textEditorComponent={TextEditor} />
-        <Resources data={resources} mainResourceName="Level" />
-        <AllDayPanel />
-      </Scheduler>
-    </Paper>
+    <Wrapper>
+      <Paper>
+        <Scheduler data={data} height={600}>
+          <ViewState currentDate={currentDate} currentViewName="Week" />
+          <EditingState onCommitChanges={() => {}} />
+          <IntegratedEditing />
+          <WeekView startDayHour={8} endDayHour={22} />
+          <Appointments />
+          <AppointmentTooltip showOpenButton />
+          <ConfirmationDialog />
+          <AppointmentForm basicLayoutComponent={BasicLayout} textEditorComponent={TextEditor} />
+          <Resources data={resources} mainResourceName="Level" />
+          <AllDayPanel />
+        </Scheduler>
+      </Paper>
+    </Wrapper>
   );
 }
