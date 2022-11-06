@@ -72,14 +72,20 @@ function BasicLayout({ onFieldChange, appointmentData, ...restProps }: Appointme
   );
 }
 
-function CommandButton({ ...restProps }) {
+function Header({ appointmentData, ...restProps }: AppointmentTooltip.HeaderProps) {
   return (
-    <>
-      <AppointmentTooltip.CommandButton {...restProps} />
+    <AppointmentTooltip.Header {...restProps} appointmentData={appointmentData}>
       <ReserveButtonWrapper>
-        <Image src={ReserveButton} alt="reserve-btn" width={30} onClick={() => {}} />
+        <Image
+          src={ReserveButton}
+          alt="reserve-btn"
+          width={30}
+          onClick={() => {
+            console.log(appointmentData);
+          }}
+        />
       </ReserveButtonWrapper>
-    </>
+    </AppointmentTooltip.Header>
   );
 }
 
@@ -115,7 +121,7 @@ function ReserveCalendar({ teacherId }: { teacherId: string }) {
         <IntegratedEditing />
         <WeekView startDayHour={8} endDayHour={22} />
         <Appointments />
-        <AppointmentTooltip commandButtonComponent={CommandButton} showOpenButton />
+        <AppointmentTooltip headerComponent={Header} />
         <ConfirmationDialog />
         <AppointmentForm basicLayoutComponent={BasicLayout} textEditorComponent={TextEditor} />
         <Resources data={resources} mainResourceName="Level" />
