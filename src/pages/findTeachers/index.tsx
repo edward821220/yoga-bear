@@ -24,6 +24,7 @@ const Teacher = styled.li`
   flex-basis: 100%;
   display: flex;
   border: 1px solid gray;
+  margin-bottom: 20px;
 `;
 const TeacherAvatar = styled.div`
   margin-right: 30px;
@@ -38,19 +39,19 @@ function FindTeachers() {
   useEffect(() => {
     const getTeachersList = async () => {
       const usersRef = collection(db, "users");
-      const teachersQuery = query(usersRef, where("role", "==", "teacher"));
+      const teachersQuery = query(usersRef, where("identity", "==", "teacher"));
       const querySnapshot = await getDocs(teachersQuery);
       const results: { name: string; uid: string }[] = [];
       querySnapshot.forEach((data) => {
         results.push({
           uid: data.data().uid,
-          name: data.data().name,
+          name: data.data().username,
         });
       });
       setTeachersList(results);
     };
     getTeachersList();
-  });
+  }, []);
   return (
     <Wrapper>
       <TeachersList>

@@ -72,7 +72,6 @@ export default function TeacherCalendar() {
   useEffect(() => {
     if (!teacherId) return;
     const getRooms = async () => {
-      console.log("hi");
       const courseRef = collection(db, "rooms");
       const courseQuery = query(courseRef, where("teacherId", "==", teacherId));
       const querySnapshot = await getDocs(courseQuery);

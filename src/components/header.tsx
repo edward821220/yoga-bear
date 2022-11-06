@@ -123,7 +123,7 @@ const loginForm = [
   },
 ];
 const signupForm = [
-  { key: "name", title: "用戶名", type: "text", placeholder: "請輸入您的用戶名" },
+  { key: "username", title: "用戶名", type: "text", placeholder: "請輸入您的用戶名" },
   { key: "email", title: "Email", type: "email", placeholder: "請輸入電子信箱" },
   {
     key: "password",
