@@ -24,6 +24,7 @@ import {
 } from "@devexpress/dx-react-scheduler-material-ui";
 import { collection, doc, setDoc, updateDoc, deleteDoc, getDocs, query, where } from "firebase/firestore";
 import styled from "styled-components";
+import { useRouter } from "next/router";
 import { db } from "../../../lib/firebase";
 import { AuthContext } from "../../contexts/authContext";
 import RoomButton from "../../../public/room.png";
@@ -107,11 +108,19 @@ function ExternalViewSwitcher({
 const currentDate = new Date(Date.now()).toLocaleString().split(" ")[0].replaceAll("/", "-");
 
 function CommandButton({ ...restProps }) {
+  const router = useRouter();
   return (
     <>
       <AppointmentTooltip.CommandButton {...restProps} />
       <RoomButtonWrapper>
-        <Image src={RoomButton} alt="room-btn" width={30} onClick={() => {}} />
+        <Image
+          src={RoomButton}
+          alt="room-btn"
+          width={30}
+          onClick={() => {
+            router.push("/myCourses/classRoom/teacherRoom/01");
+          }}
+        />
       </RoomButtonWrapper>
     </>
   );

@@ -425,7 +425,7 @@ function MyCourses() {
             <Link href="/myCourses/videoCourses">我的影音課程</Link>
           </SideBarLink>
           <SideBarLink>
-            <Link href="/myCourses/classRoom/studentRoom/01">視訊課程教室</Link>
+            <Link href="/myCourses/studentCalendar">我的課表</Link>
           </SideBarLink>
         </SideBarSection>
         <SideBarSection>
@@ -437,7 +437,7 @@ function MyCourses() {
             <Link href="/myCourses/launchVideoCourse">影音課程上架</Link>
           </SideBarLink>
           <SideBarLink>
-            <Link href="/myCourses/teacherCalendar">課程行事曆</Link>
+            <Link href="/myCourses/teacherCalendar">排課行事曆</Link>
           </SideBarLink>
         </SideBarSection>
       </SideBar>
