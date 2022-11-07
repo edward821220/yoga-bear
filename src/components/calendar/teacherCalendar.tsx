@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useContext } from "react";
+import React, { useState, useEffect } from "react";
 import Paper from "@mui/material/Paper";
 import Radio from "@mui/material/Radio";
 import RadioGroup from "@mui/material/RadioGroup";
@@ -24,9 +24,11 @@ import {
 } from "@devexpress/dx-react-scheduler-material-ui";
 import { collection, doc, setDoc, updateDoc, deleteDoc, getDocs, query, where } from "firebase/firestore";
 import styled from "styled-components";
-import { db } from "../../lib/firebase";
-import { AuthContext } from "../context/authContext";
-import RoomButton from "../../public/room.png";
+import { useRouter } from "next/router";
+import { db } from "../../../lib/firebase";
+
+import RoomButton from "../../../public/room.png";
+import resources from "./resources";
 
 const RoomButtonWrapper = styled.div`
   display: flex;
@@ -43,32 +45,6 @@ const RoomButtonWrapper = styled.div`
     background-color: #eeeeee;
   }
 `;
-
-const resourcesData = [
-  {
-    text: "初學者",
-    id: 1,
-    color: "#105861",
-  },
-  {
-    text: "一般練習者",
-    id: 2,
-    color: "#c76035",
-  },
-  {
-    text: "進階練習者",
-    id: 3,
-    color: "#cb4641",
-  },
-];
-
-const resources = [
-  {
-    fieldName: "Level",
-    title: "Level",
-    instances: resourcesData,
-  },
-];
 
 function TextEditor(props: AppointmentForm.TextEditorProps) {
   // eslint-disable-next-line react/destructuring-assignment
@@ -131,21 +107,28 @@ function ExternalViewSwitcher({
 
 const currentDate = new Date(Date.now()).toLocaleString().split(" ")[0].replaceAll("/", "-");
 
-function CommandButton({ ...restProps }) {
+function Header({ appointmentData, ...restProps }: AppointmentTooltip.HeaderProps) {
+  const router = useRouter();
   return (
-    <>
-      <AppointmentTooltip.CommandButton {...restProps} />
+    <AppointmentTooltip.Header {...restProps} appointmentData={appointmentData}>
       <RoomButtonWrapper>
-        <Image src={RoomButton} alt="room-btn" width={30} />
+        <Image
+          src={RoomButton}
+          alt="room-btn"
+          width={30}
+          onClick={() => {
+            if (!appointmentData || typeof appointmentData.id !== "string") return;
+            router.push(`/myCourses/classRoom/teacherRoom/${appointmentData.id}`);
+          }}
+        />
       </RoomButtonWrapper>
-    </>
+    </AppointmentTooltip.Header>
   );
 }
 
-export default function TeacherCalendar() {
+export default function TeacherCalendar({ userData }: { userData: { uid: string } }) {
   const [data, setData] = useState<AppointmentModel[]>([]);
   const [view, setView] = useState("Month");
-  const { userData } = useContext(AuthContext);
 
   useEffect(() => {
     const getRooms = async () => {
@@ -210,7 +193,7 @@ export default function TeacherCalendar() {
           <MonthView />
           <WeekView startDayHour={8} endDayHour={22} />
           <Appointments />
-          <AppointmentTooltip commandButtonComponent={CommandButton} showOpenButton />
+          <AppointmentTooltip headerComponent={Header} showOpenButton />
           <ConfirmationDialog />
           <AppointmentForm basicLayoutComponent={BasicLayout} textEditorComponent={TextEditor} />
           <Resources data={resources} mainResourceName="Level" />

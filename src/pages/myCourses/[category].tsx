@@ -6,12 +6,13 @@ import Image from "next/image";
 import { useRouter } from "next/router";
 import { ref, getDownloadURL, uploadBytesResumable } from "firebase/storage";
 import { collection, doc, setDoc, getDocs, query, where } from "firebase/firestore";
-import { AuthContext } from "../../context/authContext";
+import { AuthContext } from "../../contexts/authContext";
 import { storage, db } from "../../../lib/firebase";
 import Modal from "../../components/modal";
 import Bear from "../../../public/bear.png";
 import Trash from "../../../public/trash.png";
-import TeacherCalendar from "../../components/teacherCalendar";
+import TeacherCalendar from "../../components/calendar/teacherCalendar";
+import StudentCalendar from "../../components/calendar/studentCalendar";
 
 const Wrapper = styled.div`
   display: flex;
@@ -128,7 +129,7 @@ function VideoCourses() {
           <MyCourse key={course.name}>
             <CourseCover>
               <Link href={`/myCourses/classRoom/videoRoom/${course.id}`}>
-                <Image src={course.cover} alt="cover" fill />
+                <Image src={course.cover} alt="cover" fill sizes="cover" />
               </Link>
             </CourseCover>
             <CourseTitle>{course.name}</CourseTitle>
@@ -173,7 +174,7 @@ function UploadProgressModal({ progressBar }: { progressBar: { file: string; pro
     </Modal>
   );
 }
-function LaunchVideoCourse() {
+function LaunchVideoCourse({ userData }: { userData: { uid: string } }) {
   const router = useRouter();
   const [courseName, setCourseName] = useState("");
   const [price, setPrice] = useState("");
@@ -184,7 +185,6 @@ function LaunchVideoCourse() {
   >([]);
   const [showModal, setShowModal] = useState(false);
   const [progressBar, setProgressBar] = useState<{ file: string; progress: number }>({ file: "", progress: 0 });
-  const { userData } = useContext(AuthContext);
 
   const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
@@ -405,16 +405,9 @@ function LaunchVideoCourse() {
   );
 }
 
-function TeacherCalendarPage() {
-  return (
-    <CalendarWrapper>
-      <TeacherCalendar />
-    </CalendarWrapper>
-  );
-}
-
 function MyCourses() {
   const router = useRouter();
+  const { userData } = useContext(AuthContext);
 
   return (
     <Wrapper>
@@ -425,7 +418,7 @@ function MyCourses() {
             <Link href="/myCourses/videoCourses">我的影音課程</Link>
           </SideBarLink>
           <SideBarLink>
-            <Link href="/myCourses/classRoom/studentRoom/01">視訊課程教室</Link>
+            <Link href="/myCourses/studentCalendar">我的課表</Link>
           </SideBarLink>
         </SideBarSection>
         <SideBarSection>
@@ -437,15 +430,24 @@ function MyCourses() {
             <Link href="/myCourses/launchVideoCourse">影音課程上架</Link>
           </SideBarLink>
           <SideBarLink>
-            <Link href="/myCourses/teacherCalendar">課程行事曆</Link>
+            <Link href="/myCourses/teacherCalendar">排課行事曆</Link>
           </SideBarLink>
         </SideBarSection>
       </SideBar>
       <Main>
         {router.query.category === "videoCourses" && <VideoCourses />}
-        {router.query.category === "launchVideoCourse" && <LaunchVideoCourse />}
+        {router.query.category === "launchVideoCourse" && <LaunchVideoCourse userData={userData} />}
         {router.query.category === "launchedVideoCourses" && <LaunchedVideoCourses />}
-        {router.query.category === "teacherCalendar" && <TeacherCalendarPage />}
+        {router.query.category === "teacherCalendar" && (
+          <CalendarWrapper>
+            <TeacherCalendar userData={userData} />
+          </CalendarWrapper>
+        )}
+        {router.query.category === "studentCalendar" && (
+          <CalendarWrapper>
+            <StudentCalendar userData={userData} />
+          </CalendarWrapper>
+        )}
       </Main>
     </Wrapper>
   );
