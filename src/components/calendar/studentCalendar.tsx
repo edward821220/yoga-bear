@@ -99,7 +99,7 @@ function Header({ appointmentData, ...restProps }: AppointmentTooltip.HeaderProp
 
 const currentDate = new Date(Date.now()).toLocaleString().split(" ")[0].replaceAll("/", "-");
 
-function ReserveCalendar({ teacherId }: { teacherId: string }) {
+function StudentCalendar({ teacherId }: { teacherId: string }) {
   const [data, setData] = useState<AppointmentModel[]>([]);
 
   useEffect(() => {
@@ -139,4 +139,4 @@ function ReserveCalendar({ teacherId }: { teacherId: string }) {
   );
 }
 
-export default ReserveCalendar;
+export default StudentCalendar;
