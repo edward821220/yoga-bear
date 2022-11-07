@@ -34,6 +34,12 @@ const SideBarTitle = styled.h3`
 const SideBarLink = styled.li`
   font-size: 16px;
   margin-bottom: 20px;
+  a {
+    transition: 0.2s color linear;
+    &:hover {
+      color: red;
+    }
+  }
 `;
 const Main = styled.div`
   width: 80%;
@@ -87,6 +93,7 @@ const MyCoursesList = styled.ul`
 const MyCourse = styled.li`
   margin-right: 20px;
   flex-basis: 48%;
+  margin-bottom: 20px;
 `;
 const CourseCover = styled.div`
   position: relative;
@@ -122,21 +129,18 @@ function VideoCourses() {
   }, []);
 
   return (
-    <>
-      <MainTitle>我的影音課程</MainTitle>
-      <MyCoursesList>
-        {courses?.map((course) => (
-          <MyCourse key={course.name}>
-            <CourseCover>
-              <Link href={`/myCourses/classRoom/videoRoom/${course.id}`}>
-                <Image src={course.cover} alt="cover" fill sizes="cover" />
-              </Link>
-            </CourseCover>
-            <CourseTitle>{course.name}</CourseTitle>
-          </MyCourse>
-        ))}
-      </MyCoursesList>
-    </>
+    <MyCoursesList>
+      {courses?.map((course) => (
+        <MyCourse key={course.name}>
+          <CourseCover>
+            <Link href={`/myCourses/classRoom/videoRoom/${course.id}`}>
+              <Image src={course.cover} alt="cover" fill sizes="cover" />
+            </Link>
+          </CourseCover>
+          <CourseTitle>{course.name}</CourseTitle>
+        </MyCourse>
+      ))}
+    </MyCoursesList>
   );
 }
 function LaunchedVideoCourses() {
@@ -421,18 +425,20 @@ function MyCourses() {
             <Link href="/myCourses/studentCalendar">我的課表</Link>
           </SideBarLink>
         </SideBarSection>
-        <SideBarSection>
-          <SideBarTitle>老師專區</SideBarTitle>
-          <SideBarLink>
-            <Link href="/myCourses/launchedVideoCourses">已上架影音課程</Link>
-          </SideBarLink>
-          <SideBarLink>
-            <Link href="/myCourses/launchVideoCourse">影音課程上架</Link>
-          </SideBarLink>
-          <SideBarLink>
-            <Link href="/myCourses/teacherCalendar">排課行事曆</Link>
-          </SideBarLink>
-        </SideBarSection>
+        {userData.identity === "teacher" && (
+          <SideBarSection>
+            <SideBarTitle>老師專區</SideBarTitle>
+            <SideBarLink>
+              <Link href="/myCourses/launchedVideoCourses">已上架影音課程</Link>
+            </SideBarLink>
+            <SideBarLink>
+              <Link href="/myCourses/launchVideoCourse">影音課程上架</Link>
+            </SideBarLink>
+            <SideBarLink>
+              <Link href="/myCourses/teacherCalendar">排課行事曆</Link>
+            </SideBarLink>
+          </SideBarSection>
+        )}
       </SideBar>
       <Main>
         {router.query.category === "videoCourses" && <VideoCourses />}

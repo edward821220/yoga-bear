@@ -74,7 +74,7 @@ function BasicLayout({ onFieldChange, appointmentData, ...restProps }: Appointme
 }
 
 function Header({ appointmentData, ...restProps }: AppointmentTooltip.HeaderProps) {
-  const { userData } = useContext(AuthContext);
+  const { userData, isLogin } = useContext(AuthContext);
   const { username, email } = userData;
   return (
     <AppointmentTooltip.Header {...restProps} appointmentData={appointmentData}>
@@ -84,6 +84,10 @@ function Header({ appointmentData, ...restProps }: AppointmentTooltip.HeaderProp
           alt="reserve-btn"
           width={30}
           onClick={() => {
+            if (!isLogin) {
+              alert("先登入才能預約課程唷！");
+              return;
+            }
             const confirm = window.confirm("確定要預約嗎？");
             if (!confirm || !appointmentData || typeof appointmentData.id !== "string") return;
             const roomRef = doc(db, "rooms", appointmentData.id);
