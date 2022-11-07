@@ -2,6 +2,7 @@ import React, { useState, useContext, Dispatch, SetStateAction } from "react";
 import Link from "next/link";
 import Image from "next/image";
 import styled from "styled-components";
+import { useRouter } from "next/router";
 import BearLogo from "../../public/bear-logo2.png";
 import CartLogo from "../../public/cart.png";
 import MemberLogo from "../../public/member.png";
@@ -10,6 +11,10 @@ import { AuthContext } from "../contexts/authContext";
 
 interface Props {
   setShowModal: Dispatch<SetStateAction<boolean>>;
+  isLogin: boolean;
+  signup: (emil: string, password: string, identity: string, username: string) => void;
+  login(email: string, password: string): void;
+  logout(): void;
 }
 
 const Wrapper = styled.header`
@@ -38,6 +43,11 @@ const HeaderLink = styled.li`
     color: #01815b;
   }
 `;
+const MycoursesLink = styled.span`
+  color: #01815b;
+  cursor: pointer;
+`;
+
 const Member = styled.ul`
   display: flex;
   align-items: center;
@@ -140,7 +150,7 @@ const signupForm = [
 ];
 const isValidEmail = /^[\w-.]+@([\w-]+\.)+[\w-]{2,4}$/g;
 
-function MemberModal({ setShowModal }: Props) {
+function MemberModal({ setShowModal, isLogin, login, logout, signup }: Props) {
   const [errorMessage, setErrorMessage] = useState("");
   const [loginData, setloginData] = useState<Record<string, string>>({
     email: "",
@@ -155,7 +165,7 @@ function MemberModal({ setShowModal }: Props) {
   });
 
   const [needSignup, setNeedSignup] = useState(false);
-  const { signup, isLogin, login, logout } = useContext(AuthContext);
+
   const handleClose = () => {
     setShowModal(false);
     setErrorMessage("");
@@ -293,6 +303,8 @@ function MemberModal({ setShowModal }: Props) {
 
 function Header() {
   const [showModal, setShowModal] = useState(false);
+  const { signup, isLogin, login, logout } = useContext(AuthContext);
+  const router = useRouter();
 
   return (
     <Wrapper>
@@ -309,7 +321,18 @@ function Header() {
           <Link href="/findTeachers">一對一找老師</Link>
         </HeaderLink>
         <HeaderLink>
-          <Link href="/myCourses/videoCourses">我的學習</Link>
+          <MycoursesLink
+            onClick={() => {
+              if (!isLogin) {
+                alert("您還沒登入唷！");
+                setShowModal(true);
+                return;
+              }
+              router.push("/myCourses/videoCourses");
+            }}
+          >
+            我的學習
+          </MycoursesLink>
         </HeaderLink>
       </HeaderLinks>
       <Member>
@@ -326,7 +349,9 @@ function Header() {
           <Image src={MemberLogo} alt="member" />
         </MemberIconWrapper>
       </Member>
-      {showModal && <MemberModal setShowModal={setShowModal} />}
+      {showModal && (
+        <MemberModal setShowModal={setShowModal} isLogin={isLogin} login={login} logout={logout} signup={signup} />
+      )}
     </Wrapper>
   );
 }

@@ -90,6 +90,7 @@ function Header({ appointmentData, ...restProps }: AppointmentTooltip.HeaderProp
             updateDoc(roomRef, {
               students: arrayUnion({ username, email }),
             });
+            alert("您已預約成功！");
           }}
         />
       </ReserveButtonWrapper>

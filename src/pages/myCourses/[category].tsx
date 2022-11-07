@@ -12,6 +12,7 @@ import Modal from "../../components/modal";
 import Bear from "../../../public/bear.png";
 import Trash from "../../../public/trash.png";
 import TeacherCalendar from "../../components/calendar/teacherCalendar";
+import StudentCalendar from "../../components/calendar/studentCalendar";
 
 const Wrapper = styled.div`
   display: flex;
@@ -173,7 +174,7 @@ function UploadProgressModal({ progressBar }: { progressBar: { file: string; pro
     </Modal>
   );
 }
-function LaunchVideoCourse() {
+function LaunchVideoCourse({ userData }: { userData: { uid: string } }) {
   const router = useRouter();
   const [courseName, setCourseName] = useState("");
   const [price, setPrice] = useState("");
@@ -184,7 +185,6 @@ function LaunchVideoCourse() {
   >([]);
   const [showModal, setShowModal] = useState(false);
   const [progressBar, setProgressBar] = useState<{ file: string; progress: number }>({ file: "", progress: 0 });
-  const { userData } = useContext(AuthContext);
 
   const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
@@ -405,16 +405,9 @@ function LaunchVideoCourse() {
   );
 }
 
-function TeacherCalendarPage() {
-  return (
-    <CalendarWrapper>
-      <TeacherCalendar />
-    </CalendarWrapper>
-  );
-}
-
 function MyCourses() {
   const router = useRouter();
+  const { userData } = useContext(AuthContext);
 
   return (
     <Wrapper>
@@ -443,9 +436,18 @@ function MyCourses() {
       </SideBar>
       <Main>
         {router.query.category === "videoCourses" && <VideoCourses />}
-        {router.query.category === "launchVideoCourse" && <LaunchVideoCourse />}
+        {router.query.category === "launchVideoCourse" && <LaunchVideoCourse userData={userData} />}
         {router.query.category === "launchedVideoCourses" && <LaunchedVideoCourses />}
-        {router.query.category === "teacherCalendar" && <TeacherCalendarPage />}
+        {router.query.category === "teacherCalendar" && (
+          <CalendarWrapper>
+            <TeacherCalendar userData={userData} />
+          </CalendarWrapper>
+        )}
+        {router.query.category === "studentCalendar" && (
+          <CalendarWrapper>
+            <StudentCalendar userData={userData} />
+          </CalendarWrapper>
+        )}
       </Main>
     </Wrapper>
   );

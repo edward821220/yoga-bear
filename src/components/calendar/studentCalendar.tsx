@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useContext } from "react";
+import React, { useState, useEffect } from "react";
 import Paper from "@mui/material/Paper";
 import Image from "next/image";
 import { ViewState, EditingState, IntegratedEditing, AppointmentModel } from "@devexpress/dx-react-scheduler";
@@ -12,14 +12,14 @@ import {
   AppointmentTooltip,
   ConfirmationDialog,
 } from "@devexpress/dx-react-scheduler-material-ui";
-import { collection, getDocs, query, where, doc, updateDoc, arrayUnion } from "firebase/firestore";
+import { collection, getDocs, query, where } from "firebase/firestore";
 import styled from "styled-components";
+import { useRouter } from "next/router";
 import { db } from "../../../lib/firebase";
 import resources from "./resources";
-import ReserveButton from "../../../public/reserve.png";
-import { AuthContext } from "../../contexts/authContext";
+import RoomButton from "../../../public/room.png";
 
-const ReserveButtonWrapper = styled.div`
+const RoomButtonWrapper = styled.div`
   display: flex;
   justify-content: center;
   align-items: center;
@@ -74,38 +74,33 @@ function BasicLayout({ onFieldChange, appointmentData, ...restProps }: Appointme
 }
 
 function Header({ appointmentData, ...restProps }: AppointmentTooltip.HeaderProps) {
-  const { userData } = useContext(AuthContext);
-  const { username, email } = userData;
+  const router = useRouter();
   return (
     <AppointmentTooltip.Header {...restProps} appointmentData={appointmentData}>
-      <ReserveButtonWrapper>
+      <RoomButtonWrapper>
         <Image
-          src={ReserveButton}
-          alt="reserve-btn"
+          src={RoomButton}
+          alt="room-btn"
           width={30}
           onClick={() => {
-            const confirm = window.confirm("確定要預約嗎？");
-            if (!confirm || !appointmentData || typeof appointmentData.id !== "string") return;
-            const roomRef = doc(db, "rooms", appointmentData.id);
-            updateDoc(roomRef, {
-              students: arrayUnion({ username, email }),
-            });
+            if (!appointmentData || typeof appointmentData.id !== "string") return;
+            router.push(`/myCourses/classRoom/studentRoom/${appointmentData.id}`);
           }}
         />
-      </ReserveButtonWrapper>
+      </RoomButtonWrapper>
     </AppointmentTooltip.Header>
   );
 }
 
 const currentDate = new Date(Date.now()).toLocaleString().split(" ")[0].replaceAll("/", "-");
 
-function StudentCalendar({ teacherId }: { teacherId: string }) {
+function StudentCalendar({ userData }: { userData: { uid: string; username: string; email: string } }) {
   const [data, setData] = useState<AppointmentModel[]>([]);
-
+  const { uid, username, email } = userData;
   useEffect(() => {
     const getRooms = async () => {
       const courseRef = collection(db, "rooms");
-      const courseQuery = query(courseRef, where("teacherId", "==", teacherId));
+      const courseQuery = query(courseRef, where("students", "array-contains", { username, email }));
       const querySnapshot = await getDocs(courseQuery);
       const results: AppointmentModel[] = [];
       /* eslint-disable @typescript-eslint/no-unsafe-member-access */
@@ -120,7 +115,8 @@ function StudentCalendar({ teacherId }: { teacherId: string }) {
       setData(results);
     };
     getRooms();
-  }, [teacherId]);
+  }, [uid, username, email]);
+
   return (
     <Paper>
       <Scheduler data={data} height={600}>

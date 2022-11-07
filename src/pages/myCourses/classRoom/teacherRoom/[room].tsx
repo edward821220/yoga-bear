@@ -268,7 +268,7 @@ function TeacherRoom() {
 
   return (
     <>
-      <Title>TeacherRoom{room}</Title>;
+      <Title>TeacherRoom</Title>;
       <Wrapper>
         <UserViewPort>
           <video autoPlay ref={userVideo} muted />
