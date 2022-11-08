@@ -1,15 +1,20 @@
-import React, { useState, useContext, Dispatch, SetStateAction } from "react";
+import React, { useState, useContext, useEffect, Dispatch, SetStateAction } from "react";
 import Link from "next/link";
 import Image from "next/image";
 import styled from "styled-components";
 import { useRouter } from "next/router";
+import { useRecoilState, SetterOrUpdater } from "recoil";
+import { getDoc, doc } from "firebase/firestore";
 import BearLogo from "../../public/bear-logo2.png";
 import CartLogo from "../../public/cart.png";
 import MemberLogo from "../../public/member.png";
 import Modal from "./modal";
 import { AuthContext } from "../contexts/authContext";
+import { orderQtyState } from "../../lib/recoil";
+import { db } from "../../lib/firebase";
 
 interface Props {
+  setOrderQty: SetterOrUpdater<number>;
   setShowModal: Dispatch<SetStateAction<boolean>>;
   isLogin: boolean;
   signup: (emil: string, password: string, identity: string, username: string) => void;
@@ -25,6 +30,8 @@ const Wrapper = styled.header`
   margin-bottom: 36px;
   position: sticky;
   top: 0;
+  background-color: #5f555e;
+  z-index: 99;
 `;
 const LogoWrapper = styled.div`
   margin-right: 100px;
@@ -40,11 +47,11 @@ const HeaderLink = styled.li`
   font-size: 24px;
   line-height: 40px;
   a {
-    color: #01815b;
+    color: #fe8011;
   }
 `;
 const MycoursesLink = styled.span`
-  color: #01815b;
+  color: #fe8011;
   cursor: pointer;
 `;
 
@@ -69,6 +76,20 @@ const CartIconWrapper = styled.li`
     z-index: -1;
   }
 `;
+const OrderQty = styled.div`
+  position: absolute;
+  width: 30px;
+  height: 30px;
+  padding-top: 5px;
+  text-align: center;
+  font-size: 18px;
+  bottom: 0;
+  right: 0;
+  border-radius: 50%;
+  background-color: orange;
+  color: #fff;
+`;
+
 const MemberIconWrapper = styled.li`
   margin-right: 36px;
   width: 50px;
@@ -150,7 +171,8 @@ const signupForm = [
 ];
 const isValidEmail = /^[\w-.]+@([\w-]+\.)+[\w-]{2,4}$/g;
 
-function MemberModal({ setShowModal, isLogin, login, logout, signup }: Props) {
+function MemberModal({ setOrderQty, setShowModal, isLogin, login, logout, signup }: Props) {
+  const router = useRouter();
   const [errorMessage, setErrorMessage] = useState("");
   const [loginData, setloginData] = useState<Record<string, string>>({
     email: "",
@@ -289,8 +311,10 @@ function MemberModal({ setShowModal, isLogin, login, logout, signup }: Props) {
             type="submit"
             onClick={() => {
               logout();
+              setOrderQty(0);
               setNeedSignup(false);
               handleClose();
+              router.push("/");
             }}
           >
             登出
@@ -303,8 +327,23 @@ function MemberModal({ setShowModal, isLogin, login, logout, signup }: Props) {
 
 function Header() {
   const [showModal, setShowModal] = useState(false);
-  const { signup, isLogin, login, logout } = useContext(AuthContext);
+  const [orderQty, setOrderQty] = useRecoilState(orderQtyState);
+  const { signup, isLogin, login, logout, userData } = useContext(AuthContext);
   const router = useRouter();
+
+  useEffect(() => {
+    const getCartItems = async () => {
+      if (!userData.uid) return;
+      const docRef = doc(db, "users", userData.uid);
+      const docSnap = await getDoc(docRef);
+      if (docSnap.exists()) {
+        // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
+        const qty: number = docSnap.data()?.cartItems?.length;
+        setOrderQty(qty);
+      }
+    };
+    getCartItems();
+  }, [userData.uid, setOrderQty]);
 
   return (
     <Wrapper>
@@ -337,9 +376,19 @@ function Header() {
       </HeaderLinks>
       <Member>
         <CartIconWrapper>
-          <Link href="/cart">
-            <Image src={CartLogo} alt="cart" />
-          </Link>
+          <Image
+            src={CartLogo}
+            alt="cart"
+            onClick={() => {
+              if (!isLogin) {
+                alert("您還沒登入唷！");
+                setShowModal(true);
+                return;
+              }
+              router.push("/cart");
+            }}
+          />
+          {orderQty > 0 && <OrderQty>{orderQty}</OrderQty>}
         </CartIconWrapper>
         <MemberIconWrapper
           onClick={() => {
@@ -350,7 +399,14 @@ function Header() {
         </MemberIconWrapper>
       </Member>
       {showModal && (
-        <MemberModal setShowModal={setShowModal} isLogin={isLogin} login={login} logout={logout} signup={signup} />
+        <MemberModal
+          setOrderQty={setOrderQty}
+          setShowModal={setShowModal}
+          isLogin={isLogin}
+          login={login}
+          logout={logout}
+          signup={signup}
+        />
       )}
     </Wrapper>
   );

@@ -2,8 +2,10 @@ import React, { useState, useEffect, useContext } from "react";
 import { doc, getDoc, updateDoc, arrayUnion } from "firebase/firestore";
 import { useRouter } from "next/router";
 import styled from "styled-components";
+import { useRecoilState } from "recoil";
 import { db } from "../../../../lib/firebase";
 import { AuthContext } from "../../../contexts/authContext";
+import { orderQtyState } from "../../../../lib/recoil";
 
 interface CourseDataInteface {
   id: string;
@@ -80,6 +82,8 @@ function CourseDetail() {
   const { courseId } = router.query;
   const [courseData, setCourseData] = useState<CourseDataInteface>();
   const { isLogin, userData } = useContext(AuthContext);
+  const [orderQty, setOrderQty] = useRecoilState(orderQtyState);
+
   useEffect(() => {
     const getCourse = async () => {
       if (typeof courseId !== "string") return;
@@ -102,14 +106,14 @@ function CourseDetail() {
     getCourse();
   }, [courseId]);
 
-  const addToCart = () => {
+  const addToCart = async () => {
     if (!isLogin) {
       alert("請先登入唷！");
       return;
     }
     const userRef = doc(db, "users", userData.uid);
     if (!courseData) return;
-    updateDoc(userRef, {
+    await updateDoc(userRef, {
       cartItems: arrayUnion({
         id: courseData.id,
         name: courseData.name,
@@ -117,8 +121,15 @@ function CourseDetail() {
         price: courseData.price,
       }),
     });
+    const docSnap = await getDoc(userRef);
+    if (docSnap.exists()) {
+      // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
+      const qty: number = docSnap.data()?.cartItems?.length;
+      setOrderQty(qty);
+    }
     alert("已加入購物車");
   };
+
   return (
     <Wrapper>
       <Title>{courseData?.name}-課程介紹影片</Title>

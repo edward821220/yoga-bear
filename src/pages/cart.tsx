@@ -1,10 +1,12 @@
 import React, { useState, useEffect, useContext } from "react";
-import { getDoc, doc } from "firebase/firestore";
+import { getDoc, doc, updateDoc, arrayRemove } from "firebase/firestore";
 import styled from "styled-components";
 import Image from "next/image";
+import { useRecoilState } from "recoil";
 import { AuthContext } from "../contexts/authContext";
 import { db } from "../../lib/firebase";
 import RemoveIcon from "../../public/trash.png";
+import { orderQtyState } from "../../lib/recoil";
 
 const Wrapper = styled.div`
   margin: 0 auto;
@@ -89,9 +91,11 @@ const Button = styled.button`
 
 function Cart() {
   const [cartItems, setCartItems] = useState<{ cover: string; name: string; price: string; id: string }[]>();
-  const { isLogin, userData } = useContext(AuthContext);
+  const { userData } = useContext(AuthContext);
   const { uid } = userData;
   const subtotal = cartItems?.reduce((acc, current) => acc + Number(current.price), 0);
+  const [orderQty, setOrderQty] = useRecoilState(orderQtyState);
+
   useEffect(() => {
     const getCartItems = async () => {
       if (!uid) return;
@@ -115,7 +119,7 @@ function Cart() {
             <ItemPrice>價格</ItemPrice>
             <ItemRemove>刪除</ItemRemove>
           </CartItem>
-          {cartItems?.map((item) => (
+          {cartItems?.map((item, index) => (
             <CartItem key={item.id}>
               <ItemInfo>
                 <CoverWrapper>
@@ -125,7 +129,16 @@ function Cart() {
               </ItemInfo>
               <ItemPrice>{item.price}</ItemPrice>
               <ItemRemove>
-                <RemoveIconWrapper>
+                <RemoveIconWrapper
+                  onClick={() => {
+                    setCartItems(cartItems?.filter((_, removeIndex) => index !== removeIndex));
+                    setOrderQty((prev) => prev - 1);
+                    const docRef = doc(db, "users", uid);
+                    updateDoc(docRef, {
+                      cartItems: arrayRemove({ cover: item.cover, name: item.name, price: item.price, id: item.id }),
+                    });
+                  }}
+                >
                   <Image src={RemoveIcon} alt="remove" fill />
                 </RemoveIconWrapper>
               </ItemRemove>
