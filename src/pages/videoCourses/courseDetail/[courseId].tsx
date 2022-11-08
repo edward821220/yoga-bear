@@ -1,8 +1,9 @@
-import React, { useState, useEffect } from "react";
-import { doc, getDoc } from "firebase/firestore";
+import React, { useState, useEffect, useContext } from "react";
+import { doc, getDoc, setDoc, updateDoc, arrayUnion } from "firebase/firestore";
 import { useRouter } from "next/router";
 import styled from "styled-components";
 import { db } from "../../../../lib/firebase";
+import { AuthContext } from "../../../contexts/authContext";
 
 interface CourseDataInteface {
   name: string;
@@ -10,6 +11,8 @@ interface CourseDataInteface {
   introduction: string;
   introductionVideo: string;
   teacherId: string;
+  cover: string;
+  price: string;
 }
 
 const Wrapper = styled.div`
@@ -75,20 +78,32 @@ function CourseDetail() {
   const router = useRouter();
   const { courseId } = router.query;
   const [courseData, setCourseData] = useState<CourseDataInteface>();
-
+  const { isLogin, userData } = useContext(AuthContext);
   useEffect(() => {
     const getCourse = async () => {
       if (typeof courseId !== "string") return;
       const docRef = doc(db, "video_courses", courseId);
       const docSnap = await getDoc(docRef);
       if (docSnap.exists()) {
-        const { name, chapters, introduction, introductionVideo, teacher_id: teacherId } = docSnap.data();
-        setCourseData({ name, chapters, introduction, introductionVideo, teacherId });
+        const { name, chapters, introduction, introductionVideo, teacher_id: teacherId, cover, price } = docSnap.data();
+        setCourseData({ name, chapters, introduction, introductionVideo, teacherId, cover, price });
       }
     };
     getCourse();
   }, [courseId]);
 
+  const addToCart = () => {
+    if (!isLogin) {
+      alert("請先登入唷！");
+      return;
+    }
+    const userRef = doc(db, "users", userData.uid);
+    if (!courseData) return;
+    updateDoc(userRef, {
+      cartItems: arrayUnion({ name: courseData.name, cover: courseData.cover, price: courseData.price }),
+    });
+    alert("已加入購物車");
+  };
   return (
     <Wrapper>
       <Title>{courseData?.name}-課程介紹影片</Title>
@@ -100,7 +115,9 @@ function CourseDetail() {
         autoPlay
         controls
       />
-      <Button>加入購物車</Button>
+      <Button type="button" onClick={addToCart}>
+        加入購物車
+      </Button>
       <SubTitle>課程簡介-章節</SubTitle>
       <Chapters>
         {courseData?.chapters.map((chapter, chapterIndex) => (
