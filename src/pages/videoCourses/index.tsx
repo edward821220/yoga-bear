@@ -39,19 +39,34 @@ const CourseInfo = styled.p`
   margin-bottom: 10px;
 `;
 
+interface CourseInterface {
+  name: string;
+  id: string;
+  price: string;
+  cover: string;
+  reviews: { score: string; comment: string };
+}
+
 function VideoCourses() {
-  const [coursesList, setCoursesList] = useState<{ name: string; id: string; price: string; cover: string }[]>([]);
+  const [coursesList, setCoursesList] = useState<CourseInterface[]>([]);
   useEffect(() => {
     const getCoursesList = async () => {
       const videoCoursesRef = collection(db, "video_courses");
       const querySnapshot = await getDocs(videoCoursesRef);
-      const results: { name: string; id: string; price: string; cover: string }[] = [];
+      const results: {
+        name: string;
+        id: string;
+        price: string;
+        cover: string;
+        reviews: { score: string; comment: string };
+      }[] = [];
       querySnapshot.forEach((data) => {
         results.push({
           id: data.data().id,
           name: data.data().name,
           price: data.data().price,
           cover: data.data().cover,
+          reviews: data.data().reviews,
         });
       });
       setCoursesList(results);
@@ -72,6 +87,11 @@ function VideoCourses() {
             <CourseInfos>
               <CourseInfo>{course.name}</CourseInfo>
               <CourseInfo>NT. {course.price}</CourseInfo>
+              {course.reviews.score ? (
+                <CourseInfo>{course.reviews.score}</CourseInfo>
+              ) : (
+                <CourseInfo>目前無評價</CourseInfo>
+              )}
             </CourseInfos>
           </Course>
         ))}

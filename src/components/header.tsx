@@ -318,7 +318,7 @@ function Header() {
           <Link href="/videoCourses">影音課程</Link>
         </HeaderLink>
         <HeaderLink>
-          <Link href="/findTeachers">一對一找老師</Link>
+          <Link href="/findTeachers">我想找老師</Link>
         </HeaderLink>
         <HeaderLink>
           <MycoursesLink

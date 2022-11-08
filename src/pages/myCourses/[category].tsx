@@ -196,6 +196,7 @@ function LaunchVideoCourse({ userData }: { userData: { uid: string } }) {
 
     let newChapters = [...chapters];
     let imageUrl = "";
+    let introductionVideoUrl = "";
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     async function uploadTaskPromise(input: any, index: number) {
       return new Promise((resolve, reject) => {
@@ -219,6 +220,11 @@ function LaunchVideoCourse({ userData }: { userData: { uid: string } }) {
             const downloadUrl = await getDownloadURL(uploadTask.snapshot.ref);
             if (index === 0) {
               imageUrl = downloadUrl;
+              resolve(downloadUrl);
+              return;
+            }
+            if (index === 1) {
+              introductionVideoUrl = downloadUrl;
               resolve(downloadUrl);
               return;
             }
@@ -247,6 +253,7 @@ function LaunchVideoCourse({ userData }: { userData: { uid: string } }) {
       cover: imageUrl,
       price,
       introduction,
+      introductionVideo: introductionVideoUrl,
       teacher_id: userData.uid,
       chapters: newChapters,
       reviews: [],
@@ -303,6 +310,10 @@ function LaunchVideoCourse({ userData }: { userData: { uid: string } }) {
             }}
           />
           {coverPreview && <Image src={coverPreview} alt="cover" width={500} height={300} />}
+        </LauchFormLabel>
+        <LauchFormLabel>
+          <LauchFormLabelText>上傳課程介紹影片</LauchFormLabelText>
+          <LauchFormLabelInput type="file" accept="video/mp4,video/x-m4v,video/*" required />
         </LauchFormLabel>
         <Button
           type="button"
