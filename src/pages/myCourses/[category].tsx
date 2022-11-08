@@ -187,12 +187,12 @@ function LaunchVideoCourse({ userData }: { userData: { uid: string } }) {
   const [chapters, setChapters] = useState<
     { id: number; title: string; units: { id: number; title: string; video: string }[] }[]
   >([]);
-  const [showModal, setShowModal] = useState(false);
+  const [showMemberModal, setShowMemberModal] = useState(false);
   const [progressBar, setProgressBar] = useState<{ file: string; progress: number }>({ file: "", progress: 0 });
 
   const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
-    setShowModal(true);
+    setShowMemberModal(true);
 
     let newChapters = [...chapters];
     let imageUrl = "";
@@ -258,7 +258,7 @@ function LaunchVideoCourse({ userData }: { userData: { uid: string } }) {
       chapters: newChapters,
       reviews: [],
     });
-    setShowModal(false);
+    setShowMemberModal(false);
     alert("課程上架完成！");
     router.push("/myCourses/videoCourses");
   };
@@ -415,7 +415,7 @@ function LaunchVideoCourse({ userData }: { userData: { uid: string } }) {
         ))}
         <Button type="submit">確認送出</Button>
       </LauchForm>
-      {showModal && <UploadProgressModal progressBar={progressBar} />}
+      {showMemberModal && <UploadProgressModal progressBar={progressBar} />}
     </>
   );
 }

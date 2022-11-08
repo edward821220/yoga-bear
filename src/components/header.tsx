@@ -10,12 +10,14 @@ import CartLogo from "../../public/cart.png";
 import MemberLogo from "../../public/member.png";
 import Modal from "./modal";
 import { AuthContext } from "../contexts/authContext";
-import { orderQtyState } from "../../lib/recoil";
+import { orderQtyState, bearMoneyState } from "../../lib/recoil";
 import { db } from "../../lib/firebase";
+import MoneyIcon from "../../public/money.png";
+import PlusMoneyIcon from "../../public/add.png";
 
 interface Props {
   setOrderQty: SetterOrUpdater<number>;
-  setShowModal: Dispatch<SetStateAction<boolean>>;
+  setShowMemberModal: Dispatch<SetStateAction<boolean>>;
   isLogin: boolean;
   signup: (emil: string, password: string, identity: string, username: string) => void;
   login(email: string, password: string): void;
@@ -59,6 +61,35 @@ const Member = styled.ul`
   display: flex;
   align-items: center;
 `;
+
+const MoneyDisplay = styled.div`
+  width: 160px;
+  height: 40px;
+  display: flex;
+  align-items: center;
+  padding-left: 10px;
+  margin-right: 100px;
+  justify-content: space-between;
+  align-items: center;
+  background-color: #fff;
+`;
+
+const MoneyIconWrapper = styled.div`
+  position: relative;
+  width: 30px;
+  height: 30px;
+  margin-right: 5px;
+`;
+const MoneyQty = styled.p`
+  font-size: 20px;
+`;
+const MoneyPlusWrapper = styled.div`
+  position: relative;
+  width: 30px;
+  height: 30px;
+  cursor: pointer;
+`;
+
 const CartIconWrapper = styled.li`
   margin-right: 36px;
   width: 66px;
@@ -171,7 +202,7 @@ const signupForm = [
 ];
 const isValidEmail = /^[\w-.]+@([\w-]+\.)+[\w-]{2,4}$/g;
 
-function MemberModal({ setOrderQty, setShowModal, isLogin, login, logout, signup }: Props) {
+function MemberModal({ setOrderQty, setShowMemberModal, isLogin, login, logout, signup }: Props) {
   const router = useRouter();
   const [errorMessage, setErrorMessage] = useState("");
   const [loginData, setloginData] = useState<Record<string, string>>({
@@ -189,7 +220,7 @@ function MemberModal({ setOrderQty, setShowModal, isLogin, login, logout, signup
   const [needSignup, setNeedSignup] = useState(false);
 
   const handleClose = () => {
-    setShowModal(false);
+    setShowMemberModal(false);
     setErrorMessage("");
   };
   const handleLogin = async (e: React.FormEvent<HTMLFormElement>) => {
@@ -326,8 +357,10 @@ function MemberModal({ setOrderQty, setShowModal, isLogin, login, logout, signup
 }
 
 function Header() {
-  const [showModal, setShowModal] = useState(false);
+  const [showMemberModal, setShowMemberModal] = useState(false);
+  const [showPaymentModal, setShowPaymentModal] = useState(false);
   const [orderQty, setOrderQty] = useRecoilState(orderQtyState);
+  const [bearMoney, setBearMoney] = useRecoilState(bearMoneyState);
   const { signup, isLogin, login, logout, userData } = useContext(AuthContext);
   const router = useRouter();
 
@@ -364,7 +397,7 @@ function Header() {
             onClick={() => {
               if (!isLogin) {
                 alert("您還沒登入唷！");
-                setShowModal(true);
+                setShowMemberModal(true);
                 return;
               }
               router.push("/myCourses/videoCourses");
@@ -375,6 +408,16 @@ function Header() {
         </HeaderLink>
       </HeaderLinks>
       <Member>
+        <MoneyDisplay>
+          <MoneyIconWrapper>
+            <Image src={MoneyIcon} alt="moneyIcon" fill />
+          </MoneyIconWrapper>
+          <MoneyQty>{bearMoney}</MoneyQty>
+          <MoneyPlusWrapper>
+            <Image src={PlusMoneyIcon} alt="plus" fill />
+          </MoneyPlusWrapper>
+        </MoneyDisplay>
+
         <CartIconWrapper>
           <Image
             src={CartLogo}
@@ -382,7 +425,7 @@ function Header() {
             onClick={() => {
               if (!isLogin) {
                 alert("您還沒登入唷！");
-                setShowModal(true);
+                setShowMemberModal(true);
                 return;
               }
               router.push("/cart");
@@ -392,16 +435,26 @@ function Header() {
         </CartIconWrapper>
         <MemberIconWrapper
           onClick={() => {
-            setShowModal(true);
+            setShowMemberModal(true);
           }}
         >
           <Image src={MemberLogo} alt="member" />
         </MemberIconWrapper>
       </Member>
-      {showModal && (
+      {showMemberModal && (
         <MemberModal
           setOrderQty={setOrderQty}
-          setShowModal={setShowModal}
+          setShowMemberModal={setShowMemberModal}
+          isLogin={isLogin}
+          login={login}
+          logout={logout}
+          signup={signup}
+        />
+      )}
+      {showPaymentModal && (
+        <PaymentModal
+          setOrderQty={setOrderQty}
+          setShowMemberModal={setShowMemberModal}
           isLogin={isLogin}
           login={login}
           logout={logout}
