@@ -16,7 +16,7 @@ const GlobalStyle = createGlobalStyle`
 }
 body {
   box-sizing: border-box;
-  font-family: "Poppins", Roboto, "Helvetica Neue", Arial, sans-serif;
+  font-family: "Noto Sans TC", -apple-system, BlinkMacSystemFont, "Segoe UI", "Microsoft JhengHei", Roboto, "Helvetica Neue", Arial, sans-serif;
 }
 img {
   display: block;

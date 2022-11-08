@@ -1,11 +1,12 @@
 import React, { useState, useEffect, useContext } from "react";
-import { doc, getDoc, setDoc, updateDoc, arrayUnion } from "firebase/firestore";
+import { doc, getDoc, updateDoc, arrayUnion } from "firebase/firestore";
 import { useRouter } from "next/router";
 import styled from "styled-components";
 import { db } from "../../../../lib/firebase";
 import { AuthContext } from "../../../contexts/authContext";
 
 interface CourseDataInteface {
+  id: string;
   name: string;
   chapters: { id: number; title: string; units: { id: number; title: string; video: string }[] }[];
   introduction: string;
@@ -85,8 +86,17 @@ function CourseDetail() {
       const docRef = doc(db, "video_courses", courseId);
       const docSnap = await getDoc(docRef);
       if (docSnap.exists()) {
-        const { name, chapters, introduction, introductionVideo, teacher_id: teacherId, cover, price } = docSnap.data();
-        setCourseData({ name, chapters, introduction, introductionVideo, teacherId, cover, price });
+        const {
+          id,
+          name,
+          chapters,
+          introduction,
+          introductionVideo,
+          teacher_id: teacherId,
+          cover,
+          price,
+        } = docSnap.data();
+        setCourseData({ id, name, chapters, introduction, introductionVideo, teacherId, cover, price });
       }
     };
     getCourse();
@@ -100,7 +110,12 @@ function CourseDetail() {
     const userRef = doc(db, "users", userData.uid);
     if (!courseData) return;
     updateDoc(userRef, {
-      cartItems: arrayUnion({ name: courseData.name, cover: courseData.cover, price: courseData.price }),
+      cartItems: arrayUnion({
+        id: courseData.id,
+        name: courseData.name,
+        cover: courseData.cover,
+        price: courseData.price,
+      }),
     });
     alert("已加入購物車");
   };
