@@ -12,7 +12,7 @@ import Modal from "./modal";
 import { AuthContext } from "../contexts/authContext";
 import { orderQtyState, bearMoneyState } from "../../lib/recoil";
 import { db } from "../../lib/firebase";
-import MoneyIcon from "../../public/money.png";
+import MoneyIcon from "../../public/newMoney.png";
 import PlusMoneyIcon from "../../public/add.png";
 
 interface Props {
@@ -28,16 +28,15 @@ const Wrapper = styled.header`
   display: flex;
   align-items: center;
   justify-content: space-around;
-  border-bottom: 2px solid gray;
   margin-bottom: 36px;
   position: sticky;
   top: 0;
-  background-color: #5f555e;
+  background-color: #ece5da;
   z-index: 99;
 `;
 const LogoWrapper = styled.div`
-  margin-right: 100px;
-  width: 360px;
+  margin-right: 120px;
+  width: 200px;
 `;
 const HeaderLinks = styled.ul`
   display: flex;
@@ -46,14 +45,19 @@ const HeaderLinks = styled.ul`
 `;
 const HeaderLink = styled.li`
   margin-right: 66px;
-  font-size: 24px;
+  font-size: 18px;
   line-height: 40px;
+  border: 2px solid #654116;
+  border-radius: 5px;
+  background-color: #fff;
+  width: 140px;
+  text-align: center;
   a {
-    color: #fe8011;
+    color: #654116;
   }
 `;
 const MycoursesLink = styled.span`
-  color: #fe8011;
+  color: #654116;
   cursor: pointer;
 `;
 
@@ -64,7 +68,7 @@ const Member = styled.ul`
 
 const MoneyDisplay = styled.div`
   width: 160px;
-  height: 40px;
+  height: 44px;
   display: flex;
   align-items: center;
   padding-left: 10px;
@@ -72,6 +76,7 @@ const MoneyDisplay = styled.div`
   justify-content: space-between;
   align-items: center;
   background-color: #fff;
+  border-radius: 5px;
 `;
 
 const MoneyIconWrapper = styled.div`
@@ -92,49 +97,51 @@ const MoneyPlusWrapper = styled.div`
 
 const CartIconWrapper = styled.li`
   margin-right: 36px;
-  width: 66px;
+  width: 40px;
   position: relative;
   cursor: pointer;
   &:after {
     content: "";
-    width: 60px;
-    height: 60px;
+    width: 50px;
+    height: 50px;
     position: absolute;
     bottom: 0;
-    transform: translateY(-5px) translateX(1px);
-    background-color: yellow;
+    transform: translateY(1px) translateX(-5px);
+    background-color: #f4d5b0;
+    border: 2px solid #654116;
     border-radius: 50%;
     z-index: -1;
   }
 `;
 const OrderQty = styled.div`
   position: absolute;
-  width: 30px;
-  height: 30px;
-  padding-top: 5px;
+  width: 20px;
+  height: 20px;
+  padding-top: 3px;
   text-align: center;
-  font-size: 18px;
+  font-size: 13px;
   bottom: 0;
   right: 0;
   border-radius: 50%;
-  background-color: orange;
-  color: #fff;
+  background-color: #fff;
+  color: #654116;
 `;
 
 const MemberIconWrapper = styled.li`
   margin-right: 36px;
-  width: 50px;
+  width: 40px;
   position: relative;
   cursor: pointer;
   &:after {
     content: "";
-    width: 60px;
-    height: 60px;
+    width: 50px;
+    height: 50px;
     bottom: 0;
     transform: translateY(5px) translateX(-5px);
     position: absolute;
-    background-color: yellow;
+    background-color: #f4d5b0;
     border-radius: 50%;
+    border: 2px solid #654116;
     z-index: -1;
   }
 `;
