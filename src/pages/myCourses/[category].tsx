@@ -5,7 +5,7 @@ import Link from "next/link";
 import Image from "next/image";
 import { useRouter } from "next/router";
 import { ref, getDownloadURL, uploadBytesResumable } from "firebase/storage";
-import { collection, doc, setDoc, getDocs, query, where } from "firebase/firestore";
+import { collection, doc, setDoc, getDocs, getDoc, query, where } from "firebase/firestore";
 import { AuthContext } from "../../contexts/authContext";
 import { storage, db } from "../../../lib/firebase";
 import Modal from "../../components/modal";
@@ -108,25 +108,44 @@ const CalendarWrapper = styled.div`
   width: 90%;
   margin: 0 auto;
 `;
-function VideoCourses() {
+function VideoCourses({ uid }: { uid: string }) {
   const [courses, setCourses] = useState<{ name: string; cover: string; id: string }[]>();
+
   useEffect(() => {
     const getCourses = async () => {
-      const courseRef = collection(db, "video_courses");
-      const courseQuery = query(courseRef, where("name", "!=", null));
-      const querySnapshot = await getDocs(courseQuery);
+      if (!uid) return;
+      const docRef = doc(db, "users", uid);
+      const docSnap = await getDoc(docRef);
+      let myVideoCourses: string[] = [];
+      if (docSnap.exists() && docSnap) {
+        myVideoCourses = await docSnap.data().boughtCourses;
+      }
+      if (!myVideoCourses) {
+        setCourses([]);
+        return;
+      }
       const results: { name: string; cover: string; id: string }[] = [];
-      querySnapshot.forEach((data) => {
-        results.push({
-          id: data.data().id,
-          name: data.data().name,
-          cover: data.data().cover,
-        });
-      });
+      await Promise.all(
+        myVideoCourses.map(async (id: string) => {
+          const videoDocRef = doc(db, "video_courses", id);
+          const datas = await getDoc(videoDocRef);
+          if (datas.exists() && datas) {
+            results.push({
+              id: datas.data().id,
+              name: datas.data().name,
+              cover: datas.data().cover,
+            });
+          }
+        })
+      );
       setCourses(results);
     };
     getCourses();
-  }, []);
+  }, [uid]);
+
+  if (courses?.length === 0) {
+    return <p>目前沒有課程唷！</p>;
+  }
 
   return (
     <MyCoursesList>
@@ -178,7 +197,7 @@ function UploadProgressModal({ progressBar }: { progressBar: { file: string; pro
     </Modal>
   );
 }
-function LaunchVideoCourse({ userData }: { userData: { uid: string } }) {
+function LaunchVideoCourse({ uid }: { uid: string }) {
   const router = useRouter();
   const [courseName, setCourseName] = useState("");
   const [price, setPrice] = useState("");
@@ -254,7 +273,7 @@ function LaunchVideoCourse({ userData }: { userData: { uid: string } }) {
       price,
       introduction,
       introductionVideo: introductionVideoUrl,
-      teacher_id: userData.uid,
+      teacher_id: uid,
       chapters: newChapters,
       reviews: [],
     });
@@ -452,12 +471,12 @@ function MyCourses() {
         )}
       </SideBar>
       <Main>
-        {router.query.category === "videoCourses" && <VideoCourses />}
-        {router.query.category === "launchVideoCourse" && <LaunchVideoCourse userData={userData} />}
+        {router.query.category === "videoCourses" && <VideoCourses uid={userData.uid} />}
+        {router.query.category === "launchVideoCourse" && <LaunchVideoCourse uid={userData.uid} />}
         {router.query.category === "launchedVideoCourses" && <LaunchedVideoCourses />}
         {router.query.category === "teacherCalendar" && (
           <CalendarWrapper>
-            <TeacherCalendar userData={userData} />
+            <TeacherCalendar uid={userData.uid} />
           </CalendarWrapper>
         )}
         {router.query.category === "studentCalendar" && (

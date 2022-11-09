@@ -4,7 +4,7 @@ import Image from "next/image";
 import styled from "styled-components";
 import { useRouter } from "next/router";
 import { useRecoilState, SetterOrUpdater } from "recoil";
-import { getDoc, doc } from "firebase/firestore";
+import { getDoc, doc, updateDoc } from "firebase/firestore";
 import BearLogo from "../../public/bear-logo2.png";
 import CartLogo from "../../public/cart.png";
 import MemberLogo from "../../public/member.png";
@@ -388,10 +388,12 @@ function MemberModal({ setOrderQty, setShowMemberModal, isLogin, login, logout, 
 
 interface PaymentModalProps {
   setShowPaymentModal: Dispatch<SetStateAction<boolean>>;
+  bearMoney: number;
   setBearMoney: SetterOrUpdater<number>;
+  userId: string;
 }
 
-function PaymentModal({ setShowPaymentModal, setBearMoney }: PaymentModalProps) {
+function PaymentModal({ setShowPaymentModal, bearMoney, setBearMoney, userId }: PaymentModalProps) {
   const [paymentData, setPaymentData] = useState<Record<string, string>>({
     money: "",
     cardNumber: "",
@@ -415,9 +417,13 @@ function PaymentModal({ setShowPaymentModal, setBearMoney }: PaymentModalProps) 
       alert("請輸入正確的信用卡安全碼");
       return;
     }
-    setBearMoney(Number(paymentData.money));
+    setBearMoney((prev) => prev + Number(paymentData.money));
     alert("儲值成功！可以上課囉！");
     setShowPaymentModal(false);
+    const docRef = doc(db, "users", userId);
+    updateDoc(docRef, {
+      bearMoney: bearMoney + Number(paymentData.money),
+    });
   };
   return (
     <Modal handleClose={handleClose}>
@@ -480,11 +486,13 @@ function Header() {
       if (docSnap.exists()) {
         // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
         const qty: number = docSnap.data()?.cartItems?.length;
+        const money: number = docSnap.data()?.bearMoney;
         setOrderQty(qty);
+        setBearMoney(money || 0);
       }
     };
     getCartItems();
-  }, [userData.uid, setOrderQty]);
+  }, [userData.uid, setOrderQty, setBearMoney]);
 
   return (
     <Wrapper>
@@ -569,7 +577,14 @@ function Header() {
           signup={signup}
         />
       )}
-      {showPaymentModal && <PaymentModal setShowPaymentModal={setShowPaymentModal} setBearMoney={setBearMoney} />}
+      {showPaymentModal && (
+        <PaymentModal
+          setShowPaymentModal={setShowPaymentModal}
+          bearMoney={bearMoney}
+          setBearMoney={setBearMoney}
+          userId={userData.uid}
+        />
+      )}
     </Wrapper>
   );
 }

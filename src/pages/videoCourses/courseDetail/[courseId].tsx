@@ -121,13 +121,13 @@ function CourseDetail() {
         price: courseData.price,
       }),
     });
+    alert("已加入購物車");
     const docSnap = await getDoc(userRef);
     if (docSnap.exists()) {
       // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
       const qty: number = docSnap.data()?.cartItems?.length;
       setOrderQty(qty);
     }
-    alert("已加入購物車");
   };
 
   return (

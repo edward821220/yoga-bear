@@ -126,14 +126,14 @@ function Header({ appointmentData, ...restProps }: AppointmentTooltip.HeaderProp
   );
 }
 
-export default function TeacherCalendar({ userData }: { userData: { uid: string } }) {
+export default function TeacherCalendar({ uid }: { uid: string }) {
   const [data, setData] = useState<AppointmentModel[]>([]);
   const [view, setView] = useState("Month");
 
   useEffect(() => {
     const getRooms = async () => {
       const courseRef = collection(db, "rooms");
-      const courseQuery = query(courseRef, where("teacherId", "==", userData.uid));
+      const courseQuery = query(courseRef, where("teacherId", "==", uid));
       const querySnapshot = await getDocs(courseQuery);
       const results: AppointmentModel[] = [];
       /* eslint-disable @typescript-eslint/no-unsafe-member-access */
@@ -148,7 +148,7 @@ export default function TeacherCalendar({ userData }: { userData: { uid: string 
       setData(results);
     };
     getRooms();
-  }, [userData.uid]);
+  }, [uid]);
 
   const commitChanges = ({ added, changed, deleted }: ChangeSet): void => {
     if (added) {

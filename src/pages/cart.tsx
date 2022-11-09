@@ -1,12 +1,13 @@
 import React, { useState, useEffect, useContext } from "react";
-import { getDoc, doc, updateDoc, arrayRemove } from "firebase/firestore";
+import { getDoc, doc, updateDoc, arrayRemove, arrayUnion } from "firebase/firestore";
 import styled from "styled-components";
 import Image from "next/image";
 import { useRecoilState } from "recoil";
+import { useRouter } from "next/router";
 import { AuthContext } from "../contexts/authContext";
 import { db } from "../../lib/firebase";
 import RemoveIcon from "../../public/trash.png";
-import { orderQtyState } from "../../lib/recoil";
+import { orderQtyState, bearMoneyState } from "../../lib/recoil";
 
 const Wrapper = styled.div`
   margin: 0 auto;
@@ -90,11 +91,13 @@ const Button = styled.button`
 `;
 
 function Cart() {
+  const router = useRouter();
   const [cartItems, setCartItems] = useState<{ cover: string; name: string; price: string; id: string }[]>();
   const { userData } = useContext(AuthContext);
   const { uid } = userData;
   const subtotal = cartItems?.reduce((acc, current) => acc + Number(current.price), 0);
   const [orderQty, setOrderQty] = useRecoilState(orderQtyState);
+  const [bearMoney, setBearMoney] = useRecoilState(bearMoneyState);
 
   useEffect(() => {
     const getCartItems = async () => {
@@ -108,6 +111,33 @@ function Cart() {
     };
     getCartItems();
   }, [uid]);
+
+  const handleCheckout = () => {
+    if (!subtotal) {
+      alert("購物車沒東東唷！");
+      return;
+    }
+    const confirm = window.confirm("確定要購買嗎？");
+    if (!confirm) return;
+    if (subtotal > bearMoney) {
+      alert("熊幣餘額不足唷！請加值～");
+    } else {
+      setBearMoney((prev) => prev - subtotal);
+      setCartItems([]);
+      const docRef = doc(db, "users", uid);
+      updateDoc(docRef, {
+        cartItems: [],
+        bearMoney: bearMoney - subtotal,
+      });
+      cartItems?.forEach((item) => {
+        updateDoc(docRef, {
+          boughtCourses: arrayUnion(item.id),
+        });
+      });
+      alert("購買成功！可以去上課囉～");
+      router.push("/myCourses/videoCourses");
+    }
+  };
 
   return (
     <Wrapper>
@@ -132,7 +162,7 @@ function Cart() {
                 <RemoveIconWrapper
                   onClick={() => {
                     setCartItems(cartItems?.filter((_, removeIndex) => index !== removeIndex));
-                    setOrderQty((prev) => prev - 1);
+                    setOrderQty(orderQty - 1);
                     const docRef = doc(db, "users", uid);
                     updateDoc(docRef, {
                       cartItems: arrayRemove({ cover: item.cover, name: item.name, price: item.price, id: item.id }),
@@ -149,7 +179,9 @@ function Cart() {
           <DetailsTitle>訂單明細</DetailsTitle>
           <DetailItem>小計</DetailItem>
           <Subtotal>NT. {subtotal}</Subtotal>
-          <Button>結帳去</Button>
+          <Button type="button" onClick={handleCheckout}>
+            結帳去
+          </Button>
         </OrderDetails>
       </CartContainer>
     </Wrapper>
