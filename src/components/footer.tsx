@@ -7,8 +7,13 @@ const FooterLinks = styled.ul`
   justify-content: space-around;
   border-top: 2px solid gray;
   padding: 20px;
+  background-color: #ece5da;
 `;
-const FooterLink = styled.li``;
+const FooterLink = styled.li`
+  a {
+    color: #654116;
+  }
+`;
 
 function Footer() {
   return (

@@ -27,7 +27,7 @@ const Wrapper = styled.header`
   flex-wrap: wrap;
 `;
 const LogoWrapper = styled.div`
-  margin-right: 120px;
+  margin-right: 100px;
   flex-basis: 200px;
 `;
 const HeaderLinks = styled.ul`
@@ -36,13 +36,13 @@ const HeaderLinks = styled.ul`
   margin-right: auto;
 `;
 const HeaderLink = styled.li`
-  margin-right: 66px;
+  margin-right: 36px;
   font-size: 18px;
   line-height: 40px;
   border: 2px solid #654116;
   border-radius: 5px;
   background-color: #fff;
-  width: 140px;
+  width: 120px;
   text-align: center;
   a {
     color: #654116;
@@ -428,7 +428,7 @@ function PaymentModal({ setShowPaymentModal, bearMoney, setBearMoney, userId }: 
   return (
     <Modal handleClose={handleClose}>
       <Form onSubmit={handleSubmit}>
-        <FormTitle>儲值熊幣(1:1台幣)</FormTitle>
+        <FormTitle>儲值熊幣(1:1 NTD)</FormTitle>
         {paymentForm.map((item) => {
           if (item.type === "number") {
             return (
@@ -506,7 +506,10 @@ function Header() {
           <Link href="/videoCourses">影音課程</Link>
         </HeaderLink>
         <HeaderLink>
-          <Link href="/findTeachers">我想找老師</Link>
+          <Link href="/findTeachers">預約老師</Link>
+        </HeaderLink>
+        <HeaderLink>
+          <Link href="/forum">討論園地</Link>
         </HeaderLink>
         <HeaderLink>
           <MycoursesLink
