@@ -64,7 +64,7 @@ const MoneyDisplay = styled.div`
   display: flex;
   align-items: center;
   padding-left: 10px;
-  margin-right: 100px;
+  margin-right: 50px;
   justify-content: space-between;
   align-items: center;
   background-color: #fff;
