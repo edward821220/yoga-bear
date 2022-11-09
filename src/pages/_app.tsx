@@ -2,6 +2,8 @@ import Head from "next/head";
 import type { AppProps } from "next/app";
 import { createGlobalStyle } from "styled-components";
 import { Reset } from "styled-reset";
+import React from "react";
+import { RecoilRoot } from "recoil";
 import Header from "../components/header";
 import Footer from "../components/footer";
 import { AuthContextProvider } from "../contexts/authContext";
@@ -16,7 +18,7 @@ const GlobalStyle = createGlobalStyle`
 }
 body {
   box-sizing: border-box;
-  font-family: "Poppins", Roboto, "Helvetica Neue", Arial, sans-serif;
+  font-family: "Noto Sans TC", -apple-system, BlinkMacSystemFont, "Segoe UI", "Microsoft JhengHei", Roboto, "Helvetica Neue", Arial, sans-serif;
 }
 img {
   display: block;
@@ -38,9 +40,11 @@ export default function App({ Component, pageProps }: AppProps) {
       <Reset />
       <GlobalStyle />
       <AuthContextProvider>
-        <Header />
-        <Component {...pageProps} />
-        <Footer />
+        <RecoilRoot>
+          <Header />
+          <Component {...pageProps} />
+          <Footer />
+        </RecoilRoot>
       </AuthContextProvider>
     </>
   );

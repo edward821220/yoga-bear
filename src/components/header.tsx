@@ -1,34 +1,34 @@
-import React, { useState, useContext, Dispatch, SetStateAction } from "react";
+import React, { useState, useContext, useEffect, Dispatch, SetStateAction } from "react";
 import Link from "next/link";
 import Image from "next/image";
 import styled from "styled-components";
 import { useRouter } from "next/router";
+import { useRecoilState, SetterOrUpdater } from "recoil";
+import { getDoc, doc, updateDoc } from "firebase/firestore";
 import BearLogo from "../../public/bear-logo2.png";
 import CartLogo from "../../public/cart.png";
 import MemberLogo from "../../public/member.png";
 import Modal from "./modal";
 import { AuthContext } from "../contexts/authContext";
-
-interface Props {
-  setShowModal: Dispatch<SetStateAction<boolean>>;
-  isLogin: boolean;
-  signup: (emil: string, password: string, identity: string, username: string) => void;
-  login(email: string, password: string): void;
-  logout(): void;
-}
+import { orderQtyState, bearMoneyState } from "../../lib/recoil";
+import { db } from "../../lib/firebase";
+import MoneyIcon from "../../public/newMoney.png";
+import PlusMoneyIcon from "../../public/add.png";
 
 const Wrapper = styled.header`
   display: flex;
   align-items: center;
-  justify-content: space-around;
-  border-bottom: 2px solid gray;
+  justify-content: space-between;
   margin-bottom: 36px;
   position: sticky;
   top: 0;
+  background-color: #ece5da;
+  z-index: 99;
+  flex-wrap: wrap;
 `;
 const LogoWrapper = styled.div`
-  margin-right: 100px;
-  width: 360px;
+  margin-right: 120px;
+  flex-basis: 200px;
 `;
 const HeaderLinks = styled.ul`
   display: flex;
@@ -37,14 +37,19 @@ const HeaderLinks = styled.ul`
 `;
 const HeaderLink = styled.li`
   margin-right: 66px;
-  font-size: 24px;
+  font-size: 18px;
   line-height: 40px;
+  border: 2px solid #654116;
+  border-radius: 5px;
+  background-color: #fff;
+  width: 140px;
+  text-align: center;
   a {
-    color: #01815b;
+    color: #654116;
   }
 `;
 const MycoursesLink = styled.span`
-  color: #01815b;
+  color: #654116;
   cursor: pointer;
 `;
 
@@ -52,37 +57,83 @@ const Member = styled.ul`
   display: flex;
   align-items: center;
 `;
+
+const MoneyDisplay = styled.div`
+  width: 140px;
+  height: 44px;
+  display: flex;
+  align-items: center;
+  padding-left: 10px;
+  margin-right: 100px;
+  justify-content: space-between;
+  align-items: center;
+  background-color: #fff;
+  border-radius: 5px;
+`;
+
+const MoneyIconWrapper = styled.div`
+  position: relative;
+  width: 30px;
+  height: 30px;
+  margin-right: 5px;
+`;
+const MoneyQty = styled.p`
+  font-size: 18px;
+`;
+const MoneyPlusWrapper = styled.div`
+  position: relative;
+  width: 30px;
+  height: 30px;
+  cursor: pointer;
+`;
+
 const CartIconWrapper = styled.li`
   margin-right: 36px;
-  width: 66px;
+  width: 40px;
   position: relative;
   cursor: pointer;
   &:after {
     content: "";
-    width: 60px;
-    height: 60px;
+    width: 50px;
+    height: 50px;
     position: absolute;
     bottom: 0;
-    transform: translateY(-5px) translateX(1px);
-    background-color: yellow;
+    transform: translateY(1px) translateX(-5px);
+    background-color: #f4d5b0;
+    border: 2px solid #654116;
     border-radius: 50%;
     z-index: -1;
   }
 `;
+const OrderQty = styled.div`
+  position: absolute;
+  width: 20px;
+  height: 20px;
+  padding-top: 3px;
+  text-align: center;
+  font-size: 13px;
+  bottom: 0;
+  right: 0;
+  border-radius: 50%;
+  background-color: #fff;
+  color: #654116;
+`;
+
 const MemberIconWrapper = styled.li`
   margin-right: 36px;
-  width: 50px;
+  width: 40px;
   position: relative;
   cursor: pointer;
   &:after {
     content: "";
-    width: 60px;
-    height: 60px;
+    width: 50px;
+    height: 50px;
     bottom: 0;
     transform: translateY(5px) translateX(-5px);
     position: absolute;
-    background-color: yellow;
+    background-color: #f4d5b0;
     border-radius: 50%;
+    border: 2px solid #654116;
     z-index: -1;
   }
 `;
@@ -104,6 +155,8 @@ const LabelText = styled.p`
 const FormInput = styled.input`
   margin-bottom: 10px;
   height: 30px;
+  width: 200px;
+  padding-left: 5px;
 `;
 const RadioLabel = styled.label`
   display: flex;
@@ -132,6 +185,7 @@ const loginForm = [
     placeholder: "請輸入密碼",
   },
 ];
+
 const signupForm = [
   { key: "username", title: "用戶名", type: "text", placeholder: "請輸入您的用戶名" },
   { key: "email", title: "Email", type: "email", placeholder: "請輸入電子信箱" },
@@ -148,9 +202,38 @@ const signupForm = [
     placeholder: "請再次輸入密碼",
   },
 ];
-const isValidEmail = /^[\w-.]+@([\w-]+\.)+[\w-]{2,4}$/g;
 
-function MemberModal({ setShowModal, isLogin, login, logout, signup }: Props) {
+const paymentForm = [
+  {
+    key: "money",
+    title: "儲值金額",
+    type: "number",
+    placeholder: "請輸入需要儲值多少熊幣",
+    min: 100,
+    max: 10000,
+    step: 50,
+  },
+  { key: "cardNumber", title: "信用卡號", type: "text", placeholder: "OOOO-OOOO-OOOO-OOOO" },
+  { key: "expiration", title: "到期日", type: "text", placeholder: "OO/OO" },
+  { key: "cvv", title: "安全碼", type: "text", placeholder: "OOO" },
+];
+
+const isValidEmail = /^[\w-.]+@([\w-]+\.)+[\w-]{2,4}$/g;
+const isValidCardNumber = /^\d{4}-\d{4}-\d{4}-\d{4}$/;
+const isValidExpiration = /^\d{2}\/\d{2}$/;
+const isValidCCV = /\d{3}$/;
+
+interface MemberModalProps {
+  setOrderQty: SetterOrUpdater<number>;
+  setShowMemberModal: Dispatch<SetStateAction<boolean>>;
+  isLogin: boolean;
+  signup: (emil: string, password: string, identity: string, username: string) => void;
+  login(email: string, password: string): void;
+  logout(): void;
+}
+
+function MemberModal({ setOrderQty, setShowMemberModal, isLogin, login, logout, signup }: MemberModalProps) {
+  const router = useRouter();
   const [errorMessage, setErrorMessage] = useState("");
   const [loginData, setloginData] = useState<Record<string, string>>({
     email: "",
@@ -167,7 +250,7 @@ function MemberModal({ setShowModal, isLogin, login, logout, signup }: Props) {
   const [needSignup, setNeedSignup] = useState(false);
 
   const handleClose = () => {
-    setShowModal(false);
+    setShowMemberModal(false);
     setErrorMessage("");
   };
   const handleLogin = async (e: React.FormEvent<HTMLFormElement>) => {
@@ -289,8 +372,10 @@ function MemberModal({ setShowModal, isLogin, login, logout, signup }: Props) {
             type="submit"
             onClick={() => {
               logout();
+              setOrderQty(0);
               setNeedSignup(false);
               handleClose();
+              router.push("/");
             }}
           >
             登出
@@ -301,10 +386,113 @@ function MemberModal({ setShowModal, isLogin, login, logout, signup }: Props) {
   );
 }
 
+interface PaymentModalProps {
+  setShowPaymentModal: Dispatch<SetStateAction<boolean>>;
+  bearMoney: number;
+  setBearMoney: SetterOrUpdater<number>;
+  userId: string;
+}
+
+function PaymentModal({ setShowPaymentModal, bearMoney, setBearMoney, userId }: PaymentModalProps) {
+  const [paymentData, setPaymentData] = useState<Record<string, string>>({
+    money: "",
+    cardNumber: "",
+    expiration: "",
+    cvv: "",
+  });
+  const handleClose = () => {
+    setShowPaymentModal(false);
+  };
+  const handleSubmit = (e: React.FormEvent<HTMLFormElement>) => {
+    e.preventDefault();
+    if (!paymentData.cardNumber.match(isValidCardNumber)) {
+      alert("請輸入正確的信用卡格式");
+      return;
+    }
+    if (!paymentData.expiration.match(isValidExpiration)) {
+      alert("請輸入正確的信用卡期限");
+      return;
+    }
+    if (!paymentData.cvv.match(isValidCCV)) {
+      alert("請輸入正確的信用卡安全碼");
+      return;
+    }
+    setBearMoney((prev) => prev + Number(paymentData.money));
+    alert("儲值成功！可以上課囉！");
+    setShowPaymentModal(false);
+    const docRef = doc(db, "users", userId);
+    updateDoc(docRef, {
+      bearMoney: bearMoney + Number(paymentData.money),
+    });
+  };
+  return (
+    <Modal handleClose={handleClose}>
+      <Form onSubmit={handleSubmit}>
+        <FormTitle>儲值熊幣(1:1台幣)</FormTitle>
+        {paymentForm.map((item) => {
+          if (item.type === "number") {
+            return (
+              <Label key={item.key}>
+                <LabelText>{item.title}</LabelText>
+                <FormInput
+                  placeholder={item.placeholder}
+                  type={item.type}
+                  value={paymentData[item.key]}
+                  min={item.min}
+                  max={item.max}
+                  step={item.step}
+                  required
+                  onChange={(e: React.ChangeEvent<HTMLInputElement>) => {
+                    setPaymentData({ ...paymentData, [item.key]: e.target.value });
+                  }}
+                />
+              </Label>
+            );
+          }
+          return (
+            <Label key={item.key}>
+              <LabelText>{item.title}</LabelText>
+              <FormInput
+                placeholder={item.placeholder}
+                type={item.type}
+                value={paymentData[item.key]}
+                required
+                onChange={(e: React.ChangeEvent<HTMLInputElement>) => {
+                  setPaymentData({ ...paymentData, [item.key]: e.target.value });
+                }}
+              />
+            </Label>
+          );
+        })}
+        <Button type="submit">確定加值</Button>
+      </Form>
+    </Modal>
+  );
+}
+
 function Header() {
-  const [showModal, setShowModal] = useState(false);
-  const { signup, isLogin, login, logout } = useContext(AuthContext);
+  const [showMemberModal, setShowMemberModal] = useState(false);
+  const [showPaymentModal, setShowPaymentModal] = useState(false);
+  const [orderQty, setOrderQty] = useRecoilState(orderQtyState);
+  const [bearMoney, setBearMoney] = useRecoilState(bearMoneyState);
+  const { signup, isLogin, login, logout, userData } = useContext(AuthContext);
   const router = useRouter();
+
+  useEffect(() => {
+    const getCartItems = async () => {
+      if (!userData.uid) return;
+      const docRef = doc(db, "users", userData.uid);
+      const docSnap = await getDoc(docRef);
+      if (docSnap.exists()) {
+        // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
+        const qty: number = docSnap.data()?.cartItems?.length;
+        const money: number = docSnap.data()?.bearMoney;
+        setOrderQty(qty);
+        setBearMoney(money || 0);
+      }
+    };
+    getCartItems();
+  }, [userData.uid, setOrderQty, setBearMoney]);
 
   return (
     <Wrapper>
@@ -318,39 +506,84 @@ function Header() {
           <Link href="/videoCourses">影音課程</Link>
         </HeaderLink>
         <HeaderLink>
-          <Link href="/findTeachers">一對一找老師</Link>
+          <Link href="/findTeachers">我想找老師</Link>
         </HeaderLink>
         <HeaderLink>
           <MycoursesLink
             onClick={() => {
               if (!isLogin) {
                 alert("您還沒登入唷！");
-                setShowModal(true);
+                setShowMemberModal(true);
                 return;
               }
               router.push("/myCourses/videoCourses");
             }}
           >
-            我的學習
+            我的課程
           </MycoursesLink>
         </HeaderLink>
       </HeaderLinks>
       <Member>
+        <MoneyDisplay>
+          <MoneyIconWrapper>
+            <Image src={MoneyIcon} alt="moneyIcon" fill sizes="contain" />
+          </MoneyIconWrapper>
+          <MoneyQty>{bearMoney}</MoneyQty>
+          <MoneyPlusWrapper
+            onClick={() => {
+              if (!isLogin) {
+                setShowPaymentModal(false);
+                alert("您還沒登入唷！");
+                setShowMemberModal(true);
+                return;
+              }
+              setShowPaymentModal(true);
+            }}
+          >
+            <Image src={PlusMoneyIcon} alt="plus" fill sizes="contain" />
+          </MoneyPlusWrapper>
+        </MoneyDisplay>
+
         <CartIconWrapper>
-          <Link href="/cart">
-            <Image src={CartLogo} alt="cart" />
-          </Link>
+          <Image
+            src={CartLogo}
+            alt="cart"
+            onClick={() => {
+              if (!isLogin) {
+                alert("您還沒登入唷！");
+                setShowMemberModal(true);
+                return;
+              }
+              router.push("/cart");
+            }}
+          />
+          {orderQty > 0 && <OrderQty>{orderQty}</OrderQty>}
         </CartIconWrapper>
         <MemberIconWrapper
           onClick={() => {
-            setShowModal(true);
+            setShowMemberModal(true);
           }}
         >
           <Image src={MemberLogo} alt="member" />
         </MemberIconWrapper>
       </Member>
-      {showModal && (
-        <MemberModal setShowModal={setShowModal} isLogin={isLogin} login={login} logout={logout} signup={signup} />
+      {showMemberModal && (
+        <MemberModal
+          setOrderQty={setOrderQty}
+          setShowMemberModal={setShowMemberModal}
+          isLogin={isLogin}
+          login={login}
+          logout={logout}
+          signup={signup}
+        />
+      )}
+      {showPaymentModal && (
+        <PaymentModal
+          setShowPaymentModal={setShowPaymentModal}
+          bearMoney={bearMoney}
+          setBearMoney={setBearMoney}
+          userId={userData.uid}
+        />
       )}
     </Wrapper>
   );

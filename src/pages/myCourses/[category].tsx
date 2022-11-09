@@ -5,7 +5,7 @@ import Link from "next/link";
 import Image from "next/image";
 import { useRouter } from "next/router";
 import { ref, getDownloadURL, uploadBytesResumable } from "firebase/storage";
-import { collection, doc, setDoc, getDocs, query, where } from "firebase/firestore";
+import { collection, doc, setDoc, getDocs, getDoc, query, where } from "firebase/firestore";
 import { AuthContext } from "../../contexts/authContext";
 import { storage, db } from "../../../lib/firebase";
 import Modal from "../../components/modal";
@@ -34,6 +34,12 @@ const SideBarTitle = styled.h3`
 const SideBarLink = styled.li`
   font-size: 16px;
   margin-bottom: 20px;
+  a {
+    transition: 0.2s color linear;
+    &:hover {
+      color: red;
+    }
+  }
 `;
 const Main = styled.div`
   width: 80%;
@@ -87,6 +93,7 @@ const MyCoursesList = styled.ul`
 const MyCourse = styled.li`
   margin-right: 20px;
   flex-basis: 48%;
+  margin-bottom: 20px;
 `;
 const CourseCover = styled.div`
   position: relative;
@@ -101,42 +108,58 @@ const CalendarWrapper = styled.div`
   width: 90%;
   margin: 0 auto;
 `;
-function VideoCourses() {
+function VideoCourses({ uid }: { uid: string }) {
   const [courses, setCourses] = useState<{ name: string; cover: string; id: string }[]>();
+
   useEffect(() => {
     const getCourses = async () => {
-      const courseRef = collection(db, "video_courses");
-      const courseQuery = query(courseRef, where("name", "!=", null));
-      const querySnapshot = await getDocs(courseQuery);
+      if (!uid) return;
+      const docRef = doc(db, "users", uid);
+      const docSnap = await getDoc(docRef);
+      let myVideoCourses: string[] = [];
+      if (docSnap.exists() && docSnap) {
+        myVideoCourses = await docSnap.data().boughtCourses;
+      }
+      if (!myVideoCourses) {
+        setCourses([]);
+        return;
+      }
       const results: { name: string; cover: string; id: string }[] = [];
-      querySnapshot.forEach((data) => {
-        results.push({
-          id: data.data().id,
-          name: data.data().name,
-          cover: data.data().cover,
-        });
-      });
+      await Promise.all(
+        myVideoCourses.map(async (id: string) => {
+          const videoDocRef = doc(db, "video_courses", id);
+          const datas = await getDoc(videoDocRef);
+          if (datas.exists() && datas) {
+            results.push({
+              id: datas.data().id,
+              name: datas.data().name,
+              cover: datas.data().cover,
+            });
+          }
+        })
+      );
       setCourses(results);
     };
     getCourses();
-  }, []);
+  }, [uid]);
+
+  if (courses?.length === 0) {
+    return <p>目前沒有課程唷！</p>;
+  }
 
   return (
-    <>
-      <MainTitle>我的影音課程</MainTitle>
-      <MyCoursesList>
-        {courses?.map((course) => (
-          <MyCourse key={course.name}>
-            <CourseCover>
-              <Link href={`/myCourses/classRoom/videoRoom/${course.id}`}>
-                <Image src={course.cover} alt="cover" fill sizes="cover" />
-              </Link>
-            </CourseCover>
-            <CourseTitle>{course.name}</CourseTitle>
-          </MyCourse>
-        ))}
-      </MyCoursesList>
-    </>
+    <MyCoursesList>
+      {courses?.map((course) => (
+        <MyCourse key={course.name}>
+          <CourseCover>
+            <Link href={`/myCourses/classRoom/videoRoom/${course.id}`}>
+              <Image src={course.cover} alt="cover" fill sizes="cover" />
+            </Link>
+          </CourseCover>
+          <CourseTitle>{course.name}</CourseTitle>
+        </MyCourse>
+      ))}
+    </MyCoursesList>
   );
 }
 function LaunchedVideoCourses() {
@@ -174,7 +197,7 @@ function UploadProgressModal({ progressBar }: { progressBar: { file: string; pro
     </Modal>
   );
 }
-function LaunchVideoCourse({ userData }: { userData: { uid: string } }) {
+function LaunchVideoCourse({ uid }: { uid: string }) {
   const router = useRouter();
   const [courseName, setCourseName] = useState("");
   const [price, setPrice] = useState("");
@@ -183,15 +206,16 @@ function LaunchVideoCourse({ userData }: { userData: { uid: string } }) {
   const [chapters, setChapters] = useState<
     { id: number; title: string; units: { id: number; title: string; video: string }[] }[]
   >([]);
-  const [showModal, setShowModal] = useState(false);
+  const [showMemberModal, setShowMemberModal] = useState(false);
   const [progressBar, setProgressBar] = useState<{ file: string; progress: number }>({ file: "", progress: 0 });
 
   const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
-    setShowModal(true);
+    setShowMemberModal(true);
 
     let newChapters = [...chapters];
     let imageUrl = "";
+    let introductionVideoUrl = "";
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     async function uploadTaskPromise(input: any, index: number) {
       return new Promise((resolve, reject) => {
@@ -215,6 +239,11 @@ function LaunchVideoCourse({ userData }: { userData: { uid: string } }) {
             const downloadUrl = await getDownloadURL(uploadTask.snapshot.ref);
             if (index === 0) {
               imageUrl = downloadUrl;
+              resolve(downloadUrl);
+              return;
+            }
+            if (index === 1) {
+              introductionVideoUrl = downloadUrl;
               resolve(downloadUrl);
               return;
             }
@@ -243,11 +272,12 @@ function LaunchVideoCourse({ userData }: { userData: { uid: string } }) {
       cover: imageUrl,
       price,
       introduction,
-      teacher_id: userData.uid,
+      introductionVideo: introductionVideoUrl,
+      teacher_id: uid,
       chapters: newChapters,
       reviews: [],
     });
-    setShowModal(false);
+    setShowMemberModal(false);
     alert("課程上架完成！");
     router.push("/myCourses/videoCourses");
   };
@@ -299,6 +329,10 @@ function LaunchVideoCourse({ userData }: { userData: { uid: string } }) {
             }}
           />
           {coverPreview && <Image src={coverPreview} alt="cover" width={500} height={300} />}
+        </LauchFormLabel>
+        <LauchFormLabel>
+          <LauchFormLabelText>上傳課程介紹影片</LauchFormLabelText>
+          <LauchFormLabelInput type="file" accept="video/mp4,video/x-m4v,video/*" required />
         </LauchFormLabel>
         <Button
           type="button"
@@ -400,7 +434,7 @@ function LaunchVideoCourse({ userData }: { userData: { uid: string } }) {
         ))}
         <Button type="submit">確認送出</Button>
       </LauchForm>
-      {showModal && <UploadProgressModal progressBar={progressBar} />}
+      {showMemberModal && <UploadProgressModal progressBar={progressBar} />}
     </>
   );
 }
@@ -421,26 +455,28 @@ function MyCourses() {
             <Link href="/myCourses/studentCalendar">我的課表</Link>
           </SideBarLink>
         </SideBarSection>
-        <SideBarSection>
-          <SideBarTitle>老師專區</SideBarTitle>
-          <SideBarLink>
-            <Link href="/myCourses/launchedVideoCourses">已上架影音課程</Link>
-          </SideBarLink>
-          <SideBarLink>
-            <Link href="/myCourses/launchVideoCourse">影音課程上架</Link>
-          </SideBarLink>
-          <SideBarLink>
-            <Link href="/myCourses/teacherCalendar">排課行事曆</Link>
-          </SideBarLink>
-        </SideBarSection>
+        {userData.identity === "teacher" && (
+          <SideBarSection>
+            <SideBarTitle>老師專區</SideBarTitle>
+            <SideBarLink>
+              <Link href="/myCourses/launchedVideoCourses">已上架影音課程</Link>
+            </SideBarLink>
+            <SideBarLink>
+              <Link href="/myCourses/launchVideoCourse">影音課程上架</Link>
+            </SideBarLink>
+            <SideBarLink>
+              <Link href="/myCourses/teacherCalendar">排課行事曆</Link>
+            </SideBarLink>
+          </SideBarSection>
+        )}
       </SideBar>
       <Main>
-        {router.query.category === "videoCourses" && <VideoCourses />}
-        {router.query.category === "launchVideoCourse" && <LaunchVideoCourse userData={userData} />}
+        {router.query.category === "videoCourses" && <VideoCourses uid={userData.uid} />}
+        {router.query.category === "launchVideoCourse" && <LaunchVideoCourse uid={userData.uid} />}
         {router.query.category === "launchedVideoCourses" && <LaunchedVideoCourses />}
         {router.query.category === "teacherCalendar" && (
           <CalendarWrapper>
-            <TeacherCalendar userData={userData} />
+            <TeacherCalendar uid={userData.uid} />
           </CalendarWrapper>
         )}
         {router.query.category === "studentCalendar" && (
