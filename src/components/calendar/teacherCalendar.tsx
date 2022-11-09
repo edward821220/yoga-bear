@@ -154,7 +154,7 @@ export default function TeacherCalendar({ uid }: { uid: string }) {
     if (added) {
       const newRoomRef = doc(collection(db, "rooms"));
       setData([...data, { id: newRoomRef.id, startDate: added.startDate, ...added }]);
-      setDoc(newRoomRef, { id: newRoomRef.id, startDate: added.startDate, teacherId: userData.uid, ...added });
+      setDoc(newRoomRef, { id: newRoomRef.id, startDate: added.startDate, teacherId: uid, ...added });
     }
     if (changed) {
       setData(
