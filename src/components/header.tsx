@@ -15,28 +15,20 @@ import { db } from "../../lib/firebase";
 import MoneyIcon from "../../public/newMoney.png";
 import PlusMoneyIcon from "../../public/add.png";
 
-interface Props {
-  setOrderQty: SetterOrUpdater<number>;
-  setShowMemberModal: Dispatch<SetStateAction<boolean>>;
-  isLogin: boolean;
-  signup: (emil: string, password: string, identity: string, username: string) => void;
-  login(email: string, password: string): void;
-  logout(): void;
-}
-
 const Wrapper = styled.header`
   display: flex;
   align-items: center;
-  justify-content: space-around;
+  justify-content: space-between;
   margin-bottom: 36px;
   position: sticky;
   top: 0;
   background-color: #ece5da;
   z-index: 99;
+  flex-wrap: wrap;
 `;
 const LogoWrapper = styled.div`
   margin-right: 120px;
-  width: 200px;
+  flex-basis: 200px;
 `;
 const HeaderLinks = styled.ul`
   display: flex;
@@ -67,7 +59,7 @@ const Member = styled.ul`
 `;
 
 const MoneyDisplay = styled.div`
-  width: 160px;
+  width: 140px;
   height: 44px;
   display: flex;
   align-items: center;
@@ -86,7 +78,7 @@ const MoneyIconWrapper = styled.div`
   margin-right: 5px;
 `;
 const MoneyQty = styled.p`
-  font-size: 20px;
+  font-size: 18px;
 `;
 const MoneyPlusWrapper = styled.div`
   position: relative;
@@ -163,6 +155,8 @@ const LabelText = styled.p`
 const FormInput = styled.input`
   margin-bottom: 10px;
   height: 30px;
+  width: 200px;
+  padding-left: 5px;
 `;
 const RadioLabel = styled.label`
   display: flex;
@@ -191,6 +185,7 @@ const loginForm = [
     placeholder: "請輸入密碼",
   },
 ];
+
 const signupForm = [
   { key: "username", title: "用戶名", type: "text", placeholder: "請輸入您的用戶名" },
   { key: "email", title: "Email", type: "email", placeholder: "請輸入電子信箱" },
@@ -207,9 +202,37 @@ const signupForm = [
     placeholder: "請再次輸入密碼",
   },
 ];
-const isValidEmail = /^[\w-.]+@([\w-]+\.)+[\w-]{2,4}$/g;
 
-function MemberModal({ setOrderQty, setShowMemberModal, isLogin, login, logout, signup }: Props) {
+const paymentForm = [
+  {
+    key: "money",
+    title: "儲值金額",
+    type: "number",
+    placeholder: "請輸入需要儲值多少熊幣",
+    min: 100,
+    max: 10000,
+    step: 50,
+  },
+  { key: "cardNumber", title: "信用卡號", type: "text", placeholder: "OOOO-OOOO-OOOO-OOOO" },
+  { key: "expiration", title: "到期日", type: "text", placeholder: "OO/OO" },
+  { key: "cvv", title: "安全碼", type: "text", placeholder: "OOO" },
+];
+
+const isValidEmail = /^[\w-.]+@([\w-]+\.)+[\w-]{2,4}$/g;
+const isValidCardNumber = /^\d{4}-\d{4}-\d{4}-\d{4}$/;
+const isValidExpiration = /^\d{2}\/\d{2}$/;
+const isValidCCV = /\d{3}$/;
+
+interface MemberModalProps {
+  setOrderQty: SetterOrUpdater<number>;
+  setShowMemberModal: Dispatch<SetStateAction<boolean>>;
+  isLogin: boolean;
+  signup: (emil: string, password: string, identity: string, username: string) => void;
+  login(email: string, password: string): void;
+  logout(): void;
+}
+
+function MemberModal({ setOrderQty, setShowMemberModal, isLogin, login, logout, signup }: MemberModalProps) {
   const router = useRouter();
   const [errorMessage, setErrorMessage] = useState("");
   const [loginData, setloginData] = useState<Record<string, string>>({
@@ -363,6 +386,84 @@ function MemberModal({ setOrderQty, setShowMemberModal, isLogin, login, logout, 
   );
 }
 
+interface PaymentModalProps {
+  setShowPaymentModal: Dispatch<SetStateAction<boolean>>;
+  setBearMoney: SetterOrUpdater<number>;
+}
+
+function PaymentModal({ setShowPaymentModal, setBearMoney }: PaymentModalProps) {
+  const [paymentData, setPaymentData] = useState<Record<string, string>>({
+    money: "",
+    cardNumber: "",
+    expiration: "",
+    cvv: "",
+  });
+  const handleClose = () => {
+    setShowPaymentModal(false);
+  };
+  const handleSubmit = (e: React.FormEvent<HTMLFormElement>) => {
+    e.preventDefault();
+    if (!paymentData.cardNumber.match(isValidCardNumber)) {
+      alert("請輸入正確的信用卡格式");
+      return;
+    }
+    if (!paymentData.expiration.match(isValidExpiration)) {
+      alert("請輸入正確的信用卡期限");
+      return;
+    }
+    if (!paymentData.cvv.match(isValidCCV)) {
+      alert("請輸入正確的信用卡安全碼");
+      return;
+    }
+    setBearMoney(Number(paymentData.money));
+    alert("儲值成功！可以上課囉！");
+    setShowPaymentModal(false);
+  };
+  return (
+    <Modal handleClose={handleClose}>
+      <Form onSubmit={handleSubmit}>
+        <FormTitle>儲值熊幣(1:1台幣)</FormTitle>
+        {paymentForm.map((item) => {
+          if (item.type === "number") {
+            return (
+              <Label key={item.key}>
+                <LabelText>{item.title}</LabelText>
+                <FormInput
+                  placeholder={item.placeholder}
+                  type={item.type}
+                  value={paymentData[item.key]}
+                  min={item.min}
+                  max={item.max}
+                  step={item.step}
+                  required
+                  onChange={(e: React.ChangeEvent<HTMLInputElement>) => {
+                    setPaymentData({ ...paymentData, [item.key]: e.target.value });
+                  }}
+                />
+              </Label>
+            );
+          }
+          return (
+            <Label key={item.key}>
+              <LabelText>{item.title}</LabelText>
+              <FormInput
+                placeholder={item.placeholder}
+                type={item.type}
+                value={paymentData[item.key]}
+                required
+                onChange={(e: React.ChangeEvent<HTMLInputElement>) => {
+                  setPaymentData({ ...paymentData, [item.key]: e.target.value });
+                }}
+              />
+            </Label>
+          );
+        })}
+        <Button type="submit">確定加值</Button>
+      </Form>
+    </Modal>
+  );
+}
+
 function Header() {
   const [showMemberModal, setShowMemberModal] = useState(false);
   const [showPaymentModal, setShowPaymentModal] = useState(false);
@@ -410,18 +511,28 @@ function Header() {
               router.push("/myCourses/videoCourses");
             }}
           >
-            我的學習
+            我的課程
           </MycoursesLink>
         </HeaderLink>
       </HeaderLinks>
       <Member>
         <MoneyDisplay>
           <MoneyIconWrapper>
-            <Image src={MoneyIcon} alt="moneyIcon" fill />
+            <Image src={MoneyIcon} alt="moneyIcon" fill sizes="contain" />
           </MoneyIconWrapper>
           <MoneyQty>{bearMoney}</MoneyQty>
-          <MoneyPlusWrapper>
-            <Image src={PlusMoneyIcon} alt="plus" fill />
+          <MoneyPlusWrapper
+            onClick={() => {
+              if (!isLogin) {
+                setShowPaymentModal(false);
+                alert("您還沒登入唷！");
+                setShowMemberModal(true);
+                return;
+              }
+              setShowPaymentModal(true);
+            }}
+          >
+            <Image src={PlusMoneyIcon} alt="plus" fill sizes="contain" />
           </MoneyPlusWrapper>
         </MoneyDisplay>
 
@@ -458,16 +569,7 @@ function Header() {
           signup={signup}
         />
       )}
-      {showPaymentModal && (
-        <PaymentModal
-          setOrderQty={setOrderQty}
-          setShowMemberModal={setShowMemberModal}
-          isLogin={isLogin}
-          login={login}
-          logout={logout}
-          signup={signup}
-        />
-      )}
+      {showPaymentModal && <PaymentModal setShowPaymentModal={setShowPaymentModal} setBearMoney={setBearMoney} />}
     </Wrapper>
   );
 }
