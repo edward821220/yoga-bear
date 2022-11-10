@@ -93,13 +93,13 @@ function Forum() {
     <Wrapper>
       <Main>
         <BannerWrapper>
-          <Image src={BannerPic} alt="banner" fill />
+          <Image src={BannerPic} alt="banner" fill sizes="contain" />
         </BannerWrapper>
         <Articles>
           <Article>
             <ArticleUser>
               <UserAvatarWrapper>
-                <Image src={Avatar} alt="avatar" fill />
+                <Image src={Avatar} alt="avatar" fill sizes="contain" />
               </UserAvatarWrapper>
               <UserName>Tom</UserName>
             </ArticleUser>
@@ -107,11 +107,11 @@ function Forum() {
             <ArticlePreview>文章內容預覽......</ArticlePreview>
             <ArticleActivity>
               <IconWrapper>
-                <Image src={LikeIcon} alt="like" fill />
+                <Image src={LikeIcon} alt="like" fill sizes="contain" />
               </IconWrapper>
               <ActivityQty>0</ActivityQty>
               <IconWrapper>
-                <Image src={MessageIcon} alt="like" fill />
+                <Image src={MessageIcon} alt="like" fill sizes="contain" />
               </IconWrapper>
               <ActivityQty>0</ActivityQty>
             </ArticleActivity>
@@ -119,19 +119,19 @@ function Forum() {
           <Article>
             <ArticleUser>
               <UserAvatarWrapper>
-                <Image src={Avatar} alt="avatar" fill />
+                <Image src={Avatar} alt="avatar" fill sizes="contain" />
               </UserAvatarWrapper>
               <UserName>Tom</UserName>
             </ArticleUser>
-            <ArticleTitle>文章標題</ArticleTitle>
-            <ArticlePreview>文章內容預覽......</ArticlePreview>
+            <ArticleTitle>問題標題</ArticleTitle>
+            <ArticlePreview>問題內容預覽......</ArticlePreview>
             <ArticleActivity>
               <IconWrapper>
-                <Image src={LikeIcon} alt="like" fill />
+                <Image src={LikeIcon} alt="like" fill sizes="contain" />
               </IconWrapper>
               <ActivityQty>0</ActivityQty>
               <IconWrapper>
-                <Image src={MessageIcon} alt="like" fill />
+                <Image src={MessageIcon} alt="like" fill sizes="contain" />
               </IconWrapper>
               <ActivityQty>0</ActivityQty>
             </ArticleActivity>
@@ -139,10 +139,9 @@ function Forum() {
         </Articles>
       </Main>
       <Aside>
-        <AsideTitle>討論園地</AsideTitle>
+        <AsideTitle>問答園地</AsideTitle>
         <AsideContent>
-          給熱愛瑜伽、對瑜伽有興趣的同好們，不論瑜伽上的問題或是對瑜伽的想法，都非常歡迎大家發文哦～
-          希望大家可以有個舒適的空間！
+          給熱愛瑜伽、對瑜伽有興趣的同好們，有瑜伽相關的任何問題都非常歡迎大家發問唷～ 希望大家可以有個舒適的空間！
           <br />
           記得遵守板規規範， 祝大家在瑜伽的路上開開心心，體驗瑜伽帶來的美好～
         </AsideContent>
@@ -151,7 +150,7 @@ function Forum() {
             router.push("/forum/post");
           }}
         >
-          發表文章
+          我想問問題
         </Button>
       </Aside>
     </Wrapper>

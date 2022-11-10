@@ -509,7 +509,7 @@ function Header() {
           <Link href="/findTeachers">預約老師</Link>
         </HeaderLink>
         <HeaderLink>
-          <Link href="/forum">討論園地</Link>
+          <Link href="/forum">問答園地</Link>
         </HeaderLink>
         <HeaderLink>
           <MycoursesLink
