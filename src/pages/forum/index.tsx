@@ -1,10 +1,11 @@
 import Image from "next/image";
 import React from "react";
 import styled from "styled-components";
-import BannerPic from "../../public/yoga-banner.jpg";
-import LikeIcon from "../../public/like.png";
-import MessageIcon from "../../public/message.png";
-import Avatar from "../../public/member.png";
+import { useRouter } from "next/router";
+import BannerPic from "../../../public/yoga-banner.jpg";
+import LikeIcon from "../../../public/like.png";
+import MessageIcon from "../../../public/message.png";
+import Avatar from "../../../public/member.png";
 
 const Wrapper = styled.div`
   max-width: 1096px;
@@ -42,6 +43,7 @@ const Button = styled.button`
   background-color: transparent;
   padding: 10px;
   margin: 0 auto;
+  cursor: pointer;
 `;
 const Articles = styled.ul``;
 
@@ -49,6 +51,7 @@ const Article = styled.li`
   border-bottom: 1px solid gray;
   padding-bottom: 20px;
   margin-bottom: 20px;
+  cursor: pointer;
 `;
 const ArticleUser = styled.div`
   display: flex;
@@ -85,6 +88,7 @@ const ActivityQty = styled.span`
 `;
 
 function Forum() {
+  const router = useRouter();
   return (
     <Wrapper>
       <Main>
@@ -142,7 +146,13 @@ function Forum() {
           <br />
           記得遵守板規規範， 祝大家在瑜伽的路上開開心心，體驗瑜伽帶來的美好～
         </AsideContent>
-        <Button>發表文章</Button>
+        <Button
+          onClick={() => {
+            router.push("/forum/post");
+          }}
+        >
+          發表文章
+        </Button>
       </Aside>
     </Wrapper>
   );
