@@ -1,9 +1,13 @@
-import React, { useState } from "react";
+import React, { useState, useContext } from "react";
 import dynamic from "next/dynamic";
 import styled from "styled-components";
 import "react-quill/dist/quill.snow.css";
 import Image from "next/image";
+import { collection, doc, setDoc } from "firebase/firestore";
+import { useRouter } from "next/router";
 import Avatar from "../../../public/member.png";
+import { db } from "../../../lib/firebase";
+import { AuthContext } from "../../contexts/authContext";
 
 const Editor = dynamic(import("react-quill"), { ssr: false });
 
@@ -40,9 +44,11 @@ const Title = styled.input`
   padding-left: 10px;
 `;
 const Button = styled.button`
+  display: block;
   background-color: transparent;
   padding: 10px;
   font-size: 18px;
+  margin: 0 auto;
 `;
 
 const modules = {
@@ -77,13 +83,29 @@ const formats = [
 function Post() {
   const [title, setTitle] = useState("");
   const [content, setContent] = useState("");
+  const { userData } = useContext(AuthContext);
+  const router = useRouter();
+
+  const handlePost = async () => {
+    const newPostRef = doc(collection(db, "posts"));
+    await setDoc(newPostRef, {
+      id: newPostRef.id,
+      author: userData.uid,
+      title,
+      content,
+      time: Date.now(),
+    });
+    alert("您已成功提問！");
+    router.push("/forum");
+  };
+
   return (
     <Wrapper>
       <ArticleUser>
         <UserAvatarWrapper>
           <Image src={Avatar} alt="avatar" fill sizes="contain" />
         </UserAvatarWrapper>
-        <UserName>Tom</UserName>
+        <UserName>{userData.username}</UserName>
       </ArticleUser>
       <Form>
         <Label>
@@ -94,7 +116,7 @@ function Post() {
           />
         </Label>
         <Editor
-          style={{ height: "360px", marginBottom: "80px" }}
+          style={{ height: "320px", marginBottom: "80px" }}
           theme="snow"
           value={content}
           onChange={setContent}
@@ -102,7 +124,9 @@ function Post() {
           modules={modules}
           formats={formats}
         />
-        <Button>發文</Button>
+        <Button onClick={handlePost} type="button">
+          發問
+        </Button>
       </Form>
     </Wrapper>
   );

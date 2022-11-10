@@ -1,11 +1,13 @@
 import Image from "next/image";
-import React from "react";
+import React, { useState, useEffect } from "react";
 import styled from "styled-components";
 import { useRouter } from "next/router";
+import { collection, doc, getDoc, getDocs } from "firebase/firestore";
 import BannerPic from "../../../public/yoga-banner.jpg";
 import LikeIcon from "../../../public/like.png";
 import MessageIcon from "../../../public/message.png";
 import Avatar from "../../../public/member.png";
+import { db } from "../../../lib/firebase";
 
 const Wrapper = styled.div`
   max-width: 1096px;
@@ -87,8 +89,41 @@ const ActivityQty = styled.span`
   font-size: 14px;
 `;
 
+interface PostInterface {
+  id: string;
+  title: string;
+  content: string;
+  authorId: string;
+  authorName?: string;
+  authorAvatar?: string;
+}
+
 function Forum() {
   const router = useRouter();
+  const [posts, setPosts] = useState<PostInterface[]>([]);
+  useEffect(() => {
+    const getPosts = async () => {
+      const querySnapshot = await getDocs(collection(db, "posts"));
+      const results: PostInterface[] = querySnapshot.docs.map((data) => ({
+        id: data.data().id,
+        title: data.data().title,
+        content: data.data().content,
+        authorId: data.data().author,
+      }));
+      await Promise.all(
+        results.map(async (result: PostInterface, index) => {
+          const docRef = doc(db, "users", result.authorId);
+          const docSnap = await getDoc(docRef);
+          if (docSnap.exists()) {
+            results[index].authorName = docSnap.data().username;
+            // results[index].authorAvatar = docSnap.data().avatar;
+          }
+        })
+      );
+      setPosts(results);
+    };
+    getPosts();
+  }, []);
   return (
     <Wrapper>
       <Main>
@@ -96,46 +131,33 @@ function Forum() {
           <Image src={BannerPic} alt="banner" fill sizes="contain" />
         </BannerWrapper>
         <Articles>
-          <Article>
-            <ArticleUser>
-              <UserAvatarWrapper>
-                <Image src={Avatar} alt="avatar" fill sizes="contain" />
-              </UserAvatarWrapper>
-              <UserName>Tom</UserName>
-            </ArticleUser>
-            <ArticleTitle>文章標題</ArticleTitle>
-            <ArticlePreview>文章內容預覽......</ArticlePreview>
-            <ArticleActivity>
-              <IconWrapper>
-                <Image src={LikeIcon} alt="like" fill sizes="contain" />
-              </IconWrapper>
-              <ActivityQty>0</ActivityQty>
-              <IconWrapper>
-                <Image src={MessageIcon} alt="like" fill sizes="contain" />
-              </IconWrapper>
-              <ActivityQty>0</ActivityQty>
-            </ArticleActivity>
-          </Article>
-          <Article>
-            <ArticleUser>
-              <UserAvatarWrapper>
-                <Image src={Avatar} alt="avatar" fill sizes="contain" />
-              </UserAvatarWrapper>
-              <UserName>Tom</UserName>
-            </ArticleUser>
-            <ArticleTitle>問題標題</ArticleTitle>
-            <ArticlePreview>問題內容預覽......</ArticlePreview>
-            <ArticleActivity>
-              <IconWrapper>
-                <Image src={LikeIcon} alt="like" fill sizes="contain" />
-              </IconWrapper>
-              <ActivityQty>0</ActivityQty>
-              <IconWrapper>
-                <Image src={MessageIcon} alt="like" fill sizes="contain" />
-              </IconWrapper>
-              <ActivityQty>0</ActivityQty>
-            </ArticleActivity>
-          </Article>
+          {posts.map((article) => (
+            <Article
+              key={article.id}
+              onClick={() => {
+                router.push(`/forum/article/${article.id}`);
+              }}
+            >
+              <ArticleUser>
+                <UserAvatarWrapper>
+                  <Image src={Avatar} alt="avatar" fill sizes="contain" />
+                </UserAvatarWrapper>
+                <UserName>{article.authorName}</UserName>
+              </ArticleUser>
+              <ArticleTitle>{article.title}</ArticleTitle>
+              <ArticlePreview>文章內容預覽......</ArticlePreview>
+              <ArticleActivity>
+                <IconWrapper>
+                  <Image src={LikeIcon} alt="like" fill sizes="contain" />
+                </IconWrapper>
+                <ActivityQty>0</ActivityQty>
+                <IconWrapper>
+                  <Image src={MessageIcon} alt="like" fill sizes="contain" />
+                </IconWrapper>
+                <ActivityQty>0</ActivityQty>
+              </ArticleActivity>
+            </Article>
+          ))}
         </Articles>
       </Main>
       <Aside>
