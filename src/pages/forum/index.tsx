@@ -3,7 +3,6 @@ import React, { useState, useEffect } from "react";
 import styled from "styled-components";
 import { useRouter } from "next/router";
 import { collection, doc, getDoc, getDocs } from "firebase/firestore";
-import { type } from "os";
 import BannerPic from "../../../public/yoga-banner.jpg";
 import LikeIcon from "../../../public/like.png";
 import MessageIcon from "../../../public/message.png";
@@ -67,6 +66,16 @@ const UserAvatarWrapper = styled.div`
   margin-right: 5px;
 `;
 const UserName = styled.span``;
+const ArticleInfo = styled.div`
+  display: flex;
+`;
+const ArticleText = styled.div`
+  flex-basis: 80%;
+`;
+const PicPreview = styled.div`
+  position: relative;
+  flex-basis: 20%;
+`;
 
 const ArticleTitle = styled.h4`
   font-size: 18px;
@@ -117,7 +126,7 @@ function Forum() {
             content: data.data().content,
             authorId: data.data().author,
           };
-        const preview: string = paragraphs[0].slice(3, -4);
+        const preview = `${paragraphs[0].slice(3, -4)}......`;
         return {
           id: data.data().id,
           title: data.data().title,
@@ -160,8 +169,15 @@ function Forum() {
                 </UserAvatarWrapper>
                 <UserName>{article.authorName}</UserName>
               </ArticleUser>
-              <ArticleTitle>{article.title}</ArticleTitle>
-              {article.preview && <ArticlePreview dangerouslySetInnerHTML={{ __html: article?.preview }} />}
+              <ArticleInfo>
+                <ArticleText>
+                  <ArticleTitle>{article.title}</ArticleTitle>
+                  {article.preview && <ArticlePreview dangerouslySetInnerHTML={{ __html: article?.preview }} />}
+                </ArticleText>
+                <PicPreview>
+                  <Image src={Avatar} alt="pic" width={108} height={81} />
+                </PicPreview>
+              </ArticleInfo>
               <ArticleActivity>
                 <IconWrapper>
                   <Image src={LikeIcon} alt="like" fill sizes="contain" />

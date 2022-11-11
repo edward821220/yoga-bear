@@ -1,15 +1,29 @@
-import React, { useState, useContext } from "react";
+import React, { useState, useContext, useRef, useMemo, useCallback } from "react";
 import dynamic from "next/dynamic";
 import styled from "styled-components";
 import Image from "next/image";
 import { collection, doc, setDoc } from "firebase/firestore";
+import { ref, uploadBytesResumable, getDownloadURL } from "firebase/storage";
 import { useRouter } from "next/router";
+import { ReactQuillProps } from "react-quill";
 import Avatar from "../../../public/member.png";
-import { db } from "../../../lib/firebase";
+import { db, storage } from "../../../lib/firebase";
 import { AuthContext } from "../../contexts/authContext";
 import "react-quill/dist/quill.snow.css";
 
-const Editor = dynamic(import("react-quill"), { ssr: false });
+/* eslint-disable react/display-name */
+const Editor = dynamic(
+  async () => {
+    const { default: ReactQuill } = await import("react-quill");
+    /* eslint-disable-next-line func-names */
+    return function ({ forwardedRef, ...props }: ReactQuillProps) {
+      return <ReactQuill ref={forwardedRef} {...props} />;
+    };
+  },
+  {
+    ssr: false,
+  }
+);
 
 const Wrapper = styled.div`
   max-width: 800px;
@@ -60,18 +74,6 @@ const Button = styled.button`
   margin: 0 auto;
 `;
 
-const modules = {
-  toolbar: [
-    [{ size: [] }],
-    ["bold", "italic", "underline", "strike", "blockquote"],
-    [{ list: "ordered" }, { list: "bullet" }, { indent: "-1" }, { indent: "+1" }],
-    ["link", "image"],
-    ["clean"],
-  ],
-  clipboard: {
-    matchVisual: false,
-  },
-};
 const formats = [
   "size",
   "bold",
@@ -91,11 +93,11 @@ function Post() {
   const [content, setContent] = useState("");
   const { userData } = useContext(AuthContext);
   const router = useRouter();
+  const quillRef = useRef();
 
   const handlePost = async () => {
     if (!title.trim()) {
       alert("請輸入標題");
-      return;
     }
     const newPostRef = doc(collection(db, "posts"));
     await setDoc(newPostRef, {
@@ -108,6 +110,51 @@ function Post() {
     alert("您已成功提問！");
     router.push("/forum");
   };
+
+  const imageHandler = useCallback(() => {
+    const input = document.createElement("input");
+    input.setAttribute("type", "file");
+    input.setAttribute("accept", "image/*");
+    input.click();
+    input.onchange = () => {
+      const { files } = input;
+      if (!files) return;
+      const file = files[0];
+      const storageRef = ref(storage, `article/${file.name}`);
+      const uploadTask = uploadBytesResumable(storageRef, file);
+      uploadTask.on(
+        "state_changed",
+        () => {},
+        (error) => {
+          alert(error);
+        },
+        async () => {
+          const downloadUrl = await getDownloadURL(uploadTask.snapshot.ref);
+          const quillObj = quillRef?.current.editor;
+          const range = quillRef?.current.selection;
+          quillObj?.insertEmbed(range.index, "image", downloadUrl);
+        }
+      );
+    };
+  }, []);
+
+  const modules = useMemo(
+    () => ({
+      toolbar: {
+        container: [
+          [{ size: [] }],
+          ["bold", "italic", "underline", "strike", "blockquote"],
+          [{ list: "ordered" }, { list: "bullet" }, { indent: "-1" }, { indent: "+1" }],
+          ["link", "image"],
+          ["clean"],
+        ],
+        handlers: {
+          image: imageHandler,
+        },
+      },
+    }),
+    [imageHandler]
+  );
 
   return (
     <Wrapper>
@@ -133,6 +180,7 @@ function Post() {
           placeholder="瑜伽相關的任何問題都非常歡迎大家提問唷～"
           modules={modules}
           formats={formats}
+          forwardedRef={quillRef}
         />
         <Button onClick={handlePost} type="button">
           發問

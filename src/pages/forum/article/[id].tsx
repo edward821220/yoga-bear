@@ -74,7 +74,6 @@ const Content = styled.div`
 const MessagesContainer = styled.div`
   background-color: #bbb8b8;
   width: 100%;
-  border: 2px solid #dd0a0a;
 `;
 const Messages = styled.ul``;
 const Message = styled.li``;
