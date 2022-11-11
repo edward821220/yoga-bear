@@ -17,14 +17,15 @@ import PlusMoneyIcon from "../../public/add.png";
 
 const Wrapper = styled.header`
   display: flex;
+  flex-wrap: wrap;
   align-items: center;
   justify-content: space-between;
-  margin-bottom: 36px;
+  background-color: #ece5da;
+  height: 100px;
   position: sticky;
   top: 0;
-  background-color: #ece5da;
   z-index: 99;
-  flex-wrap: wrap;
+  margin-bottom: 36px;
 `;
 const LogoWrapper = styled.div`
   margin-right: 100px;

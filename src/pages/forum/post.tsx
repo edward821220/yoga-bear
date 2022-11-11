@@ -14,7 +14,7 @@ const Editor = dynamic(import("react-quill"), { ssr: false });
 const Wrapper = styled.div`
   max-width: 800px;
   margin: 0 auto;
-  min-height: calc(100vh - 127.6167px - 58px);
+  min-height: calc(100vh - 136px - 58px);
   padding-bottom: 50px;
 `;
 
@@ -93,6 +93,10 @@ function Post() {
   const router = useRouter();
 
   const handlePost = async () => {
+    if (!title.trim()) {
+      alert("請輸入標題");
+      return;
+    }
     const newPostRef = doc(collection(db, "posts"));
     await setDoc(newPostRef, {
       id: newPostRef.id,

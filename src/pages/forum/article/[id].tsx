@@ -11,7 +11,7 @@ const Wrapper = styled.div`
   max-width: 800px;
   margin: 0 auto;
   padding-bottom: 50px;
-  min-height: calc(100vh - 127.6167px - 58px);
+  min-height: calc(100vh - 136px - 58px);
 `;
 
 const ArticleUser = styled.div`
@@ -74,15 +74,13 @@ const Content = styled.div`
 const MessagesContainer = styled.div`
   background-color: #bbb8b8;
   width: 100%;
-  border: 2px solid red;
+  border: 2px solid #dd0a0a;
 `;
 const Messages = styled.ul``;
 const Message = styled.li``;
 const MessageBlock = styled.div`
-  position: fixed;
   display: flex;
-  bottom: 58.2px;
-  width: 800px;
+  width: 100%;
 `;
 const MessageTextArea = styled.textarea`
   resize: none;

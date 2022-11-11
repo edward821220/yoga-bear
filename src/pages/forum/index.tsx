@@ -3,6 +3,7 @@ import React, { useState, useEffect } from "react";
 import styled from "styled-components";
 import { useRouter } from "next/router";
 import { collection, doc, getDoc, getDocs } from "firebase/firestore";
+import { type } from "os";
 import BannerPic from "../../../public/yoga-banner.jpg";
 import LikeIcon from "../../../public/like.png";
 import MessageIcon from "../../../public/message.png";
@@ -72,7 +73,7 @@ const ArticleTitle = styled.h4`
   font-weight: bolder;
   margin-bottom: 10px;
 `;
-const ArticlePreview = styled.p`
+const ArticlePreview = styled.div`
   margin-bottom: 20px;
 `;
 const ArticleActivity = styled.div`
@@ -93,6 +94,7 @@ interface PostInterface {
   id: string;
   title: string;
   content: string;
+  preview?: string;
   authorId: string;
   authorName?: string;
   authorAvatar?: string;
@@ -101,15 +103,29 @@ interface PostInterface {
 function Forum() {
   const router = useRouter();
   const [posts, setPosts] = useState<PostInterface[]>([]);
+
   useEffect(() => {
     const getPosts = async () => {
       const querySnapshot = await getDocs(collection(db, "posts"));
-      const results: PostInterface[] = querySnapshot.docs.map((data) => ({
-        id: data.data().id,
-        title: data.data().title,
-        content: data.data().content,
-        authorId: data.data().author,
-      }));
+      const results: PostInterface[] = querySnapshot.docs.map((data) => {
+        const datas = data.data() as PostInterface;
+        const paragraphs = datas?.content?.match(/<p>.*?<\/p>/g);
+        if (!paragraphs)
+          return {
+            id: data.data().id,
+            title: data.data().title,
+            content: data.data().content,
+            authorId: data.data().author,
+          };
+        const preview: string = paragraphs[0].slice(3, -4);
+        return {
+          id: data.data().id,
+          title: data.data().title,
+          content: data.data().content,
+          authorId: data.data().author,
+          preview,
+        };
+      });
       await Promise.all(
         results.map(async (result: PostInterface, index) => {
           const docRef = doc(db, "users", result.authorId);
@@ -145,7 +161,7 @@ function Forum() {
                 <UserName>{article.authorName}</UserName>
               </ArticleUser>
               <ArticleTitle>{article.title}</ArticleTitle>
-              <ArticlePreview>文章內容預覽......</ArticlePreview>
+              {article.preview && <ArticlePreview dangerouslySetInnerHTML={{ __html: article?.preview }} />}
               <ArticleActivity>
                 <IconWrapper>
                   <Image src={LikeIcon} alt="like" fill sizes="contain" />
