@@ -5,19 +5,23 @@ import Image from "next/image";
 import { collection, doc, setDoc } from "firebase/firestore";
 import { ref, uploadBytesResumable, getDownloadURL } from "firebase/storage";
 import { useRouter } from "next/router";
-import { ReactQuillProps } from "react-quill";
+import ReactQuill, { ReactQuillProps } from "react-quill";
 import Avatar from "../../../public/member.png";
 import { db, storage } from "../../../lib/firebase";
 import { AuthContext } from "../../contexts/authContext";
 import "react-quill/dist/quill.snow.css";
 
+interface EditorInterface extends ReactQuillProps {
+  forwardedRef: React.RefObject<ReactQuill>;
+}
+
 /* eslint-disable react/display-name */
 const Editor = dynamic(
   async () => {
-    const { default: ReactQuill } = await import("react-quill");
+    const { default: RQ } = await import("react-quill");
     /* eslint-disable-next-line func-names */
-    return function ({ forwardedRef, ...props }: ReactQuillProps) {
-      return <ReactQuill ref={forwardedRef} {...props} />;
+    return function ({ forwardedRef, ...props }: EditorInterface) {
+      return <RQ ref={forwardedRef} {...props} />;
     };
   },
   {
@@ -57,6 +61,7 @@ const Form = styled.form`
     }
   }
 `;
+
 const Label = styled.label``;
 const Title = styled.input`
   margin-bottom: 20px;
@@ -93,7 +98,7 @@ function Post() {
   const [content, setContent] = useState("");
   const { userData } = useContext(AuthContext);
   const router = useRouter();
-  const quillRef = useRef();
+  const quillRef = useRef<ReactQuill>(null);
 
   const handlePost = async () => {
     if (!title.trim()) {
@@ -120,7 +125,7 @@ function Post() {
       const { files } = input;
       if (!files) return;
       const file = files[0];
-      const storageRef = ref(storage, `article/${file.name}`);
+      const storageRef = ref(storage, `article/${Date.now()}-${file.name}`);
       const uploadTask = uploadBytesResumable(storageRef, file);
       uploadTask.on(
         "state_changed",
@@ -130,9 +135,14 @@ function Post() {
         },
         async () => {
           const downloadUrl = await getDownloadURL(uploadTask.snapshot.ref);
-          const quillObj = quillRef?.current.editor;
-          const range = quillRef?.current.selection;
-          quillObj?.insertEmbed(range.index, "image", downloadUrl);
+          /* eslint-disable @typescript-eslint/no-unsafe-member-access */
+          /* eslint-disable @typescript-eslint/no-unsafe-call */
+          const quillEditor = quillRef?.current?.editor;
+          const range = quillRef?.current?.selection;
+          if (!range) return;
+          const { index } = range;
+          // eslint-disable-next-line @typescript-eslint/restrict-plus-operands
+          quillEditor?.insertEmbed(index + 1, "image", downloadUrl);
         }
       );
     };

@@ -70,11 +70,16 @@ const ArticleInfo = styled.div`
   display: flex;
 `;
 const ArticleText = styled.div`
-  flex-basis: 80%;
+  flex-basis: 75%;
+  margin-right: 10px;
 `;
 const PicPreview = styled.div`
   position: relative;
-  flex-basis: 20%;
+  flex-basis: 25%;
+  img {
+    width: 160px;
+    height: 90px;
+  }
 `;
 
 const ArticleTitle = styled.h4`
@@ -107,6 +112,7 @@ interface PostInterface {
   authorId: string;
   authorName?: string;
   authorAvatar?: string;
+  picPreview?: string;
 }
 
 function Forum() {
@@ -118,21 +124,19 @@ function Forum() {
       const querySnapshot = await getDocs(collection(db, "posts"));
       const results: PostInterface[] = querySnapshot.docs.map((data) => {
         const datas = data.data() as PostInterface;
+        const images = datas?.content?.match(/<img.*?>/g);
         const paragraphs = datas?.content?.match(/<p>.*?<\/p>/g);
-        if (!paragraphs)
-          return {
-            id: data.data().id,
-            title: data.data().title,
-            content: data.data().content,
-            authorId: data.data().author,
-          };
-        const preview = `${paragraphs[0].slice(3, -4)}......`;
+        let preview = "";
+        let picPreview = "";
+        if (paragraphs) preview = `${paragraphs[0].slice(3, -4)} ......`;
+        if (images) [picPreview] = images;
         return {
           id: data.data().id,
           title: data.data().title,
           content: data.data().content,
           authorId: data.data().author,
           preview,
+          picPreview,
         };
       });
       await Promise.all(
@@ -141,7 +145,6 @@ function Forum() {
           const docSnap = await getDoc(docRef);
           if (docSnap.exists()) {
             results[index].authorName = docSnap.data().username;
-            // results[index].authorAvatar = docSnap.data().avatar;
           }
         })
       );
@@ -174,9 +177,7 @@ function Forum() {
                   <ArticleTitle>{article.title}</ArticleTitle>
                   {article.preview && <ArticlePreview dangerouslySetInnerHTML={{ __html: article?.preview }} />}
                 </ArticleText>
-                <PicPreview>
-                  <Image src={Avatar} alt="pic" width={108} height={81} />
-                </PicPreview>
+                {article.picPreview && <PicPreview dangerouslySetInnerHTML={{ __html: article?.picPreview }} />}
               </ArticleInfo>
               <ArticleActivity>
                 <IconWrapper>
