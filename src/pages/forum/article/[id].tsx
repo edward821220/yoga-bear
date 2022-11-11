@@ -40,16 +40,25 @@ const Content = styled.div`
   padding: 10px;
   margin-bottom: 30px;
   ol {
-    list-style: decimal;
+    display: block;
+    list-style-type: decimal;
+    margin-top: 1em;
+    margin-bottom: 1em;
+    margin-left: 0;
+    margin-right: 0;
+    padding-left: 40px;
   }
   ul {
-    list-style: circle;
+    display: block;
+    list-style-type: disc;
+    margin-top: 1em;
+    margin-bottom: 1 em;
+    margin-left: 0;
+    margin-right: 0;
+    padding-left: 40px;
   }
-  h1 {
-    font-size: 2em;
-  }
-  h2 {
-    font-size: 1.5em;
+  li {
+    display: list-item;
   }
   blockquote {
     margin: 20px;

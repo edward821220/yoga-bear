@@ -1,13 +1,13 @@
 import React, { useState, useContext } from "react";
 import dynamic from "next/dynamic";
 import styled from "styled-components";
-import "react-quill/dist/quill.snow.css";
 import Image from "next/image";
 import { collection, doc, setDoc } from "firebase/firestore";
 import { useRouter } from "next/router";
 import Avatar from "../../../public/member.png";
 import { db } from "../../../lib/firebase";
 import { AuthContext } from "../../contexts/authContext";
+import "react-quill/dist/quill.snow.css";
 
 const Editor = dynamic(import("react-quill"), { ssr: false });
 
@@ -33,7 +33,16 @@ const UserName = styled.span`
   line-height: 30px;
 `;
 
-const Form = styled.form``;
+const Form = styled.form`
+  .quill {
+    strong {
+      font-weight: bold;
+    }
+    em {
+      font-style: italic;
+    }
+  }
+`;
 const Label = styled.label``;
 const Title = styled.input`
   margin-bottom: 20px;
@@ -53,7 +62,6 @@ const Button = styled.button`
 
 const modules = {
   toolbar: [
-    [{ header: "1" }, { header: "2" }, { font: [] }],
     [{ size: [] }],
     ["bold", "italic", "underline", "strike", "blockquote"],
     [{ list: "ordered" }, { list: "bullet" }, { indent: "-1" }, { indent: "+1" }],
@@ -65,8 +73,6 @@ const modules = {
   },
 };
 const formats = [
-  "header",
-  "font",
   "size",
   "bold",
   "italic",
