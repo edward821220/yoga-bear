@@ -10,10 +10,15 @@ import Avatar from "../../../public/member.png";
 import { db } from "../../../lib/firebase";
 
 const Wrapper = styled.div`
+  background-color: #dfb098;
+  min-height: calc(100vh - 182px);
+  padding-top: 20px;
+`;
+const Container = styled.div`
   max-width: 1096px;
   margin: 0 auto;
   display: flex;
-  padding: 0 10px 20px 10px;
+  padding: 0 10px;
 `;
 const Main = styled.main`
   flex-basis: 70%;
@@ -25,9 +30,12 @@ const BannerWrapper = styled.div`
   margin-bottom: 20px;
 `;
 const Aside = styled.div`
+  color: #654116;
+  background-color: #fff;
   flex-basis: 30%;
   height: 300px;
-  border: 1px solid gray;
+  border: 2px solid #654116;
+  border-radius: 5px;
   padding: 10px;
 `;
 const AsideTitle = styled.h3`
@@ -41,6 +49,7 @@ const AsideContent = styled.p`
   line-height: 24px;
 `;
 const Button = styled.button`
+  color: #654116;
   display: block;
   background-color: transparent;
   padding: 10px;
@@ -50,8 +59,11 @@ const Button = styled.button`
 const Articles = styled.ul``;
 
 const Article = styled.li`
-  border-bottom: 1px solid gray;
-  padding-bottom: 20px;
+  color: #654116;
+  background-color: #fff;
+  border: 2px solid #654116;
+  border-radius: 5px;
+  padding: 20px;
   margin-bottom: 20px;
   cursor: pointer;
 `;
@@ -162,60 +174,62 @@ function Forum() {
   }, []);
   return (
     <Wrapper>
-      <Main>
-        <BannerWrapper>
-          <Image src={BannerPic} alt="banner" fill sizes="contain" />
-        </BannerWrapper>
-        <Articles>
-          {posts.map((article) => (
-            <Article
-              key={article.id}
-              onClick={() => {
-                router.push(`/forum/article/${article.id}`);
-              }}
-            >
-              <ArticleUser>
-                <UserAvatarWrapper>
-                  <Image src={Avatar} alt="avatar" fill sizes="contain" />
-                </UserAvatarWrapper>
-                <UserName>{article.authorName}</UserName>
-              </ArticleUser>
-              <ArticleInfo>
-                <ArticleText>
-                  <ArticleTitle>{article.title}</ArticleTitle>
-                  {article.preview && <ArticlePreview dangerouslySetInnerHTML={{ __html: article?.preview }} />}
-                </ArticleText>
-                {article.picPreview && <PicPreview dangerouslySetInnerHTML={{ __html: article?.picPreview }} />}
-              </ArticleInfo>
-              <ArticleActivity>
-                <IconWrapper>
-                  <Image src={LikeIcon} alt="like" fill sizes="contain" />
-                </IconWrapper>
-                <ActivityQty>{article.likesQty}</ActivityQty>
-                <IconWrapper>
-                  <Image src={MessageIcon} alt="like" fill sizes="contain" />
-                </IconWrapper>
-                <ActivityQty>{article.messagesQty}</ActivityQty>
-              </ArticleActivity>
-            </Article>
-          ))}
-        </Articles>
-      </Main>
-      <Aside>
-        <AsideTitle>問答園地</AsideTitle>
-        <AsideContent>
-          給熱愛瑜伽、對瑜伽有興趣的同好們，有瑜伽相關的任何問題都非常歡迎大家發問唷～ 希望大家可以有個舒適的空間！
-          <br />
-          記得遵守板規規範， 祝大家在瑜伽的路上開開心心，體驗瑜伽帶來的美好～
-        </AsideContent>
-        <Button
-          onClick={() => {
-            router.push("/forum/post");
-          }}
-        >
-          我想問問題
-        </Button>
-      </Aside>
+      <Container>
+        <Main>
+          <BannerWrapper>
+            <Image src={BannerPic} alt="banner" fill sizes="contain" />
+          </BannerWrapper>
+          <Articles>
+            {posts.map((article) => (
+              <Article
+                key={article.id}
+                onClick={() => {
+                  router.push(`/forum/article/${article.id}`);
+                }}
+              >
+                <ArticleUser>
+                  <UserAvatarWrapper>
+                    <Image src={Avatar} alt="avatar" fill sizes="contain" />
+                  </UserAvatarWrapper>
+                  <UserName>{article.authorName}</UserName>
+                </ArticleUser>
+                <ArticleInfo>
+                  <ArticleText>
+                    <ArticleTitle>{article.title}</ArticleTitle>
+                    {article.preview && <ArticlePreview dangerouslySetInnerHTML={{ __html: article?.preview }} />}
+                  </ArticleText>
+                  {article.picPreview && <PicPreview dangerouslySetInnerHTML={{ __html: article?.picPreview }} />}
+                </ArticleInfo>
+                <ArticleActivity>
+                  <IconWrapper>
+                    <Image src={LikeIcon} alt="like" fill sizes="contain" />
+                  </IconWrapper>
+                  <ActivityQty>{article.likesQty}</ActivityQty>
+                  <IconWrapper>
+                    <Image src={MessageIcon} alt="like" fill sizes="contain" />
+                  </IconWrapper>
+                  <ActivityQty>{article.messagesQty}</ActivityQty>
+                </ArticleActivity>
+              </Article>
+            ))}
+          </Articles>
+        </Main>
+        <Aside>
+          <AsideTitle>問答園地</AsideTitle>
+          <AsideContent>
+            給熱愛瑜伽、對瑜伽有興趣的同好們，有瑜伽相關的任何問題都非常歡迎大家發問唷～ 希望大家可以有個舒適的空間！
+            <br />
+            記得遵守板規規範， 祝大家在瑜伽的路上開開心心，體驗瑜伽帶來的美好～
+          </AsideContent>
+          <Button
+            onClick={() => {
+              router.push("/forum/post");
+            }}
+          >
+            我想問問題
+          </Button>
+        </Aside>
+      </Container>
     </Wrapper>
   );
 }

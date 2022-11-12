@@ -8,7 +8,8 @@ const Wrapper = styled.div`
   display: flex;
   flex-direction: column;
   align-items: center;
-  min-height: calc(100vh - 136px - 58px);
+  min-height: calc(100vh - 182px);
+  background-color: #dfb098;
 `;
 
 export default function Home() {

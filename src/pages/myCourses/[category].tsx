@@ -5,7 +5,7 @@ import Link from "next/link";
 import Image from "next/image";
 import { useRouter } from "next/router";
 import { ref, getDownloadURL, uploadBytesResumable } from "firebase/storage";
-import { collection, doc, setDoc, getDocs, getDoc, query, where } from "firebase/firestore";
+import { collection, doc, setDoc, getDoc } from "firebase/firestore";
 import { AuthContext } from "../../contexts/authContext";
 import { storage, db } from "../../../lib/firebase";
 import Modal from "../../components/modal";
@@ -15,29 +15,40 @@ import TeacherCalendar from "../../components/calendar/teacherCalendar";
 import StudentCalendar from "../../components/calendar/studentCalendar";
 
 const Wrapper = styled.div`
+  background-color: #dfb098;
+  min-height: calc(100vh - 182px);
   display: flex;
-  min-height: 77vh;
-  padding: 20px 0;
+  padding: 20px;
 `;
 const SideBar = styled.div`
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
   width: 20%;
   text-align: center;
+  background-color: #fff;
+  border: 2px solid #654116;
+  border-radius: 5px;
+  margin-right: 20px;
 `;
 const SideBarSection = styled.ul`
   margin-bottom: 50px;
 `;
 const SideBarTitle = styled.h3`
   font-size: 24px;
+  font-weight: bold;
   margin-bottom: 20px;
-  color: #097be6;
+  color: #654116;
 `;
 const SideBarLink = styled.li`
   font-size: 16px;
   margin-bottom: 20px;
+
   a {
     transition: 0.2s color linear;
+    color: #654116;
     &:hover {
-      color: red;
+      color: #5d7262;
     }
   }
 `;
@@ -91,8 +102,18 @@ const MyCoursesList = styled.ul`
   flex-wrap: wrap;
 `;
 const MyCourse = styled.li`
-  margin-right: 20px;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  text-align: center;
+  color: #654116;
+  align-items: center;
   flex-basis: 48%;
+  background-color: #fff;
+  padding: 10px;
+  border: 2px solid #654116;
+  border-radius: 5px;
+  margin-right: 20px;
   margin-bottom: 20px;
 `;
 const CourseCover = styled.div`

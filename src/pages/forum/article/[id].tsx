@@ -14,10 +14,14 @@ import LikeBlankIcon from "../../../../public/favorite-blank.png";
 import LikeIcon from "../../../../public/favorite.png";
 
 const Wrapper = styled.div`
+  background-color: #dfb098;
+  min-height: calc(100vh - 182px);
+  padding: 20px 0;
+`;
+
+const Container = styled.div`
   max-width: 800px;
   margin: 0 auto;
-  padding-bottom: 50px;
-  min-height: calc(100vh - 136px - 58px);
 `;
 
 const ArticleUser = styled.div`
@@ -111,7 +115,7 @@ const ActivityQty = styled.span`
 `;
 
 const MessagesContainer = styled.div`
-  background-color: #ece5da;
+  background-color: #dfb098;
   padding-top: 10px;
   width: 100%;
 `;
@@ -156,7 +160,7 @@ const MessageTextArea = styled.textarea`
   flex-basis: 90%;
 `;
 const Button = styled.button`
-  background-color: transparent;
+  background-color: #f7a537;
   padding: 5px;
   flex-basis: 10%;
 `;
@@ -321,123 +325,125 @@ function Article() {
 
   return (
     <Wrapper>
-      <ArticleUser>
-        <UserAvatarWrapper>
-          <Image src={Avatar} alt="avatar" fill sizes="contain" />
-        </UserAvatarWrapper>
-        <UserName>{article?.authorName}</UserName>
-      </ArticleUser>
-      <Title>{article?.title}</Title>
-      {article && <PostTime>{new Date(article.time).toLocaleString()}</PostTime>}
-      {article && (
-        <ArticleContainer>
-          {/* eslint-disable-next-line react/no-danger */}
-          <Content className="ql-editor" dangerouslySetInnerHTML={{ __html: article.content }} />
-          <ArticleActivity>
-            <Qtys>
-              <IconWrapper>
-                <Image src={LikeQtyIcon} alt="like" fill sizes="contain" />
-              </IconWrapper>
-              <ActivityQty>{article?.likes?.length || 0}</ActivityQty>
-              <IconWrapper>
-                <Image src={MessageIcon} alt="like" fill sizes="contain" />
-              </IconWrapper>
-              <ActivityQty>{article?.messages?.length || 0}</ActivityQty>
-            </Qtys>
-            {article.likes.includes(userData.uid) || (
-              <ClickLike onClick={handleLikeArticle}>
+      <Container>
+        <ArticleUser>
+          <UserAvatarWrapper>
+            <Image src={Avatar} alt="avatar" fill sizes="contain" />
+          </UserAvatarWrapper>
+          <UserName>{article?.authorName}</UserName>
+        </ArticleUser>
+        <Title>{article?.title}</Title>
+        {article && <PostTime>{new Date(article.time).toLocaleString()}</PostTime>}
+        {article && (
+          <ArticleContainer>
+            {/* eslint-disable-next-line react/no-danger */}
+            <Content className="ql-editor" dangerouslySetInnerHTML={{ __html: article.content }} />
+            <ArticleActivity>
+              <Qtys>
                 <IconWrapper>
-                  <Image src={LikeBlankIcon} alt="like-click" fill sizes="contain" />
+                  <Image src={LikeQtyIcon} alt="like" fill sizes="contain" />
                 </IconWrapper>
-              </ClickLike>
-            )}
-            {article.likes.includes(userData.uid) && (
-              <ClickLike onClick={handleDislikeArticle}>
+                <ActivityQty>{article?.likes?.length || 0}</ActivityQty>
                 <IconWrapper>
-                  <Image src={LikeIcon} alt="like-cliked" fill sizes="contain" />
+                  <Image src={MessageIcon} alt="like" fill sizes="contain" />
                 </IconWrapper>
-              </ClickLike>
-            )}
-          </ArticleActivity>
-        </ArticleContainer>
-      )}
+                <ActivityQty>{article?.messages?.length || 0}</ActivityQty>
+              </Qtys>
+              {article.likes.includes(userData.uid) || (
+                <ClickLike onClick={handleLikeArticle}>
+                  <IconWrapper>
+                    <Image src={LikeBlankIcon} alt="like-click" fill sizes="contain" />
+                  </IconWrapper>
+                </ClickLike>
+              )}
+              {article.likes.includes(userData.uid) && (
+                <ClickLike onClick={handleDislikeArticle}>
+                  <IconWrapper>
+                    <Image src={LikeIcon} alt="like-cliked" fill sizes="contain" />
+                  </IconWrapper>
+                </ClickLike>
+              )}
+            </ArticleActivity>
+          </ArticleContainer>
+        )}
 
-      {article && article?.messages?.length > 0 && (
-        <MessagesContainer>
-          <Messages>
-            <MessageQty>共 {article?.messages.length} 則留言</MessageQty>
-            {Array.isArray(article.messages) &&
-              article.messages.map((message: MessageInterface, index) => (
-                <Message key={message.authorId + new Date(message.time).toLocaleString()}>
-                  {message.identity === "student" && (
-                    <MessageAuthor>
-                      <UserAvatarWrapper>
-                        <Image src={Avatar} alt="avatar" />
-                      </UserAvatarWrapper>
-                      <UserName>
-                        {message.authorName} (學生)
-                        {message.authorId === article.authorId && " - 原PO"}
-                      </UserName>
-                    </MessageAuthor>
-                  )}
-                  {message.identity === "teacher" && (
-                    <MessageAuthorTeacher
-                      onClick={() => {
-                        router.push(`/findTeachers/reserve/${message.authorId}`);
-                      }}
-                    >
-                      <UserAvatarWrapper>
-                        <Image src={Avatar} alt="avatar" />
-                      </UserAvatarWrapper>
-                      <UserName>
-                        {message.authorName} (老師)
-                        {message.authorId === article.authorId && " - 原PO"}
-                      </UserName>
-                    </MessageAuthorTeacher>
-                  )}
-                  <MessageContent>{message.message}</MessageContent>
-                  <MessageInfo>
-                    {message?.likes?.includes(userData.uid) || (
-                      <ClickLike
+        {article && article?.messages?.length > 0 && (
+          <MessagesContainer>
+            <Messages>
+              <MessageQty>共 {article?.messages.length} 則留言</MessageQty>
+              {Array.isArray(article.messages) &&
+                article.messages.map((message: MessageInterface, index) => (
+                  <Message key={message.authorId + new Date(message.time).toLocaleString()}>
+                    {message.identity === "student" && (
+                      <MessageAuthor>
+                        <UserAvatarWrapper>
+                          <Image src={Avatar} alt="avatar" />
+                        </UserAvatarWrapper>
+                        <UserName>
+                          {message.authorName} (學生)
+                          {message.authorId === article.authorId && " - 原PO"}
+                        </UserName>
+                      </MessageAuthor>
+                    )}
+                    {message.identity === "teacher" && (
+                      <MessageAuthorTeacher
                         onClick={() => {
-                          handleLikeMessage(index);
+                          router.push(`/findTeachers/reserve/${message.authorId}`);
                         }}
                       >
-                        <IconWrapper>
-                          <Image src={LikeBlankIcon} alt="like-click" fill sizes="contain" />
-                        </IconWrapper>
-                        <span>{message?.likes?.length || 0}</span>
-                      </ClickLike>
+                        <UserAvatarWrapper>
+                          <Image src={Avatar} alt="avatar" />
+                        </UserAvatarWrapper>
+                        <UserName>
+                          {message.authorName} (老師)
+                          {message.authorId === article.authorId && " - 原PO"}
+                        </UserName>
+                      </MessageAuthorTeacher>
                     )}
-                    {message?.likes?.includes(userData.uid) && (
-                      <ClickLike
-                        onClick={() => {
-                          handleDislikeMessage(index);
-                        }}
-                      >
-                        <IconWrapper>
-                          <Image src={LikeIcon} alt="like-cliked" fill sizes="contain" />
-                        </IconWrapper>
-                        <span>{message?.likes?.length || 0}</span>
-                      </ClickLike>
-                    )}
-                    <MessageTime>{new Date(message.time).toLocaleString()}</MessageTime>
-                    <MessageFloor>B{index + 1}</MessageFloor>
-                  </MessageInfo>
-                </Message>
-              ))}
-          </Messages>
-        </MessagesContainer>
-      )}
-      <MessageBlock>
-        <MessageTextArea
-          value={inputMessage}
-          onChange={(e) => {
-            setInputMessage(e.target.value);
-          }}
-        />
-        <Button onClick={handleMessage}>送出</Button>
-      </MessageBlock>
+                    <MessageContent>{message.message}</MessageContent>
+                    <MessageInfo>
+                      {message?.likes?.includes(userData.uid) || (
+                        <ClickLike
+                          onClick={() => {
+                            handleLikeMessage(index);
+                          }}
+                        >
+                          <IconWrapper>
+                            <Image src={LikeBlankIcon} alt="like-click" fill sizes="contain" />
+                          </IconWrapper>
+                          <span>{message?.likes?.length || 0}</span>
+                        </ClickLike>
+                      )}
+                      {message?.likes?.includes(userData.uid) && (
+                        <ClickLike
+                          onClick={() => {
+                            handleDislikeMessage(index);
+                          }}
+                        >
+                          <IconWrapper>
+                            <Image src={LikeIcon} alt="like-cliked" fill sizes="contain" />
+                          </IconWrapper>
+                          <span>{message?.likes?.length || 0}</span>
+                        </ClickLike>
+                      )}
+                      <MessageTime>{new Date(message.time).toLocaleString()}</MessageTime>
+                      <MessageFloor>B{index + 1}</MessageFloor>
+                    </MessageInfo>
+                  </Message>
+                ))}
+            </Messages>
+          </MessagesContainer>
+        )}
+        <MessageBlock>
+          <MessageTextArea
+            value={inputMessage}
+            onChange={(e) => {
+              setInputMessage(e.target.value);
+            }}
+          />
+          <Button onClick={handleMessage}>送出</Button>
+        </MessageBlock>
+      </Container>
     </Wrapper>
   );
 }

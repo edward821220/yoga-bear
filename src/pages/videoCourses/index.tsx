@@ -6,10 +6,12 @@ import { collection, getDocs } from "firebase/firestore";
 import { db } from "../../../lib/firebase";
 
 const Wrapper = styled.div`
+  background-color: #dfb098;
+  padding-top: 20px;
+`;
+const Container = styled.div`
   max-width: 1280px;
   margin: 0 auto;
-  min-height: 77vh;
-  padding: 20px 0;
   display: flex;
   align-items: center;
   flex-direction: column;
@@ -20,7 +22,10 @@ const CoursesList = styled.ul`
   width: 80%;
 `;
 const Course = styled.li`
-  border: 1px solid gray;
+  color: #654116;
+  background-color: #ffffff;
+  border: 2px solid #654116;
+  border-radius: 5px;
   margin-right: 20px;
   margin-bottom: 20px;
 `;
@@ -76,26 +81,28 @@ function VideoCourses() {
 
   return (
     <Wrapper>
-      <CoursesList>
-        {coursesList.map((course) => (
-          <Course key={course.id}>
-            <CourseCover>
-              <Link href={`/videoCourses/courseDetail/${course.id}`}>
-                <Image src={course.cover} alt="cover" fill />
-              </Link>
-            </CourseCover>
-            <CourseInfos>
-              <CourseInfo>{course.name}</CourseInfo>
-              <CourseInfo>NT. {course.price}</CourseInfo>
-              {course.reviews.score ? (
-                <CourseInfo>{course.reviews.score}</CourseInfo>
-              ) : (
-                <CourseInfo>目前無評價</CourseInfo>
-              )}
-            </CourseInfos>
-          </Course>
-        ))}
-      </CoursesList>
+      <Container>
+        <CoursesList>
+          {coursesList.map((course) => (
+            <Course key={course.id}>
+              <CourseCover>
+                <Link href={`/videoCourses/courseDetail/${course.id}`}>
+                  <Image src={course.cover} alt="cover" fill />
+                </Link>
+              </CourseCover>
+              <CourseInfos>
+                <CourseInfo>{course.name}</CourseInfo>
+                <CourseInfo>NT. {course.price}</CourseInfo>
+                {course.reviews.score ? (
+                  <CourseInfo>{course.reviews.score}</CourseInfo>
+                ) : (
+                  <CourseInfo>目前無評價</CourseInfo>
+                )}
+              </CourseInfos>
+            </Course>
+          ))}
+        </CoursesList>
+      </Container>
     </Wrapper>
   );
 }

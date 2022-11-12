@@ -6,11 +6,14 @@ const FooterLinks = styled.ul`
   display: flex;
   justify-content: space-around;
   padding: 20px;
-  background-color: #ece5da;
+  background-color: #f2deba;
+  border-top: 6px solid #5d7262;
 `;
 const FooterLink = styled.li`
+  padding: 10px;
+  border-radius: 5px;
   a {
-    color: #654116;
+    color: #000000;
   }
 `;
 

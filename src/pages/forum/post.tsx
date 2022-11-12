@@ -30,10 +30,16 @@ const Editor = dynamic(
 );
 
 const Wrapper = styled.div`
-  max-width: 800px;
+  background-color: #dfb098;
+  min-height: calc(100vh - 182px);
+  padding: 20px 0;
+`;
+
+const Container = styled.div`
+  max-width: 810px;
   margin: 0 auto;
-  min-height: calc(100vh - 136px - 58px);
-  padding-bottom: 50px;
+  background-color: #fff;
+  padding: 20px;
 `;
 
 const ArticleUser = styled.div`
@@ -168,34 +174,36 @@ function Post() {
 
   return (
     <Wrapper>
-      <ArticleUser>
-        <UserAvatarWrapper>
-          <Image src={Avatar} alt="avatar" fill sizes="contain" />
-        </UserAvatarWrapper>
-        <UserName>{userData.username}</UserName>
-      </ArticleUser>
-      <Form>
-        <Label>
-          <Title
-            value={title}
-            placeholder="想問什麼呢？"
-            onChange={(e: React.ChangeEvent<HTMLInputElement>) => setTitle(e.target.value)}
+      <Container>
+        <ArticleUser>
+          <UserAvatarWrapper>
+            <Image src={Avatar} alt="avatar" fill sizes="contain" />
+          </UserAvatarWrapper>
+          <UserName>{userData.username}</UserName>
+        </ArticleUser>
+        <Form>
+          <Label>
+            <Title
+              value={title}
+              placeholder="想問什麼呢？"
+              onChange={(e: React.ChangeEvent<HTMLInputElement>) => setTitle(e.target.value)}
+            />
+          </Label>
+          <Editor
+            style={{ height: "320px", marginBottom: "80px" }}
+            theme="snow"
+            value={content}
+            onChange={setContent}
+            placeholder="瑜伽相關的任何問題都非常歡迎大家提問唷～"
+            modules={modules}
+            formats={formats}
+            forwardedRef={quillRef}
           />
-        </Label>
-        <Editor
-          style={{ height: "320px", marginBottom: "80px" }}
-          theme="snow"
-          value={content}
-          onChange={setContent}
-          placeholder="瑜伽相關的任何問題都非常歡迎大家提問唷～"
-          modules={modules}
-          formats={formats}
-          forwardedRef={quillRef}
-        />
-        <Button onClick={handlePost} type="button">
-          發問
-        </Button>
-      </Form>
+          <Button onClick={handlePost} type="button">
+            發問
+          </Button>
+        </Form>
+      </Container>
     </Wrapper>
   );
 }
