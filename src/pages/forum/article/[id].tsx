@@ -3,6 +3,7 @@ import { useRouter } from "next/router";
 import Image from "next/image";
 import styled from "styled-components";
 import { doc, getDoc, updateDoc, arrayUnion } from "firebase/firestore";
+import produce from "immer";
 import { db } from "../../../../lib/firebase";
 import { AuthContext } from "../../../contexts/authContext";
 import "react-quill/dist/quill.snow.css";
@@ -34,9 +35,10 @@ const UserName = styled.p`
 const Title = styled.h2`
   font-size: 30px;
   margin-bottom: 20px;
+  font-weight: bold;
 `;
 const PostTime = styled.p`
-  margin-bottom: 10px;
+  margin-bottom: 20px;
 `;
 const ArticleContainer = styled.div`
   border: 1px solid gray;
@@ -74,6 +76,9 @@ const Content = styled.div`
     margin: 15px 30px 0 10px;
     padding-left: 20px;
     border-radius: 6px;
+  }
+  img {
+    margin: 10px auto;
   }
 `;
 const ArticleActivity = styled.div`
@@ -113,6 +118,9 @@ const MessageAuthor = styled.div`
   display: flex;
   margin-bottom: 15px;
 `;
+const MessageAuthorTeacher = styled(MessageAuthor)`
+  cursor: pointer;
+`;
 
 const MessageContent = styled.p`
   margin-bottom: 20px;
@@ -139,40 +147,107 @@ const Button = styled.button`
   flex-basis: 10%;
 `;
 
+interface MessageInterface {
+  time: string | number;
+  message: string;
+  authorId: string;
+  authorName: string;
+  identity: string;
+  avatar?: string;
+  like: number;
+}
+interface ArticleInterface {
+  time: string;
+  title: string;
+  authorId: string;
+  authorName: string;
+  content: string;
+  messages: MessageInterface[];
+}
+
 function Article() {
   const router = useRouter();
   const { id } = router.query;
-  const [article, setArticle] = useState<Record<string, string>>();
+  const [article, setArticle] = useState<ArticleInterface>({
+    time: "",
+    title: "",
+    authorId: "",
+    authorName: "",
+    content: "",
+    messages: [],
+  });
   const [inputMessage, setInputMessage] = useState("");
-  const { userData } = useContext(AuthContext);
+  const { userData, isLogin } = useContext(AuthContext);
+
   useEffect(() => {
     if (!id || typeof id !== "string") return;
     const getArticle = async () => {
       const docRef = doc(db, "posts", id);
       const docSnap = await getDoc(docRef);
-      if (docSnap.exists()) {
-        const authorId: string = docSnap.data().author;
-        const userRef = doc(db, "users", authorId);
-        const userSnap = await getDoc(userRef);
-        if (userSnap.exists()) {
-          setArticle({ ...docSnap.data(), authorName: userSnap.data().username });
-        }
+      if (!docSnap.exists()) return;
+      const authorId: string = docSnap.data().author;
+      const userRef = doc(db, "users", authorId);
+      const userSnap = await getDoc(userRef);
+      if (!userSnap.exists()) return;
+      const messages = docSnap.data().messages as MessageInterface[];
+      if (messages) {
+        await Promise.all(
+          messages?.map(async (message, index) => {
+            const messageAuthorId = message.authorId;
+            const messageAuthorRef = doc(db, "users", messageAuthorId);
+            const messageAuthorSnap = await getDoc(messageAuthorRef);
+            if (messageAuthorSnap.exists()) {
+              messages[index].authorName = messageAuthorSnap.data().username;
+              messages[index].identity = messageAuthorSnap.data().identity;
+            }
+          })
+        );
       }
+      const datas: ArticleInterface = {
+        time: docSnap.data().time,
+        title: docSnap.data().title,
+        authorId: docSnap.data().author,
+        content: docSnap.data().content,
+        messages: messages || [],
+        authorName: userSnap.data().username,
+      };
+      setArticle(datas);
     };
     getArticle();
   }, [id]);
 
   const handleMessage = async () => {
+    if (!isLogin) {
+      alert("登入後才能留言唷！");
+      return;
+    }
     if (!inputMessage.trim()) {
       alert("請輸入內容");
+      return;
     }
     if (typeof id !== "string") return;
     const articleRef = doc(db, "posts", id);
     await updateDoc(articleRef, {
-      messages: arrayUnion({ author: userData.uid, time: Date.now(), message: inputMessage }),
+      messages: arrayUnion({
+        authorId: userData.uid,
+        time: Date.now(),
+        message: inputMessage,
+        like: 0,
+      }),
     });
-    alert("您已成功留言！");
     setInputMessage("");
+    setArticle(
+      produce((draft) => {
+        draft.messages.push({
+          authorId: userData.uid,
+          authorName: userData.username,
+          identity: userData.identity,
+          time: Date.now(),
+          message: inputMessage,
+          like: 0,
+        });
+      })
+    );
   };
 
   return (
@@ -184,11 +259,7 @@ function Article() {
         <UserName>{article?.authorName}</UserName>
       </ArticleUser>
       <Title>{article?.title}</Title>
-      {article && (
-        <PostTime>{`${new Date(article.time).toLocaleDateString()} ${new Date(article.time).getHours()}:${new Date(
-          article.time
-        ).getMinutes()}`}</PostTime>
-      )}
+      {article && <PostTime>{new Date(article.time).toLocaleString()}</PostTime>}
       {article && (
         <ArticleContainer>
           {/* eslint-disable-next-line react/no-danger */}
@@ -201,22 +272,44 @@ function Article() {
             <IconWrapper>
               <Image src={MessageIcon} alt="like" fill sizes="contain" />
             </IconWrapper>
-            <ActivityQty>0</ActivityQty>
+            <ActivityQty>{article?.messages?.length || 0}</ActivityQty>
           </ArticleActivity>
         </ArticleContainer>
       )}
 
-      {article && article.messages.length > 0 && (
+      {article && article?.messages?.length > 0 && (
         <MessagesContainer>
           <Messages>
-            <MessageQty>共{article.messages.length}則留言</MessageQty>
+            <MessageQty>共 {article?.messages.length} 則留言</MessageQty>
             {Array.isArray(article.messages) &&
-              article.messages.map((message: { author: string; time: string; message: string }, index) => (
-                <Message key={message.author + message.time}>
-                  <MessageAuthor>
-                    <UserAvatarWrapper>O</UserAvatarWrapper>
-                    <UserName>OOO</UserName>
-                  </MessageAuthor>
+              article.messages.map((message: MessageInterface, index) => (
+                <Message key={message.authorId + new Date(message.time).toLocaleString()}>
+                  {message.identity === "student" && (
+                    <MessageAuthor>
+                      <UserAvatarWrapper>
+                        <Image src={Avatar} alt="avatar" />
+                      </UserAvatarWrapper>
+                      <UserName>
+                        {message.authorName} (學生)
+                        {message.authorId === article.authorId && " - 原PO"}
+                      </UserName>
+                    </MessageAuthor>
+                  )}
+                  {message.identity === "teacher" && (
+                    <MessageAuthorTeacher
+                      onClick={() => {
+                        router.push(`/findTeachers/reserve/${message.authorId}`);
+                      }}
+                    >
+                      <UserAvatarWrapper>
+                        <Image src={Avatar} alt="avatar" />
+                      </UserAvatarWrapper>
+                      <UserName>
+                        {message.authorName} (老師)
+                        {message.authorId === article.authorId && " - 原PO"}
+                      </UserName>
+                    </MessageAuthorTeacher>
+                  )}
                   <MessageContent>{message.message}</MessageContent>
                   <MessageInfo>
                     <MessageTime>{new Date(message.time).toLocaleString()}</MessageTime>
@@ -225,17 +318,17 @@ function Article() {
                 </Message>
               ))}
           </Messages>
-          <MessageBlock>
-            <MessageTextArea
-              value={inputMessage}
-              onChange={(e) => {
-                setInputMessage(e.target.value);
-              }}
-            />
-            <Button onClick={handleMessage}>送出</Button>
-          </MessageBlock>
         </MessagesContainer>
       )}
+      <MessageBlock>
+        <MessageTextArea
+          value={inputMessage}
+          onChange={(e) => {
+            setInputMessage(e.target.value);
+          }}
+        />
+        <Button onClick={handleMessage}>送出</Button>
+      </MessageBlock>
     </Wrapper>
   );
 }

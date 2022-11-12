@@ -113,6 +113,8 @@ interface PostInterface {
   authorName?: string;
   authorAvatar?: string;
   picPreview?: string;
+  messages?: [];
+  messagesQty: number;
 }
 
 function Forum() {
@@ -123,9 +125,10 @@ function Forum() {
     const getPosts = async () => {
       const querySnapshot = await getDocs(collection(db, "posts"));
       const results: PostInterface[] = querySnapshot.docs.map((data) => {
-        const datas = data.data() as PostInterface;
-        const images = datas?.content?.match(/<img.*?>/g);
-        const paragraphs = datas?.content?.match(/<p>.*?<\/p>/g);
+        const article = data.data() as PostInterface;
+        const images = article?.content?.match(/<img.*?>/g);
+        const paragraphs = article?.content?.match(/<p>.*?<\/p>/g);
+        const messagesQty = article?.messages?.length || 0;
         let preview = "";
         let picPreview = "";
         if (paragraphs) preview = `${paragraphs[0].slice(3, -4)} ......`;
@@ -137,6 +140,7 @@ function Forum() {
           authorId: data.data().author,
           preview,
           picPreview,
+          messagesQty,
         };
       });
       await Promise.all(
@@ -187,7 +191,7 @@ function Forum() {
                 <IconWrapper>
                   <Image src={MessageIcon} alt="like" fill sizes="contain" />
                 </IconWrapper>
-                <ActivityQty>0</ActivityQty>
+                <ActivityQty>{article.messagesQty}</ActivityQty>
               </ArticleActivity>
             </Article>
           ))}
