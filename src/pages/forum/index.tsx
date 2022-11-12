@@ -115,6 +115,8 @@ interface PostInterface {
   picPreview?: string;
   messages?: [];
   messagesQty: number;
+  likes?: [];
+  likesQty: number;
 }
 
 function Forum() {
@@ -129,6 +131,7 @@ function Forum() {
         const images = article?.content?.match(/<img.*?>/g);
         const paragraphs = article?.content?.match(/<p>.*?<\/p>/g);
         const messagesQty = article?.messages?.length || 0;
+        const likesQty = article?.likes?.length || 0;
         let preview = "";
         let picPreview = "";
         if (paragraphs) preview = `${paragraphs[0].slice(3, -4)} ......`;
@@ -141,6 +144,7 @@ function Forum() {
           preview,
           picPreview,
           messagesQty,
+          likesQty,
         };
       });
       await Promise.all(
@@ -187,7 +191,7 @@ function Forum() {
                 <IconWrapper>
                   <Image src={LikeIcon} alt="like" fill sizes="contain" />
                 </IconWrapper>
-                <ActivityQty>0</ActivityQty>
+                <ActivityQty>{article.likesQty}</ActivityQty>
                 <IconWrapper>
                   <Image src={MessageIcon} alt="like" fill sizes="contain" />
                 </IconWrapper>

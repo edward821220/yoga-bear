@@ -2,14 +2,16 @@ import React, { useState, useEffect, useContext } from "react";
 import { useRouter } from "next/router";
 import Image from "next/image";
 import styled from "styled-components";
-import { doc, getDoc, updateDoc, arrayUnion } from "firebase/firestore";
+import { doc, getDoc, updateDoc, arrayUnion, arrayRemove } from "firebase/firestore";
 import produce from "immer";
 import { db } from "../../../../lib/firebase";
 import { AuthContext } from "../../../contexts/authContext";
 import "react-quill/dist/quill.snow.css";
 import Avatar from "../../../../public/member.png";
-import LikeIcon from "../../../../public/like.png";
+import LikeQtyIcon from "../../../../public/like.png";
 import MessageIcon from "../../../../public/message.png";
+import LikeBlankIcon from "../../../../public/favorite-blank.png";
+import LikeIcon from "../../../../public/favorite.png";
 
 const Wrapper = styled.div`
   max-width: 800px;
@@ -41,7 +43,7 @@ const PostTime = styled.p`
   margin-bottom: 20px;
 `;
 const ArticleContainer = styled.div`
-  border: 1px solid gray;
+  border: 1px solid #654116;
   padding: 10px;
   margin-bottom: 30px;
 `;
@@ -81,11 +83,22 @@ const Content = styled.div`
     margin: 10px auto;
   }
 `;
+
 const ArticleActivity = styled.div`
   display: flex;
   padding-left: 15px;
   margin-bottom: 10px;
+  justify-content: space-between;
 `;
+const Qtys = styled.div`
+  display: flex;
+`;
+const ClickLike = styled.div`
+  display: flex;
+  position: relative;
+  cursor: pointer;
+`;
+
 const IconWrapper = styled.div`
   position: relative;
   width: 24px;
@@ -98,20 +111,20 @@ const ActivityQty = styled.span`
 `;
 
 const MessagesContainer = styled.div`
-  background-color: #bbb8b8;
+  background-color: #ece5da;
   padding-top: 10px;
   width: 100%;
 `;
 const Messages = styled.ul``;
 const MessageQty = styled.p`
-  padding: 5px;
-  border-bottom: 2px solid gray;
-  margin-bottom: 20px;
+  padding: 5px 5px 10px 20px;
+  border-bottom: 2px solid #654116;
+  margin-bottom: 10px;
 `;
 const Message = styled.li`
-  margin-bottom: 20px;
-  padding: 20px;
-  border: 1px solid green;
+  margin-bottom: 10px;
+  padding: 10px 20px;
+  border-bottom: 1px solid #654116;
 `;
 
 const MessageAuthor = styled.div`
@@ -131,6 +144,7 @@ const MessageInfo = styled.div`
 `;
 const MessageTime = styled.p`
   margin-right: 20px;
+  margin-left: 20px;
 `;
 const MessageFloor = styled.p``;
 const MessageBlock = styled.div`
@@ -154,7 +168,7 @@ interface MessageInterface {
   authorName: string;
   identity: string;
   avatar?: string;
-  like: number;
+  likes: string[];
 }
 interface ArticleInterface {
   time: string;
@@ -163,6 +177,7 @@ interface ArticleInterface {
   authorName: string;
   content: string;
   messages: MessageInterface[];
+  likes: string[];
 }
 
 function Article() {
@@ -175,6 +190,7 @@ function Article() {
     authorName: "",
     content: "",
     messages: [],
+    likes: [],
   });
   const [inputMessage, setInputMessage] = useState("");
   const { userData, isLogin } = useContext(AuthContext);
@@ -210,11 +226,64 @@ function Article() {
         content: docSnap.data().content,
         messages: messages || [],
         authorName: userSnap.data().username,
+        likes: docSnap.data().likes || [],
       };
       setArticle(datas);
     };
     getArticle();
   }, [id]);
+
+  const handleLikeArticle = async () => {
+    if (typeof id !== "string") return;
+    if (!isLogin) {
+      alert("登入後才能按讚唷！");
+      return;
+    }
+    setArticle(
+      produce((draft: ArticleInterface) => {
+        draft.likes.push(userData.uid);
+      })
+    );
+    const articleRef = doc(db, "posts", id);
+    await updateDoc(articleRef, { likes: arrayUnion(userData.uid) });
+  };
+
+  const handleDislikeArticle = async () => {
+    if (typeof id !== "string") return;
+    setArticle(
+      produce((draft: ArticleInterface) => {
+        draft.likes.splice(draft.likes.indexOf(userData.uid), 1);
+      })
+    );
+    const articleRef = doc(db, "posts", id);
+    await updateDoc(articleRef, { likes: arrayRemove(userData.uid) });
+  };
+
+  const handleLikeMessage = (index: number) => {
+    if (typeof id !== "string") return;
+    if (!isLogin) {
+      alert("登入後才能按讚唷！");
+      return;
+    }
+    setArticle(
+      produce((draft: ArticleInterface) => {
+        draft.messages[index].likes.push(userData.uid);
+        const articleRef = doc(db, "posts", id);
+        updateDoc(articleRef, { messages: draft.messages });
+      })
+    );
+  };
+
+  const handleDislikeMessage = (index: number) => {
+    if (typeof id !== "string") return;
+    setArticle(
+      produce((draft: ArticleInterface) => {
+        draft.messages[index].likes.splice(draft.messages[index].likes.indexOf(userData.uid), 1);
+        const articleRef = doc(db, "posts", id);
+        updateDoc(articleRef, { messages: draft.messages });
+      })
+    );
+  };
 
   const handleMessage = async () => {
     if (!isLogin) {
@@ -232,7 +301,7 @@ function Article() {
         authorId: userData.uid,
         time: Date.now(),
         message: inputMessage,
-        like: 0,
+        likes: [],
       }),
     });
     setInputMessage("");
@@ -244,7 +313,7 @@ function Article() {
           identity: userData.identity,
           time: Date.now(),
           message: inputMessage,
-          like: 0,
+          likes: [],
         });
       })
     );
@@ -265,14 +334,30 @@ function Article() {
           {/* eslint-disable-next-line react/no-danger */}
           <Content className="ql-editor" dangerouslySetInnerHTML={{ __html: article.content }} />
           <ArticleActivity>
-            <IconWrapper>
-              <Image src={LikeIcon} alt="like" fill sizes="contain" />
-            </IconWrapper>
-            <ActivityQty>0</ActivityQty>
-            <IconWrapper>
-              <Image src={MessageIcon} alt="like" fill sizes="contain" />
-            </IconWrapper>
-            <ActivityQty>{article?.messages?.length || 0}</ActivityQty>
+            <Qtys>
+              <IconWrapper>
+                <Image src={LikeQtyIcon} alt="like" fill sizes="contain" />
+              </IconWrapper>
+              <ActivityQty>{article?.likes?.length || 0}</ActivityQty>
+              <IconWrapper>
+                <Image src={MessageIcon} alt="like" fill sizes="contain" />
+              </IconWrapper>
+              <ActivityQty>{article?.messages?.length || 0}</ActivityQty>
+            </Qtys>
+            {article.likes.includes(userData.uid) || (
+              <ClickLike onClick={handleLikeArticle}>
+                <IconWrapper>
+                  <Image src={LikeBlankIcon} alt="like-click" fill sizes="contain" />
+                </IconWrapper>
+              </ClickLike>
+            )}
+            {article.likes.includes(userData.uid) && (
+              <ClickLike onClick={handleDislikeArticle}>
+                <IconWrapper>
+                  <Image src={LikeIcon} alt="like-cliked" fill sizes="contain" />
+                </IconWrapper>
+              </ClickLike>
+            )}
           </ArticleActivity>
         </ArticleContainer>
       )}
@@ -312,6 +397,30 @@ function Article() {
                   )}
                   <MessageContent>{message.message}</MessageContent>
                   <MessageInfo>
+                    {message?.likes?.includes(userData.uid) || (
+                      <ClickLike
+                        onClick={() => {
+                          handleLikeMessage(index);
+                        }}
+                      >
+                        <IconWrapper>
+                          <Image src={LikeBlankIcon} alt="like-click" fill sizes="contain" />
+                        </IconWrapper>
+                        <span>{message?.likes?.length || 0}</span>
+                      </ClickLike>
+                    )}
+                    {message?.likes?.includes(userData.uid) && (
+                      <ClickLike
+                        onClick={() => {
+                          handleDislikeMessage(index);
+                        }}
+                      >
+                        <IconWrapper>
+                          <Image src={LikeIcon} alt="like-cliked" fill sizes="contain" />
+                        </IconWrapper>
+                        <span>{message?.likes?.length || 0}</span>
+                      </ClickLike>
+                    )}
                     <MessageTime>{new Date(message.time).toLocaleString()}</MessageTime>
                     <MessageFloor>B{index + 1}</MessageFloor>
                   </MessageInfo>
