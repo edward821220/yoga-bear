@@ -17,17 +17,18 @@ import PlusMoneyIcon from "../../public/add.png";
 
 const Wrapper = styled.header`
   display: flex;
+  flex-wrap: wrap;
   align-items: center;
   justify-content: space-between;
-  margin-bottom: 36px;
+  background-color: #ece5da;
+  height: 100px;
   position: sticky;
   top: 0;
-  background-color: #ece5da;
   z-index: 99;
-  flex-wrap: wrap;
+  margin-bottom: 36px;
 `;
 const LogoWrapper = styled.div`
-  margin-right: 120px;
+  margin-right: 100px;
   flex-basis: 200px;
 `;
 const HeaderLinks = styled.ul`
@@ -36,13 +37,13 @@ const HeaderLinks = styled.ul`
   margin-right: auto;
 `;
 const HeaderLink = styled.li`
-  margin-right: 66px;
+  margin-right: 36px;
   font-size: 18px;
   line-height: 40px;
   border: 2px solid #654116;
   border-radius: 5px;
   background-color: #fff;
-  width: 140px;
+  width: 120px;
   text-align: center;
   a {
     color: #654116;
@@ -64,7 +65,7 @@ const MoneyDisplay = styled.div`
   display: flex;
   align-items: center;
   padding-left: 10px;
-  margin-right: 100px;
+  margin-right: 50px;
   justify-content: space-between;
   align-items: center;
   background-color: #fff;
@@ -428,7 +429,7 @@ function PaymentModal({ setShowPaymentModal, bearMoney, setBearMoney, userId }: 
   return (
     <Modal handleClose={handleClose}>
       <Form onSubmit={handleSubmit}>
-        <FormTitle>儲值熊幣(1:1台幣)</FormTitle>
+        <FormTitle>儲值熊幣(1:1 NTD)</FormTitle>
         {paymentForm.map((item) => {
           if (item.type === "number") {
             return (
@@ -506,7 +507,10 @@ function Header() {
           <Link href="/videoCourses">影音課程</Link>
         </HeaderLink>
         <HeaderLink>
-          <Link href="/findTeachers">我想找老師</Link>
+          <Link href="/findTeachers">預約老師</Link>
+        </HeaderLink>
+        <HeaderLink>
+          <Link href="/forum">問答園地</Link>
         </HeaderLink>
         <HeaderLink>
           <MycoursesLink

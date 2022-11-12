@@ -4,10 +4,10 @@ import styled from "styled-components";
 import Image from "next/image";
 import { useRecoilState } from "recoil";
 import { useRouter } from "next/router";
-import { AuthContext } from "../contexts/authContext";
-import { db } from "../../lib/firebase";
-import RemoveIcon from "../../public/trash.png";
-import { orderQtyState, bearMoneyState } from "../../lib/recoil";
+import { AuthContext } from "../../contexts/authContext";
+import { db } from "../../../lib/firebase";
+import { orderQtyState, bearMoneyState } from "../../../lib/recoil";
+import RemoveIcon from "../../../public/trash.png";
 
 const Wrapper = styled.div`
   margin: 0 auto;

@@ -225,7 +225,6 @@ function LaunchVideoCourse({ uid }: { uid: string }) {
         const file = input.files[0];
         const storageRef = ref(storage, `${courseName}/${file.name}`);
         const uploadTask = uploadBytesResumable(storageRef, file);
-        // promises.push(uploadTask);
         uploadTask.on(
           "state_changed",
           (snapshot) => {
