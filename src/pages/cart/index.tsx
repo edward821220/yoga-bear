@@ -4,7 +4,6 @@ import styled from "styled-components";
 import Image from "next/image";
 import { useRecoilState } from "recoil";
 import { useRouter } from "next/router";
-import { Details } from "@mui/icons-material";
 import { AuthContext } from "../../contexts/authContext";
 import { db } from "../../../lib/firebase";
 import { orderQtyState, bearMoneyState } from "../../../lib/recoil";
