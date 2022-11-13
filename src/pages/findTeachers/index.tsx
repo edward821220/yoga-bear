@@ -37,7 +37,7 @@ const Teacher = styled.li`
   border: 2px solid #654116;
   border-radius: 5px;
   margin-bottom: 20px;
-  padding: 5px;
+  padding: 10px 5px;
   background-color: #ffffff;
   &:last-child {
     margin-bottom: 0;
