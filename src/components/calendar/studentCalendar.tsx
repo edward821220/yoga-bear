@@ -6,6 +6,9 @@ import {
   Scheduler,
   Resources,
   WeekView,
+  Toolbar,
+  DateNavigator,
+  TodayButton,
   AllDayPanel,
   Appointments,
   AppointmentForm,
@@ -92,11 +95,11 @@ function Header({ appointmentData, ...restProps }: AppointmentTooltip.HeaderProp
   );
 }
 
-const currentDate = new Date(Date.now()).toLocaleString().split(" ")[0].replaceAll("/", "-");
-
 function StudentCalendar({ userData }: { userData: { uid: string; username: string; email: string } }) {
   const [data, setData] = useState<AppointmentModel[]>([]);
   const { uid, username, email } = userData;
+  const [currentDate, setCurrentDate] = useState(new Date(Date.now()));
+
   useEffect(() => {
     const getRooms = async () => {
       const courseRef = collection(db, "rooms");
@@ -120,10 +123,17 @@ function StudentCalendar({ userData }: { userData: { uid: string; username: stri
   return (
     <Paper>
       <Scheduler data={data} height={600}>
-        <ViewState currentDate={currentDate} currentViewName="Week" />
+        <ViewState
+          currentDate={currentDate}
+          currentViewName="Week"
+          onCurrentDateChange={setCurrentDate as (currentDate: Date) => void}
+        />
         <EditingState onCommitChanges={() => {}} />
         <IntegratedEditing />
         <WeekView startDayHour={8} endDayHour={22} />
+        <Toolbar />
+        <DateNavigator />
+        <TodayButton />
         <Appointments />
         <AppointmentTooltip headerComponent={Header} showOpenButton />
         <ConfirmationDialog />

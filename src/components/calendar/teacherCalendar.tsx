@@ -16,6 +16,9 @@ import {
   Resources,
   WeekView,
   MonthView,
+  Toolbar,
+  DateNavigator,
+  TodayButton,
   AllDayPanel,
   Appointments,
   AppointmentForm,
@@ -105,8 +108,6 @@ function ExternalViewSwitcher({
   );
 }
 
-const currentDate = new Date(Date.now()).toLocaleString().split(" ")[0].replaceAll("/", "-");
-
 function Header({ appointmentData, ...restProps }: AppointmentTooltip.HeaderProps) {
   const router = useRouter();
   return (
@@ -129,6 +130,7 @@ function Header({ appointmentData, ...restProps }: AppointmentTooltip.HeaderProp
 export default function TeacherCalendar({ uid }: { uid: string }) {
   const [data, setData] = useState<AppointmentModel[]>([]);
   const [view, setView] = useState("Month");
+  const [currentDate, setCurrentDate] = useState(new Date(Date.now()));
 
   useEffect(() => {
     const getRooms = async () => {
@@ -187,11 +189,18 @@ export default function TeacherCalendar({ uid }: { uid: string }) {
       />
       <Paper>
         <Scheduler data={data} height={600}>
-          <ViewState currentDate={currentDate} currentViewName={view} />
+          <ViewState
+            currentDate={currentDate}
+            currentViewName={view}
+            onCurrentDateChange={setCurrentDate as (currentDate: Date) => void}
+          />
           <EditingState onCommitChanges={commitChanges} />
           <IntegratedEditing />
           <MonthView />
           <WeekView startDayHour={8} endDayHour={22} />
+          <Toolbar />
+          <DateNavigator />
+          <TodayButton />
           <Appointments />
           <AppointmentTooltip headerComponent={Header} showOpenButton />
           <ConfirmationDialog />

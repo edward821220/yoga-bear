@@ -153,6 +153,7 @@ function Cart() {
         });
       });
       alert("購買成功！可以去上課囉～");
+      setOrderQty(0);
       router.push("/myCourses/videoCourses");
     }
   };

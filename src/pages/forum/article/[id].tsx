@@ -20,13 +20,17 @@ const Wrapper = styled.div`
 `;
 
 const Container = styled.div`
+  color: #654116;
   max-width: 800px;
   margin: 0 auto;
+  border: 2px solid #654116;
+  border-radius: 5px;
+  background-color: #fff;
 `;
 
 const ArticleUser = styled.div`
   display: flex;
-  margin-bottom: 15px;
+  margin: 20px 25px;
 `;
 const UserAvatarWrapper = styled.div`
   position: relative;
@@ -40,14 +44,13 @@ const UserName = styled.p`
 
 const Title = styled.h2`
   font-size: 30px;
-  margin-bottom: 20px;
   font-weight: bold;
+  margin: 20px 25px;
 `;
 const PostTime = styled.p`
-  margin-bottom: 20px;
+  margin: 10px 25px;
 `;
 const ArticleContainer = styled.div`
-  border: 1px solid #654116;
   padding: 10px;
   margin-bottom: 30px;
 `;
@@ -84,7 +87,7 @@ const Content = styled.div`
     border-radius: 6px;
   }
   img {
-    margin: 10px auto;
+    margin: 20px auto;
   }
 `;
 
@@ -115,8 +118,8 @@ const ActivityQty = styled.span`
 `;
 
 const MessagesContainer = styled.div`
-  background-color: #dfb098;
-  padding-top: 10px;
+  background-color: #f2deba;
+  padding: 10px 0px;
   width: 100%;
 `;
 const Messages = styled.ul``;
@@ -126,9 +129,11 @@ const MessageQty = styled.p`
   margin-bottom: 10px;
 `;
 const Message = styled.li`
-  margin-bottom: 10px;
-  padding: 10px 20px;
   border-bottom: 1px solid #654116;
+  border: 2px solid #654116;
+  border-radius: 5px;
+  margin: 0px 10px 10px 10px;
+  padding: 10px 20px;
 `;
 
 const MessageAuthor = styled.div`
@@ -158,11 +163,13 @@ const MessageBlock = styled.div`
 const MessageTextArea = styled.textarea`
   resize: none;
   flex-basis: 90%;
+  height: 50px;
 `;
 const Button = styled.button`
   background-color: #f7a537;
   padding: 5px;
   flex-basis: 10%;
+  height: 50px;
 `;
 
 interface MessageInterface {
