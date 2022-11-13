@@ -110,19 +110,23 @@ function ExternalViewSwitcher({
 
 function Header({ appointmentData, ...restProps }: AppointmentTooltip.HeaderProps) {
   const router = useRouter();
+  const isEnded = Date.now() > Date.parse(appointmentData?.endDate as string);
+
   return (
     <AppointmentTooltip.Header {...restProps} appointmentData={appointmentData}>
-      <RoomButtonWrapper>
-        <Image
-          src={RoomButton}
-          alt="room-btn"
-          width={30}
-          onClick={() => {
-            if (!appointmentData || typeof appointmentData.id !== "string") return;
-            router.push(`/myCourses/classRoom/teacherRoom/${appointmentData.id}`);
-          }}
-        />
-      </RoomButtonWrapper>
+      {isEnded || (
+        <RoomButtonWrapper>
+          <Image
+            src={RoomButton}
+            alt="room-btn"
+            width={30}
+            onClick={() => {
+              if (!appointmentData || typeof appointmentData.id !== "string") return;
+              router.push(`/myCourses/classRoom/teacherRoom/${appointmentData.id}`);
+            }}
+          />
+        </RoomButtonWrapper>
+      )}
     </AppointmentTooltip.Header>
   );
 }

@@ -183,7 +183,6 @@ function VideoCourses({ uid }: { uid: string }) {
   const [showReviewModal, setShowReviewModal] = useState<number | boolean>(false);
   const [score, setScore] = useState(0);
   const [comments, setComments] = useState("");
-  const router = useRouter();
 
   useEffect(() => {
     const getCourses = async () => {

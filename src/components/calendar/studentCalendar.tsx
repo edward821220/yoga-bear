@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useContext } from "react";
 import Paper from "@mui/material/Paper";
 import Image from "next/image";
 import { ViewState, EditingState, IntegratedEditing, AppointmentModel } from "@devexpress/dx-react-scheduler";
@@ -15,14 +15,19 @@ import {
   AppointmentTooltip,
   ConfirmationDialog,
 } from "@devexpress/dx-react-scheduler-material-ui";
-import { collection, getDocs, query, where } from "firebase/firestore";
+import { collection, doc, updateDoc, getDocs, query, where, arrayUnion } from "firebase/firestore";
 import styled from "styled-components";
 import { useRouter } from "next/router";
+import { AuthContext } from "../../contexts/authContext";
 import { db } from "../../../lib/firebase";
+import Modal from "../modal";
 import resources from "./resources";
 import RoomButton from "../../../public/room.png";
+import ReviewButton from "../../../public/review.png";
+import EmptyStar from "../../../public/star-empty.png";
+import Star from "../../../public/star.png";
 
-const RoomButtonWrapper = styled.div`
+const ButtonWrapper = styled.div`
   display: flex;
   justify-content: center;
   align-items: center;
@@ -36,6 +41,37 @@ const RoomButtonWrapper = styled.div`
   &:hover {
     background-color: #eeeeee;
   }
+`;
+const ReviewForm = styled.form`
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  height: 100%;
+  color: #654116;
+`;
+const ReviewLabel = styled.label`
+  display: flex;
+  margin-bottom: 20px;
+`;
+const ReviewTextarea = styled.textarea`
+  width: 100%;
+  height: 200px;
+  resize: none;
+  margin-bottom: 20px;
+`;
+const StarWrapper = styled.div`
+  position: relative;
+  width: 24px;
+  height: 24px;
+  cursor: pointer;
+`;
+const Button = styled.button`
+  color: #654116;
+  background-color: #f8a637;
+  width: 100px;
+  margin-bottom: 10px;
+  padding: 10px;
 `;
 
 function TextEditor(props: AppointmentForm.TextEditorProps) {
@@ -78,19 +114,108 @@ function BasicLayout({ onFieldChange, appointmentData, ...restProps }: Appointme
 
 function Header({ appointmentData, ...restProps }: AppointmentTooltip.HeaderProps) {
   const router = useRouter();
+  const [showReviewModal, setShowReviewModal] = useState(false);
+  const [score, setScore] = useState(0);
+  const [comments, setComments] = useState("");
+  const { userData } = useContext(AuthContext);
+  const isEnded = Date.now() > Date.parse(appointmentData?.endDate as string);
+
+  const handleClose = () => {
+    setScore(0);
+    setComments("");
+    setShowReviewModal(false);
+  };
+
   return (
     <AppointmentTooltip.Header {...restProps} appointmentData={appointmentData}>
-      <RoomButtonWrapper>
-        <Image
-          src={RoomButton}
-          alt="room-btn"
-          width={30}
-          onClick={() => {
-            if (!appointmentData || typeof appointmentData.id !== "string") return;
-            router.push(`/myCourses/classRoom/studentRoom/${appointmentData.id}`);
-          }}
-        />
-      </RoomButtonWrapper>
+      {isEnded || (
+        <ButtonWrapper>
+          <Image
+            src={RoomButton}
+            alt="room-btn"
+            width={30}
+            onClick={() => {
+              if (!appointmentData || typeof appointmentData.id !== "string") return;
+              router.push(`/myCourses/classRoom/studentRoom/${appointmentData.id}`);
+            }}
+          />
+        </ButtonWrapper>
+      )}
+      {/* eslint-disable @typescript-eslint/no-unsafe-call */}
+      {/* eslint-disable @typescript-eslint/no-unsafe-member-access */}
+      {isEnded && !appointmentData?.reviewedStudents?.includes(userData.uid) && (
+        <ButtonWrapper>
+          <Image
+            src={ReviewButton}
+            alt="review-btn"
+            width={26}
+            onClick={() => {
+              setShowReviewModal(true);
+            }}
+          />
+        </ButtonWrapper>
+      )}
+      {showReviewModal && (
+        <Modal handleClose={handleClose}>
+          <ReviewForm>
+            <ReviewLabel>
+              {Array.from({ length: 5 }, (v, i) => i + 1).map((starIndex) => (
+                <StarWrapper
+                  key={starIndex}
+                  onClick={() => {
+                    setScore(starIndex);
+                  }}
+                >
+                  {score >= starIndex ? (
+                    <Image src={Star} alt="star" fill sizes="contain" />
+                  ) : (
+                    <Image src={EmptyStar} alt="empty-star" fill sizes="contain" />
+                  )}
+                </StarWrapper>
+              ))}
+            </ReviewLabel>
+            <ReviewLabel>
+              <ReviewTextarea
+                placeholder="留下您的評價"
+                value={comments}
+                onChange={(e) => {
+                  setComments(e.target.value);
+                }}
+              />
+            </ReviewLabel>
+            <Button
+              type="button"
+              onClick={async () => {
+                if (score === 0) {
+                  alert("請點選星星評分");
+                  return;
+                }
+                if (!appointmentData || typeof appointmentData.teacherId !== "string") return;
+                const teacherRef = doc(db, "users", appointmentData.teacherId);
+                await updateDoc(teacherRef, {
+                  reviews: arrayUnion({
+                    userId: userData.uid,
+                    score,
+                    comments,
+                    class: appointmentData.title,
+                  }),
+                });
+                if (typeof appointmentData.id !== "string") return;
+                const roomRef = doc(db, "rooms", appointmentData.id);
+                await updateDoc(roomRef, {
+                  reviewedStudents: arrayUnion(userData.uid),
+                });
+                alert("感謝您的評論～您的支持是我們最大的動力！");
+                setComments("");
+                setScore(0);
+                setShowReviewModal(false);
+              }}
+            >
+              送出
+            </Button>
+          </ReviewForm>
+        </Modal>
+      )}
     </AppointmentTooltip.Header>
   );
 }
