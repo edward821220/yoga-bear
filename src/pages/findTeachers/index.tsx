@@ -6,6 +6,7 @@ import { collection, getDocs, query, where } from "firebase/firestore";
 import { db } from "../../../lib/firebase";
 import BearAvatar from "../../../public/member.png";
 import StarIcon from "../../../public/star.png";
+import HalfStar from "../../../public/star-half.png";
 
 const Wrapper = styled.div`
   background-color: #dfb098;
@@ -54,11 +55,22 @@ const TeacherInfo = styled.div`
   justify-content: center;
   color: #654116;
 `;
-const TeacherName = styled.p``;
-const TeacherIntroduction = styled.p``;
+const TeacherName = styled.p`
+  font-size: 18px;
+  font-weight: bold;
+  margin-bottom: 10px;
+`;
+const TeacherIntroduction = styled.p`
+  margin-bottom: 10px;
+`;
 
 const TeacherScore = styled.div`
   display: flex;
+`;
+const TeacherReviewsInfo = styled.p``;
+const StarIcons = styled.div`
+  display: flex;
+  margin-right: 10px;
 `;
 const StarWrapper = styled.div`
   position: relative;
@@ -67,17 +79,18 @@ const StarWrapper = styled.div`
 `;
 
 function FindTeachers() {
-  const [teachersList, setTeachersList] = useState<{ name: string; uid: string }[]>([]);
+  const [teachersList, setTeachersList] = useState<{ name: string; uid: string; reviews: { score: number }[] }[]>([]);
   useEffect(() => {
     const getTeachersList = async () => {
       const usersRef = collection(db, "users");
       const teachersQuery = query(usersRef, where("identity", "==", "teacher"));
       const querySnapshot = await getDocs(teachersQuery);
-      const results: { name: string; uid: string }[] = [];
+      const results: { name: string; uid: string; reviews: { score: number }[] }[] = [];
       querySnapshot.forEach((data) => {
         results.push({
           uid: data.data().uid,
           name: data.data().username,
+          reviews: data.data().reviews,
         });
       });
       setTeachersList(results);
@@ -100,24 +113,39 @@ function FindTeachers() {
                 <TeacherIntroduction>
                   Lorem ipsum dolor, sit amet consectetur adipisicing elit. Quae placeat quibusdam veniam laudantium.
                 </TeacherIntroduction>
-                <TeacherScore>
-                  <StarWrapper>
-                    <Image src={StarIcon} alt="star" fill sizes="contain" />
-                  </StarWrapper>
-                  <StarWrapper>
-                    <Image src={StarIcon} alt="star" fill sizes="contain" />
-                  </StarWrapper>
-                  <StarWrapper>
-                    <Image src={StarIcon} alt="star" fill sizes="contain" />
-                  </StarWrapper>
-                  <StarWrapper>
-                    <Image src={StarIcon} alt="star" fill sizes="contain" />
-                  </StarWrapper>
-                  <StarWrapper>
-                    <Image src={StarIcon} alt="star" fill sizes="contain" />
-                  </StarWrapper>
-                  <p>4.5分 ， 5 則評論</p>
-                </TeacherScore>
+                {teacher?.reviews?.length > 0 ? (
+                  <TeacherScore>
+                    <StarIcons>
+                      {/* eslint-disable no-unsafe-optional-chaining */}
+                      {Array.from(
+                        {
+                          length: Math.floor(
+                            teacher?.reviews?.reduce((acc, cur) => acc + cur.score, 0) / teacher?.reviews?.length
+                          ),
+                        },
+                        (v, i) => i + 1
+                      ).map((starIndex) => (
+                        <StarWrapper key={starIndex}>
+                          <Image src={StarIcon} alt="star" fill sizes="contain" />
+                        </StarWrapper>
+                      ))}
+                      {(teacher?.reviews?.reduce((acc, cur) => acc + cur.score, 0) / teacher?.reviews?.length) % 1 !==
+                        0 && (
+                        <StarWrapper>
+                          <Image src={HalfStar} alt="star" fill sizes="contain" />
+                        </StarWrapper>
+                      )}
+                    </StarIcons>
+                    <TeacherReviewsInfo>
+                      {(
+                        teacher?.reviews?.reduce((acc, cur) => acc + cur.score, 0) / teacher?.reviews?.length || 0
+                      ).toFixed(1) || 0}
+                      分 ，{teacher?.reviews?.length || 0}則評論
+                    </TeacherReviewsInfo>
+                  </TeacherScore>
+                ) : (
+                  <TeacherReviewsInfo>目前無評價</TeacherReviewsInfo>
+                )}
               </TeacherInfo>
             </Teacher>
           ))}
