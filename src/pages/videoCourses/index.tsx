@@ -9,6 +9,7 @@ import HalfStar from "../../../public/star-half.png";
 
 const Wrapper = styled.div`
   background-color: #dfb098;
+  min-height: calc(100vh - 182px);
   padding-top: 20px;
 `;
 const Container = styled.div`
