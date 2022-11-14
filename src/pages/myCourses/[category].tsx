@@ -17,7 +17,7 @@ import EmptyStar from "../../../public/star-empty.png";
 import Star from "../../../public/star.png";
 
 const Wrapper = styled.div`
-  background-color: #dfb098;
+  background-color: #f1ead8;
   min-height: calc(100vh - 182px);
   display: flex;
   padding: 20px;
@@ -100,9 +100,10 @@ const LauchFormLabelTextarea = styled.textarea`
   resize: none;
 `;
 const Button = styled.button`
-  color: #654116;
-  background-color: #f8a637;
-  width: 100px;
+  color: #fff;
+  background-color: #5d7262;
+  border-radius: 5px;
+  width: 80px;
   margin-bottom: 10px;
   padding: 10px;
 `;

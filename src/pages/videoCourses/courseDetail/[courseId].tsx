@@ -30,8 +30,10 @@ const Video = styled.video`
   margin-bottom: 20px;
 `;
 const Button = styled.button`
-  color: #654116;
-  background-color: orange;
+  color: #fff;
+  background-color: #5d7262;
+  border-radius: 5px;
+  width: 120px;
   padding: 10px;
   margin-bottom: 20px;
   cursor: pointer;

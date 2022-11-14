@@ -67,8 +67,9 @@ const StarWrapper = styled.div`
   cursor: pointer;
 `;
 const Button = styled.button`
-  color: #654116;
-  background-color: #f8a637;
+  color: #fff;
+  background-color: #5d7262;
+  border-radius: 5px;
   width: 100px;
   margin-bottom: 10px;
   padding: 10px;

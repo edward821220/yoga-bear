@@ -9,7 +9,7 @@ const Wrapper = styled.div`
   flex-direction: column;
   align-items: center;
   min-height: calc(100vh - 182px);
-  background-color: #dfb098;
+  background-color: #f1ead8;
 `;
 
 export default function Home() {

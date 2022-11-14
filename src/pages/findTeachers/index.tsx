@@ -9,7 +9,7 @@ import StarIcon from "../../../public/star.png";
 import HalfStar from "../../../public/star-half.png";
 
 const Wrapper = styled.div`
-  background-color: #dfb098;
+  background-color: #f1ead8;
   min-height: calc(100vh - 182px);
   display: flex;
   flex-direction: column;
@@ -38,7 +38,7 @@ const Teacher = styled.li`
   border-radius: 5px;
   margin-bottom: 20px;
   padding: 10px 5px;
-  background-color: #ffffff;
+  background-color: #fff;
   &:last-child {
     margin-bottom: 0;
   }

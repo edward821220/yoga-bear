@@ -9,7 +9,7 @@ import Avatar from "../../../../public/member.png";
 import Star from "../../../../public/star.png";
 
 const Wrapper = styled.div`
-  background-color: #dfb098;
+  background-color: #f1ead8;
   min-height: calc(100vh - 182px);
   padding: 20px;
   margin: 0 auto;
