@@ -10,9 +10,22 @@ const Title = styled.h2`
 `;
 const Wrapper = styled.div`
   display: flex;
+  min-height: calc(100vh - 182px);
+  padding: 20px;
+  margin: 0 auto;
 `;
-const UserViewPort = styled.div``;
-const PartnerViewPort = styled.div``;
+const UserViewPort = styled.div`
+  width: 480px;
+  height: 270px;
+  margin-bottom: 20px;
+  margin-right: 20px;
+`;
+const PartnerViewPort = styled.div`
+  width: 480px;
+  height: 270px;
+  margin-bottom: 20px;
+`;
+const Video = styled.video``;
 
 const ICE_SERVERS = {
   // you can add TURN servers here too
@@ -78,7 +91,7 @@ function TeacherRoom() {
       navigator.mediaDevices
         .getUserMedia({
           audio: true,
-          video: { width: 960, height: 540 },
+          video: { width: 480, height: 270 },
         })
         .then((stream) => {
           /* store reference to the stream and provide it to the video element */
@@ -190,7 +203,7 @@ function TeacherRoom() {
         // Can handle this however you'd like
 
         // eslint-disable-next-line @typescript-eslint/no-floating-promises
-        router.push("/");
+        router.push("/myCourses/teacherCalendar");
       }
       handleRoomJoined();
     });
@@ -266,15 +279,15 @@ function TeacherRoom() {
       rtcConnection.current.close();
       rtcConnection.current = null;
     }
-    router.push("/");
+    router.push("/myCourses/videoCourses");
   };
 
   return (
     <>
-      <Title>TeacherRoom</Title>;
+      <Title>TeacherRoom</Title>
       <Wrapper>
         <UserViewPort>
-          <video autoPlay ref={userVideo} muted />
+          <Video autoPlay ref={userVideo} />
           <div>
             <button onClick={toggleMic} type="button">
               {micActive ? "Mute Mic" : "UnMute Mic"}
@@ -288,7 +301,7 @@ function TeacherRoom() {
           </div>
         </UserViewPort>
         <PartnerViewPort>
-          <video autoPlay ref={partnerVideo} muted />
+          <Video autoPlay ref={partnerVideo} />
         </PartnerViewPort>
       </Wrapper>
     </>

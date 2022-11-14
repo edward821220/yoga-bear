@@ -10,9 +10,20 @@ const Title = styled.h2`
 `;
 const Wrapper = styled.div`
   display: flex;
+  min-height: calc(100vh - 182px);
 `;
-const UserViewPort = styled.div``;
-const PartnerViewPort = styled.div``;
+const UserViewPort = styled.div`
+  width: 480px;
+  height: 270px;
+  margin-bottom: 20px;
+  margin-right: 20px;
+`;
+const PartnerViewPort = styled.div`
+  width: 480px;
+  height: 270px;
+  margin-bottom: 20px;
+`;
+const Video = styled.video``;
 
 const ICE_SERVERS = {
   // you can add TURN servers here too
@@ -78,7 +89,7 @@ function StudentRoom() {
       navigator.mediaDevices
         .getUserMedia({
           audio: true,
-          video: { width: 960, height: 540 },
+          video: { width: 480, height: 270 },
         })
         .then((stream) => {
           /* store reference to the stream and provide it to the video element */
@@ -181,16 +192,16 @@ function StudentRoom() {
     channelRef.current.bind("pusher:subscription_succeeded", (members: Members) => {
       if (members.count === 1) {
         // when subscribing, if you are the first member, you are the host
-        host.current = true;
+        alert("老師還沒來唷！請稍候再進教室～");
+        router.push("/myCourses/studentCalendar");
       }
 
       // example only supports 2 users per call
       if (members.count > 2) {
         // 3+ person joining will get sent back home
         // Can handle this however you'd like
-
         // eslint-disable-next-line @typescript-eslint/no-floating-promises
-        router.push("/");
+        router.push("/myCourses/studentCalendar");
       }
       handleRoomJoined();
     });
@@ -266,7 +277,7 @@ function StudentRoom() {
       rtcConnection.current.close();
       rtcConnection.current = null;
     }
-    router.push("/");
+    router.push("/myCourses/videoCourses");
   };
 
   return (
@@ -274,7 +285,7 @@ function StudentRoom() {
       <Title>StudentRoom</Title>
       <Wrapper>
         <UserViewPort>
-          <video autoPlay ref={userVideo} muted />
+          <Video autoPlay ref={userVideo} />
           <div>
             <button onClick={toggleMic} type="button">
               {micActive ? "Mute Mic" : "UnMute Mic"}
@@ -288,7 +299,7 @@ function StudentRoom() {
           </div>
         </UserViewPort>
         <PartnerViewPort>
-          <video autoPlay ref={partnerVideo} muted />
+          <Video autoPlay ref={partnerVideo} />
         </PartnerViewPort>
       </Wrapper>
     </>
