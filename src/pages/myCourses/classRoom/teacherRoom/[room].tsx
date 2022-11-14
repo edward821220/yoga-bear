@@ -15,15 +15,16 @@ const Wrapper = styled.div`
   margin: 0 auto;
 `;
 const UserViewPort = styled.div`
-  width: 480px;
-  height: 270px;
-  margin-bottom: 20px;
+  width: 400px;
+  height: 300px;
+  border: 1px solid red;
   margin-right: 20px;
 `;
 const PartnerViewPort = styled.div`
-  width: 480px;
-  height: 270px;
-  margin-bottom: 20px;
+  width: 320px;
+  height: 240px;
+  border: 1px solid red;
+  margin-right: 20px;
 `;
 const Video = styled.video``;
 
@@ -59,6 +60,7 @@ function TeacherRoom() {
 
   const userVideo = useRef<HTMLVideoElement>(null);
   const partnerVideo = useRef<HTMLVideoElement>(null);
+  const secondPartnerVideo = useRef<HTMLVideoElement>(null);
 
   useEffect(() => {
     if (!room || typeof room !== "string") return undefined;
@@ -91,7 +93,7 @@ function TeacherRoom() {
       navigator.mediaDevices
         .getUserMedia({
           audio: true,
-          video: { width: 480, height: 270 },
+          video: true,
         })
         .then((stream) => {
           /* store reference to the stream and provide it to the video element */
@@ -112,12 +114,10 @@ function TeacherRoom() {
         });
     };
     const handlePeerLeaving = () => {
-      host.current = true;
       if (partnerVideo.current?.srcObject) {
         (partnerVideo.current.srcObject as MediaStream).getTracks().forEach((track) => track.stop()); // Stops receiving all track of Peer.
         partnerVideo.current.srcObject = null;
       }
-
       // Safely closes the existing connection established with the peer who left.
       if (rtcConnection.current) {
         rtcConnection.current.ontrack = null;
@@ -150,29 +150,10 @@ function TeacherRoom() {
       }
     };
 
-    const handleReceivedOffer = (offer: RTCSessionDescriptionInit) => {
-      rtcConnection.current = createPeerConnection();
-      userStream.current?.getTracks().forEach((track) => {
-        // Adding tracks to the RTCPeerConnection to give peer access to it
-        if (!userStream.current) return;
-        rtcConnection.current?.addTrack(track, userStream.current);
-      });
-
-      rtcConnection.current.setRemoteDescription(offer);
-      rtcConnection.current
-        .createAnswer()
-        .then((answer) => {
-          if (!rtcConnection.current) return;
-          rtcConnection.current.setLocalDescription(answer);
-          channelRef.current?.trigger("client-answer", answer);
-        })
-        .catch((error) => {
-          alert(error);
-        });
-    };
     const handleAnswerReceived = (answer: RTCSessionDescriptionInit) => {
       rtcConnection.current?.setRemoteDescription(answer).catch((error) => alert(error));
     };
+
     const handlerNewIceCandidateMsg = (incoming: RTCIceCandidate) => {
       // We cast the incoming candidate to RTCIceCandidate
       const candidate = new RTCIceCandidate(incoming);
@@ -211,13 +192,6 @@ function TeacherRoom() {
     // when a member leaves the chat
     channelRef.current.bind("pusher:member_removed", () => {
       handlePeerLeaving();
-    });
-
-    channelRef.current.bind("client-offer", (offer: RTCSessionDescriptionInit) => {
-      // offer is sent by the host, so only non-host should handle it
-      if (!host.current) {
-        handleReceivedOffer(offer);
-      }
     });
 
     // When the second peer tells host they are ready to start the call
@@ -279,7 +253,7 @@ function TeacherRoom() {
       rtcConnection.current.close();
       rtcConnection.current = null;
     }
-    router.push("/myCourses/videoCourses");
+    router.push("/myCourses/teacherCalendar");
   };
 
   return (
@@ -287,22 +261,25 @@ function TeacherRoom() {
       <Title>TeacherRoom</Title>
       <Wrapper>
         <UserViewPort>
-          <Video autoPlay ref={userVideo} />
-          <div>
-            <button onClick={toggleMic} type="button">
-              {micActive ? "Mute Mic" : "UnMute Mic"}
-            </button>
-            <button onClick={leaveRoom} type="button">
-              Leave
-            </button>
-            <button onClick={toggleCamera} type="button">
-              {cameraActive ? "Stop Camera" : "Start Camera"}
-            </button>
-          </div>
+          <Video autoPlay ref={userVideo} width={400} height={320} />
         </UserViewPort>
         <PartnerViewPort>
-          <Video autoPlay ref={partnerVideo} />
+          <Video autoPlay ref={partnerVideo} width={320} height={240} />
         </PartnerViewPort>
+        <PartnerViewPort>
+          <Video autoPlay ref={secondPartnerVideo} width={320} height={240} />
+        </PartnerViewPort>
+        <div>
+          <button onClick={toggleMic} type="button">
+            {micActive ? "Mute Mic" : "UnMute Mic"}
+          </button>
+          <button onClick={leaveRoom} type="button">
+            Leave
+          </button>
+          <button onClick={toggleCamera} type="button">
+            {cameraActive ? "Stop Camera" : "Start Camera"}
+          </button>
+        </div>
       </Wrapper>
     </>
   );

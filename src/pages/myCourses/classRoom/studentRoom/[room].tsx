@@ -13,15 +13,16 @@ const Wrapper = styled.div`
   min-height: calc(100vh - 182px);
 `;
 const UserViewPort = styled.div`
-  width: 480px;
-  height: 270px;
-  margin-bottom: 20px;
+  width: 400px;
+  height: 300px;
+  border: 1px solid red;
   margin-right: 20px;
 `;
 const PartnerViewPort = styled.div`
-  width: 480px;
-  height: 270px;
-  margin-bottom: 20px;
+  width: 400px;
+  height: 300px;
+  border: 1px solid red;
+  margin-right: 20px;
 `;
 const Video = styled.video``;
 
@@ -89,7 +90,7 @@ function StudentRoom() {
       navigator.mediaDevices
         .getUserMedia({
           audio: true,
-          video: { width: 480, height: 270 },
+          video: true,
         })
         .then((stream) => {
           /* store reference to the stream and provide it to the video element */
@@ -168,16 +169,6 @@ function StudentRoom() {
           alert(error);
         });
     };
-    const handleAnswerReceived = (answer: RTCSessionDescriptionInit) => {
-      rtcConnection.current?.setRemoteDescription(answer).catch((error) => alert(error));
-    };
-    const handlerNewIceCandidateMsg = (incoming: RTCIceCandidate) => {
-      // We cast the incoming candidate to RTCIceCandidate
-      const candidate = new RTCIceCandidate(incoming);
-      rtcConnection.current?.addIceCandidate(candidate).catch((error) => {
-        alert(error);
-      });
-    };
     // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
     pusherRef.current = new Pusher(process.env.NEXT_PUBLIC_PUSHER_KEY!, {
       authEndpoint: "/api/pusher/auth",
@@ -193,14 +184,6 @@ function StudentRoom() {
       if (members.count === 1) {
         // when subscribing, if you are the first member, you are the host
         alert("老師還沒來唷！請稍候再進教室～");
-        router.push("/myCourses/studentCalendar");
-      }
-
-      // example only supports 2 users per call
-      if (members.count > 2) {
-        // 3+ person joining will get sent back home
-        // Can handle this however you'd like
-        // eslint-disable-next-line @typescript-eslint/no-floating-promises
         router.push("/myCourses/studentCalendar");
       }
       handleRoomJoined();
@@ -222,18 +205,6 @@ function StudentRoom() {
     // This happens after the second peer has grabbed their media
     channelRef.current.bind("client-ready", () => {
       initiateCall();
-    });
-
-    channelRef.current.bind("client-answer", (answer: RTCSessionDescriptionInit) => {
-      // answer is sent by non-host, so only host should handle it
-      if (host.current) {
-        handleAnswerReceived(answer);
-      }
-    });
-
-    channelRef.current.bind("client-ice-candidate", (iceCandidate: RTCIceCandidate) => {
-      // answer is sent by non-host, so only host should handle it
-      handlerNewIceCandidateMsg(iceCandidate);
     });
 
     return () => {
@@ -285,7 +256,7 @@ function StudentRoom() {
       <Title>StudentRoom</Title>
       <Wrapper>
         <UserViewPort>
-          <Video autoPlay ref={userVideo} />
+          <Video autoPlay ref={userVideo} width={400} height={320} />
           <div>
             <button onClick={toggleMic} type="button">
               {micActive ? "Mute Mic" : "UnMute Mic"}
@@ -299,7 +270,7 @@ function StudentRoom() {
           </div>
         </UserViewPort>
         <PartnerViewPort>
-          <Video autoPlay ref={partnerVideo} />
+          <Video autoPlay ref={partnerVideo} width={400} height={320} />
         </PartnerViewPort>
       </Wrapper>
     </>
