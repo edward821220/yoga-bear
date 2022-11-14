@@ -227,6 +227,9 @@ function StudentRoom() {
 
     return () => {
       if (pusherRef.current) pusherRef.current.unsubscribe(`presence-${room}`);
+      userStream.current?.getTracks().forEach((track) => {
+        track.enabled = false; // eslint-disable-line no-param-reassign
+      });
     };
   }, [room, router]);
 
@@ -268,7 +271,7 @@ function StudentRoom() {
 
   return (
     <>
-      <Title>StudentRoom</Title>;
+      <Title>StudentRoom</Title>
       <Wrapper>
         <UserViewPort>
           <video autoPlay ref={userVideo} muted />

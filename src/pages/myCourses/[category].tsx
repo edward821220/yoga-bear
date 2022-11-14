@@ -5,7 +5,7 @@ import Link from "next/link";
 import Image from "next/image";
 import { useRouter } from "next/router";
 import { ref, getDownloadURL, uploadBytesResumable } from "firebase/storage";
-import { collection, doc, setDoc, getDocs, getDoc, query, where } from "firebase/firestore";
+import { collection, doc, setDoc, getDoc, updateDoc, arrayUnion } from "firebase/firestore";
 import { AuthContext } from "../../contexts/authContext";
 import { storage, db } from "../../../lib/firebase";
 import Modal from "../../components/modal";
@@ -13,31 +13,45 @@ import Bear from "../../../public/bear.png";
 import Trash from "../../../public/trash.png";
 import TeacherCalendar from "../../components/calendar/teacherCalendar";
 import StudentCalendar from "../../components/calendar/studentCalendar";
+import EmptyStar from "../../../public/star-empty.png";
+import Star from "../../../public/star.png";
 
 const Wrapper = styled.div`
+  background-color: #dfb098;
+  min-height: calc(100vh - 182px);
   display: flex;
-  min-height: 77vh;
-  padding: 20px 0;
+  padding: 20px;
 `;
 const SideBar = styled.div`
-  width: 20%;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
   text-align: center;
+  background-color: #fff;
+  width: 20%;
+  height: 500px;
+  border: 2px solid #654116;
+  border-radius: 5px;
+  margin-right: 20px;
 `;
 const SideBarSection = styled.ul`
   margin-bottom: 50px;
 `;
 const SideBarTitle = styled.h3`
   font-size: 24px;
+  font-weight: bold;
   margin-bottom: 20px;
-  color: #097be6;
+  color: #654116;
 `;
 const SideBarLink = styled.li`
   font-size: 16px;
   margin-bottom: 20px;
+
   a {
     transition: 0.2s color linear;
+    color: #654116;
     &:hover {
-      color: red;
+      color: #5d7262;
     }
   }
 `;
@@ -54,6 +68,13 @@ const LauchForm = styled.form`
   flex-direction: column;
   justify-content: center;
   align-items: center;
+  width: 60%;
+  background-color: #fff;
+  border: 2px solid #654116;
+  border-radius: 5px;
+  padding: 20px;
+  margin: 0 auto;
+  color: #654116;
 `;
 const LauchFormLabel = styled.label`
   display: flex;
@@ -79,9 +100,16 @@ const LauchFormLabelTextarea = styled.textarea`
   resize: none;
 `;
 const Button = styled.button`
-  margin-bottom: 20px;
-  padding: 10px;
+  color: #654116;
+  background-color: #f8a637;
   width: 100px;
+  margin-bottom: 10px;
+  padding: 10px;
+`;
+const ButtonWrapper = styled.div`
+  display: flex;
+  justify-content: end;
+  width: 100%;
 `;
 const RemoveIcon = styled.div`
   margin-bottom: 10px;
@@ -91,8 +119,18 @@ const MyCoursesList = styled.ul`
   flex-wrap: wrap;
 `;
 const MyCourse = styled.li`
-  margin-right: 20px;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  text-align: center;
+  color: #654116;
+  align-items: center;
   flex-basis: 48%;
+  background-color: #fff;
+  padding: 10px;
+  border: 2px solid #654116;
+  border-radius: 5px;
+  margin-right: 20px;
   margin-bottom: 20px;
 `;
 const CourseCover = styled.div`
@@ -103,13 +141,48 @@ const CourseCover = styled.div`
 `;
 const CourseTitle = styled.h3`
   font-size: 24px;
+  margin-bottom: 10px;
 `;
 const CalendarWrapper = styled.div`
   width: 90%;
   margin: 0 auto;
 `;
+const ReviewForm = styled.form`
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  height: 100%;
+  color: #654116;
+`;
+const ReviewLabel = styled.label`
+  display: flex;
+  margin-bottom: 20px;
+`;
+const ReviewTextarea = styled.textarea`
+  width: 100%;
+  height: 200px;
+  resize: none;
+  margin-bottom: 20px;
+`;
+const StarWrapper = styled.div`
+  position: relative;
+  width: 24px;
+  height: 24px;
+  cursor: pointer;
+`;
+
+interface Review {
+  userId: string;
+  score: number;
+  comments: string;
+}
+
 function VideoCourses({ uid }: { uid: string }) {
-  const [courses, setCourses] = useState<{ name: string; cover: string; id: string }[]>();
+  const [courses, setCourses] = useState<{ name: string; cover: string; id: string; reviews?: Review[] }[]>();
+  const [showReviewModal, setShowReviewModal] = useState<number | boolean>(false);
+  const [score, setScore] = useState(0);
+  const [comments, setComments] = useState("");
 
   useEffect(() => {
     const getCourses = async () => {
@@ -124,7 +197,7 @@ function VideoCourses({ uid }: { uid: string }) {
         setCourses([]);
         return;
       }
-      const results: { name: string; cover: string; id: string }[] = [];
+      const results: { name: string; cover: string; id: string; reviews: Review[] }[] = [];
       await Promise.all(
         myVideoCourses.map(async (id: string) => {
           const videoDocRef = doc(db, "video_courses", id);
@@ -134,6 +207,7 @@ function VideoCourses({ uid }: { uid: string }) {
               id: datas.data().id,
               name: datas.data().name,
               cover: datas.data().cover,
+              reviews: datas.data().reviews,
             });
           }
         })
@@ -143,13 +217,18 @@ function VideoCourses({ uid }: { uid: string }) {
     getCourses();
   }, [uid]);
 
+  const handleClose = () => {
+    setScore(0);
+    setComments("");
+    setShowReviewModal(false);
+  };
+
   if (courses?.length === 0) {
     return <p>目前沒有課程唷！</p>;
   }
-
   return (
     <MyCoursesList>
-      {courses?.map((course) => (
+      {courses?.map((course, courseIndex) => (
         <MyCourse key={course.name}>
           <CourseCover>
             <Link href={`/myCourses/classRoom/videoRoom/${course.id}`}>
@@ -157,6 +236,82 @@ function VideoCourses({ uid }: { uid: string }) {
             </Link>
           </CourseCover>
           <CourseTitle>{course.name}</CourseTitle>
+          {course?.reviews?.some((review) => review.userId === uid) || (
+            <ButtonWrapper>
+              <Button
+                type="button"
+                onClick={() => {
+                  setShowReviewModal(courseIndex);
+                }}
+              >
+                評價
+              </Button>
+            </ButtonWrapper>
+          )}
+          {showReviewModal === courseIndex && (
+            <Modal handleClose={handleClose}>
+              <ReviewForm>
+                <ReviewLabel>
+                  {Array.from({ length: 5 }, (v, i) => i + 1).map((starIndex) => (
+                    <StarWrapper
+                      key={starIndex}
+                      onClick={() => {
+                        setScore(starIndex);
+                      }}
+                    >
+                      {score >= starIndex ? (
+                        <Image src={Star} alt="star" fill sizes="contain" />
+                      ) : (
+                        <Image src={EmptyStar} alt="empty-star" fill sizes="contain" />
+                      )}
+                    </StarWrapper>
+                  ))}
+                </ReviewLabel>
+                <ReviewLabel>
+                  <ReviewTextarea
+                    placeholder="留下您的評價"
+                    value={comments}
+                    onChange={(e) => {
+                      setComments(e.target.value);
+                    }}
+                  />
+                </ReviewLabel>
+                <Button
+                  type="button"
+                  onClick={async () => {
+                    if (score === 0) {
+                      alert("請點選星星評分");
+                      return;
+                    }
+                    const courseRef = doc(db, "video_courses", course.id);
+                    await updateDoc(courseRef, {
+                      reviews: arrayUnion({
+                        userId: uid,
+                        score,
+                        comments,
+                      }),
+                    });
+                    alert("感謝您的評論～您的支持是我們最大的動力！");
+                    setCourses(
+                      produce((draft) => {
+                        if (!draft) return;
+                        draft[courseIndex].reviews?.push({
+                          userId: uid,
+                          score,
+                          comments,
+                        });
+                      })
+                    );
+                    setComments("");
+                    setScore(0);
+                    setShowReviewModal(false);
+                  }}
+                >
+                  送出
+                </Button>
+              </ReviewForm>
+            </Modal>
+          )}
         </MyCourse>
       ))}
     </MyCoursesList>
@@ -283,7 +438,6 @@ function LaunchVideoCourse({ uid }: { uid: string }) {
 
   return (
     <>
-      <MainTitle>影音課程上架</MainTitle>
       <LauchForm onSubmit={handleSubmit}>
         <LauchFormLabel>
           <LauchFormLabelText>課程標題</LauchFormLabelText>

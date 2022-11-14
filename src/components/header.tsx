@@ -20,12 +20,12 @@ const Wrapper = styled.header`
   flex-wrap: wrap;
   align-items: center;
   justify-content: space-between;
-  background-color: #ece5da;
+  background-color: #f2deba;
   height: 100px;
   position: sticky;
   top: 0;
   z-index: 99;
-  margin-bottom: 36px;
+  border-bottom: 6px solid #5d7262;
 `;
 const LogoWrapper = styled.div`
   margin-right: 100px;
@@ -40,7 +40,7 @@ const HeaderLink = styled.li`
   margin-right: 36px;
   font-size: 18px;
   line-height: 40px;
-  border: 2px solid #654116;
+  border: 2px solid #5d7262;
   border-radius: 5px;
   background-color: #fff;
   width: 120px;
@@ -100,8 +100,8 @@ const CartIconWrapper = styled.li`
     position: absolute;
     bottom: 0;
     transform: translateY(1px) translateX(-5px);
-    background-color: #f4d5b0;
-    border: 2px solid #654116;
+    background-color: #f7ecde;
+    border: 2px solid #5d7262;
     border-radius: 50%;
     z-index: -1;
   }
@@ -114,10 +114,10 @@ const OrderQty = styled.div`
   text-align: center;
   font-size: 13px;
   bottom: 0;
-  right: 0;
+  right: -10px;
   border-radius: 50%;
-  background-color: #fff;
-  color: #654116;
+  background-color: #5d7262;
+  color: #fff;
 `;
 
 const MemberIconWrapper = styled.li`
@@ -132,9 +132,9 @@ const MemberIconWrapper = styled.li`
     bottom: 0;
     transform: translateY(5px) translateX(-5px);
     position: absolute;
-    background-color: #f4d5b0;
+    background-color: #f7ecde;
     border-radius: 50%;
-    border: 2px solid #654116;
+    border: 2px solid #5d7262;
     z-index: -1;
   }
 `;

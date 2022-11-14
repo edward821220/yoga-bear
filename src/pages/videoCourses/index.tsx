@@ -4,12 +4,17 @@ import Link from "next/link";
 import Image from "next/image";
 import { collection, getDocs } from "firebase/firestore";
 import { db } from "../../../lib/firebase";
+import StarIcon from "../../../public/star.png";
+import HalfStar from "../../../public/star-half.png";
 
 const Wrapper = styled.div`
+  background-color: #dfb098;
+  min-height: calc(100vh - 182px);
+  padding-top: 20px;
+`;
+const Container = styled.div`
   max-width: 1280px;
   margin: 0 auto;
-  min-height: 77vh;
-  padding: 20px 0;
   display: flex;
   align-items: center;
   flex-direction: column;
@@ -20,7 +25,10 @@ const CoursesList = styled.ul`
   width: 80%;
 `;
 const Course = styled.li`
-  border: 1px solid gray;
+  color: #654116;
+  background-color: #ffffff;
+  border: 2px solid #654116;
+  border-radius: 5px;
   margin-right: 20px;
   margin-bottom: 20px;
 `;
@@ -31,12 +39,27 @@ const CourseCover = styled.div`
   margin-bottom: 10px;
 `;
 const CourseInfos = styled.div`
-  width: 200px;
+  width: 100%;
   margin-left: 10px;
 `;
 const CourseInfo = styled.p`
   font-size: 18px;
   margin-bottom: 10px;
+`;
+const CourseScore = styled.div`
+  display: flex;
+  margin-bottom: 10px;
+`;
+const CourseReviewsInfo = styled.p``;
+
+const StarIcons = styled.div`
+  display: flex;
+  margin-right: 10px;
+`;
+const StarWrapper = styled.div`
+  position: relative;
+  width: 20px;
+  height: 20px;
 `;
 
 interface CourseInterface {
@@ -44,7 +67,7 @@ interface CourseInterface {
   id: string;
   price: string;
   cover: string;
-  reviews: { score: string; comment: string };
+  reviews: { score: number; comments: string }[];
 }
 
 function VideoCourses() {
@@ -58,7 +81,7 @@ function VideoCourses() {
         id: string;
         price: string;
         cover: string;
-        reviews: { score: string; comment: string };
+        reviews: { score: number; comments: string }[];
       }[] = [];
       querySnapshot.forEach((data) => {
         results.push({
@@ -76,26 +99,56 @@ function VideoCourses() {
 
   return (
     <Wrapper>
-      <CoursesList>
-        {coursesList.map((course) => (
-          <Course key={course.id}>
-            <CourseCover>
-              <Link href={`/videoCourses/courseDetail/${course.id}`}>
-                <Image src={course.cover} alt="cover" fill />
-              </Link>
-            </CourseCover>
-            <CourseInfos>
-              <CourseInfo>{course.name}</CourseInfo>
-              <CourseInfo>NT. {course.price}</CourseInfo>
-              {course.reviews.score ? (
-                <CourseInfo>{course.reviews.score}</CourseInfo>
-              ) : (
-                <CourseInfo>目前無評價</CourseInfo>
-              )}
-            </CourseInfos>
-          </Course>
-        ))}
-      </CoursesList>
+      <Container>
+        <CoursesList>
+          {coursesList.map((course) => (
+            <Course key={course.id}>
+              <CourseCover>
+                <Link href={`/videoCourses/courseDetail/${course.id}`}>
+                  <Image src={course.cover} alt="cover" fill />
+                </Link>
+              </CourseCover>
+              <CourseInfos>
+                <CourseInfo>{course.name}</CourseInfo>
+                <CourseInfo>NT. {course.price}</CourseInfo>
+                {course?.reviews?.length > 0 ? (
+                  <CourseScore>
+                    <StarIcons>
+                      {/* eslint-disable no-unsafe-optional-chaining */}
+                      {Array.from(
+                        {
+                          length: Math.floor(
+                            course?.reviews?.reduce((acc, cur) => acc + cur.score, 0) / course?.reviews?.length
+                          ),
+                        },
+                        (v, i) => i + 1
+                      ).map((starIndex) => (
+                        <StarWrapper key={starIndex}>
+                          <Image src={StarIcon} alt="star" fill sizes="contain" />
+                        </StarWrapper>
+                      ))}
+                      {(course?.reviews?.reduce((acc, cur) => acc + cur.score, 0) / course?.reviews?.length) % 1 !==
+                        0 && (
+                        <StarWrapper>
+                          <Image src={HalfStar} alt="star" fill sizes="contain" />
+                        </StarWrapper>
+                      )}
+                    </StarIcons>
+                    <CourseReviewsInfo>
+                      {(
+                        course?.reviews?.reduce((acc, cur) => acc + cur.score, 0) / course?.reviews?.length || 0
+                      ).toFixed(1) || 0}
+                      分 ，{course?.reviews?.length || 0}則評論
+                    </CourseReviewsInfo>
+                  </CourseScore>
+                ) : (
+                  <CourseReviewsInfo>目前無評價</CourseReviewsInfo>
+                )}
+              </CourseInfos>
+            </Course>
+          ))}
+        </CoursesList>
+      </Container>
     </Wrapper>
   );
 }

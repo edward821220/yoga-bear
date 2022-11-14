@@ -10,6 +10,10 @@ import { orderQtyState, bearMoneyState } from "../../../lib/recoil";
 import RemoveIcon from "../../../public/trash.png";
 
 const Wrapper = styled.div`
+  background-color: #dfb098;
+  min-height: calc(100vh - 182px);
+`;
+const Container = styled.div`
   margin: 0 auto;
   max-width: 1280px;
   padding: 20px;
@@ -17,23 +21,26 @@ const Wrapper = styled.div`
 
 const CartContainer = styled.div`
   display: flex;
-`;
-
-const Title = styled.h2`
-  font-size: 24px;
-  margin-bottom: 10px;
+  color: #654116;
 `;
 
 const CartItems = styled.ul`
-  border-top: 1px solid gray;
-  padding-top: 20px;
+  background-color: #fff;
   width: 80%;
+  border: 2px solid #654116;
+  border-radius: 5px;
+  padding: 20px 10px 0px 10px;
   margin-right: 20px;
 `;
 const CartItem = styled.li`
   display: flex;
   width: 100%;
   margin-bottom: 20px;
+  padding-bottom: 20px;
+  border-bottom: 2px solid #654116;
+  &:last-child {
+    border-bottom: none;
+  }
 `;
 const ItemInfo = styled.div`
   flex-basis: 70%;
@@ -52,41 +59,51 @@ const ItemPrice = styled.p`
 `;
 const ItemRemove = styled.div`
   flex-basis: 10%;
+  display: flex;
+  justify-content: center;
 `;
 const RemoveIconWrapper = styled.div`
   position: relative;
   height: 20px;
   width: 20px;
   cursor: pointer;
+  padding-left: 10px;
 `;
 
 const OrderDetails = styled.div`
   flex-basis: 30%;
-  border: 1px solid gray;
-  padding: 20px;
+  background-color: #fff;
   height: 50%;
+  border: 2px solid #654116;
+  border-radius: 5px;
+  padding: 10px;
 `;
 const DetailsTitle = styled.h3`
   font-size: 18px;
   text-align: center;
   padding-bottom: 20px;
-  border-bottom: 1px solid gray;
+  border-bottom: 2px solid #654116;
   margin-bottom: 30px;
+`;
+const DetailItems = styled.div`
+  display: flex;
+  justify-content: space-between;
 `;
 const DetailItem = styled.p`
   margin-bottom: 20px;
 `;
-const Subtotal = styled.p`
-  font-size: 36px;
-  color: orange;
-  margin-bottom: 30px;
+const Total = styled(DetailItems)`
+  border-top: 2px solid #654116;
+  padding-top: 10px;
 `;
 const Button = styled.button`
-  background-color: orange;
-  color: white;
-  padding: 10px;
   display: block;
-  width: 100%;
+  font-size: 16px;
+  color: #654116;
+  background-color: orange;
+  padding: 10px;
+  width: 50%;
+  margin: 0 auto;
   cursor: pointer;
 `;
 
@@ -135,55 +152,65 @@ function Cart() {
         });
       });
       alert("購買成功！可以去上課囉～");
+      setOrderQty(0);
       router.push("/myCourses/videoCourses");
     }
   };
 
   return (
     <Wrapper>
-      <Title>購物車</Title>
-      <CartContainer>
-        <CartItems>
-          <CartItem>
-            <ItemInfo>課程名稱</ItemInfo>
-            <ItemPrice>價格</ItemPrice>
-            <ItemRemove>刪除</ItemRemove>
-          </CartItem>
-          {cartItems?.map((item, index) => (
-            <CartItem key={item.id}>
-              <ItemInfo>
-                <CoverWrapper>
-                  <Image src={item.cover} alt="cover" fill />
-                </CoverWrapper>
-                <ItemName>{item.name}</ItemName>
-              </ItemInfo>
-              <ItemPrice>{item.price}</ItemPrice>
-              <ItemRemove>
-                <RemoveIconWrapper
-                  onClick={() => {
-                    setCartItems(cartItems?.filter((_, removeIndex) => index !== removeIndex));
-                    setOrderQty(orderQty - 1);
-                    const docRef = doc(db, "users", uid);
-                    updateDoc(docRef, {
-                      cartItems: arrayRemove({ cover: item.cover, name: item.name, price: item.price, id: item.id }),
-                    });
-                  }}
-                >
-                  <Image src={RemoveIcon} alt="remove" fill />
-                </RemoveIconWrapper>
-              </ItemRemove>
+      <Container>
+        <CartContainer>
+          <CartItems>
+            <CartItem>
+              <ItemInfo>課程名稱</ItemInfo>
+              <ItemPrice>價格</ItemPrice>
+              <ItemRemove>刪除</ItemRemove>
             </CartItem>
-          ))}
-        </CartItems>
-        <OrderDetails>
-          <DetailsTitle>訂單明細</DetailsTitle>
-          <DetailItem>小計</DetailItem>
-          <Subtotal>NT. {subtotal}</Subtotal>
-          <Button type="button" onClick={handleCheckout}>
-            結帳去
-          </Button>
-        </OrderDetails>
-      </CartContainer>
+            {cartItems?.map((item, index) => (
+              <CartItem key={item.id}>
+                <ItemInfo>
+                  <CoverWrapper>
+                    <Image src={item.cover} alt="cover" fill />
+                  </CoverWrapper>
+                  <ItemName>{item.name}</ItemName>
+                </ItemInfo>
+                <ItemPrice>{item.price}</ItemPrice>
+                <ItemRemove>
+                  <RemoveIconWrapper
+                    onClick={() => {
+                      setCartItems(cartItems?.filter((_, removeIndex) => index !== removeIndex));
+                      setOrderQty(orderQty - 1);
+                      const docRef = doc(db, "users", uid);
+                      updateDoc(docRef, {
+                        cartItems: arrayRemove({ cover: item.cover, name: item.name, price: item.price, id: item.id }),
+                      });
+                    }}
+                  >
+                    <Image src={RemoveIcon} alt="remove" fill sizes="contain" />
+                  </RemoveIconWrapper>
+                </ItemRemove>
+              </CartItem>
+            ))}
+          </CartItems>
+          <OrderDetails>
+            <DetailsTitle>訂單明細</DetailsTitle>
+            {cartItems?.map((item) => (
+              <DetailItems key={item.id}>
+                <DetailItem>{item.name}</DetailItem>
+                <DetailItem>NT. {item.price}</DetailItem>
+              </DetailItems>
+            ))}
+            <Total>
+              <DetailItem>總計</DetailItem>
+              <DetailItem>NT. {subtotal}</DetailItem>
+            </Total>
+            <Button type="button" onClick={handleCheckout}>
+              結帳去
+            </Button>
+          </OrderDetails>
+        </CartContainer>
+      </Container>
     </Wrapper>
   );
 }
