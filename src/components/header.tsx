@@ -170,11 +170,13 @@ const RadioInput = styled.input`
 
 const Button = styled.button`
   display: block;
-  margin-bottom: 10px;
-  padding: 5px;
   color: #fff;
   background-color: #5d7262;
   border-radius: 5px;
+  width: 100px;
+  padding: 5px;
+  margin-bottom: 10px;
+  cursor: pointer;
 `;
 const ErrorMessage = styled.p`
   color: red;

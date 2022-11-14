@@ -178,6 +178,7 @@ const Button = styled.button`
   border-radius: 5px;
   height: 40px;
   padding: 5px;
+  cursor: pointer;
 `;
 
 interface MessageInterface {

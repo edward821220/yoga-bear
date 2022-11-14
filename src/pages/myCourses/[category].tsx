@@ -106,6 +106,7 @@ const Button = styled.button`
   width: 80px;
   margin-bottom: 10px;
   padding: 10px;
+  cursor: pointer;
 `;
 const ButtonWrapper = styled.div`
   display: flex;

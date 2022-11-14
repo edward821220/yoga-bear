@@ -73,6 +73,7 @@ const Button = styled.button`
   width: 100px;
   margin-bottom: 10px;
   padding: 10px;
+  cursor: pointer;
 `;
 
 function TextEditor(props: AppointmentForm.TextEditorProps) {

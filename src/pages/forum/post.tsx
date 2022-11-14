@@ -85,6 +85,7 @@ const Button = styled.button`
   padding: 10px;
   font-size: 18px;
   margin: 0 auto;
+  cursor: pointer;
 `;
 
 const formats = [
