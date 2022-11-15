@@ -88,6 +88,9 @@ function BasicLayout({ onFieldChange, appointmentData, ...restProps }: Appointme
   const onDescriptionChange = (nextValue: string) => {
     onFieldChange({ description: nextValue });
   };
+  const onPriceChange = (nextValue: string) => {
+    onFieldChange({ price: nextValue });
+  };
   const onPrecautionChange = (nextValue: string) => {
     onFieldChange({ precaution: nextValue });
   };
@@ -99,6 +102,14 @@ function BasicLayout({ onFieldChange, appointmentData, ...restProps }: Appointme
         value={appointmentData.description}
         onValueChange={onDescriptionChange}
         placeholder="請輸入課程內容（若是實體課請填寫上課地點）"
+        type="ordinaryTextEditor"
+        readOnly
+      />
+      <AppointmentForm.Label text="課程價格" type="titleLabel" />
+      <AppointmentForm.TextEditor
+        value={appointmentData.price}
+        onValueChange={onPriceChange}
+        placeholder="請輸入課程價格"
         type="ordinaryTextEditor"
         readOnly
       />
