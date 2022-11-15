@@ -200,6 +200,9 @@ const FileLable = styled.label`
 const FileInput = styled.input`
   display: none;
 `;
+const MemberInfo = styled.p`
+  margin-bottom: 20px;
+`;
 
 const Button = styled.button`
   display: block;
@@ -516,17 +519,19 @@ function MemberModal({
         </Form>
       )}
       {isLogin && (
-        <Form onSubmit={handleSignup}>
+        <Form>
           <FormTitle>會員資訊</FormTitle>
           <Avatar>
             <Image src={userData.avatar || MemberLogo} alt="avatar" fill sizes="contain" />
           </Avatar>
+          <MemberInfo>用戶名稱：{userData.username}</MemberInfo>
+          <MemberInfo>用戶身份：{userData.identity}</MemberInfo>
           <FileLable onChange={handleUploadAvatar}>
             頭像上傳
             <FileInput type="file" />
           </FileLable>
           <Button
-            type="submit"
+            type="button"
             onClick={() => {
               logout();
               setOrderQty(0);
