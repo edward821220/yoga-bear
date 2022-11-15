@@ -510,7 +510,7 @@ function MemberModal({
               </Label>
               <Label>
                 <LabelText>證照上傳</LabelText>
-                <FormInput type="file" required />
+                <FormInput type="file" accept="image/*, application/pdf" required />
               </Label>
             </>
           )}
@@ -528,7 +528,7 @@ function MemberModal({
           <MemberInfo>用戶身份：{userData.identity}</MemberInfo>
           <FileLable onChange={handleUploadAvatar}>
             頭像上傳
-            <FileInput type="file" />
+            <FileInput type="file" accept="image/*" />
           </FileLable>
           <Button
             type="button"
