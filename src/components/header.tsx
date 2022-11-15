@@ -201,7 +201,8 @@ const FileInput = styled.input`
   display: none;
 `;
 const MemberInfo = styled.p`
-  margin-bottom: 20px;
+  line-height: 20px;
+  margin-bottom: 10px;
 `;
 
 const Button = styled.button`
