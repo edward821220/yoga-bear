@@ -15,19 +15,12 @@ interface AuthContextInterface {
       avatar: string;
     }>
   >;
-  signup: (emil: string, password: string, identity: string, username: string) => void;
+  signup(emil: string, password: string, identity: string, username: string): Promise<string>;
   login(email: string, password: string): void;
   logout(): void;
 }
 
-export const AuthContext = createContext<AuthContextInterface>({
-  isLogin: false,
-  userData: { uid: "", email: "", identity: "", username: "", avatar: "" },
-  setUserData: () => {},
-  signup: () => {},
-  login: () => {},
-  logout: () => {},
-});
+export const AuthContext = createContext<AuthContextInterface>({} as AuthContextInterface);
 
 export function AuthContextProvider({ children }: { children: React.ReactNode }) {
   const [isLogin, setIsLogin] = useState(false);
@@ -64,7 +57,7 @@ export function AuthContextProvider({ children }: { children: React.ReactNode })
       if (typeof user.email === "string") {
         setUserData({ uid: user.uid, email: user.email, identity, username, avatar: "" });
       }
-      return "註冊成功";
+      return user.uid;
     } catch (error) {
       if (error instanceof Error) return error.message;
       return "註冊失敗";

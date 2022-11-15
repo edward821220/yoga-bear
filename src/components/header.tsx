@@ -166,6 +166,15 @@ const FormInput = styled.input`
   width: 200px;
   padding-left: 5px;
 `;
+const FormTextarea = styled.textarea`
+  font-size: 14px;
+  width: 200px;
+  height: 60px;
+  padding-top: 5px;
+  padding-left: 5px;
+  margin-bottom: 10px;
+  resize: none;
+`;
 
 const RadioLabel = styled.label`
   display: flex;
@@ -257,7 +266,7 @@ interface MemberModalProps {
   setOrderQty: SetterOrUpdater<number>;
   setShowMemberModal: Dispatch<SetStateAction<boolean>>;
   isLogin: boolean;
-  signup: (emil: string, password: string, identity: string, username: string) => void;
+  signup: (emil: string, password: string, identity: string, username: string) => string;
   login(email: string, password: string): void;
   logout(): void;
   userData: {
@@ -301,6 +310,10 @@ function MemberModal({
     checkPassword: "",
     identity: "student",
   });
+  const [teacherSignupData, setTeacherSignupData] = useState<Record<string, string>>({
+    introduction: "",
+    exprience: "",
+  });
   const [needSignup, setNeedSignup] = useState(false);
 
   const handleClose = () => {
@@ -328,15 +341,40 @@ function MemberModal({
       setErrorMessage("請再次確認密碼是否輸入一致");
       return;
     }
-    const res = await signup(signupData.email, signupData.password, signupData.identity, signupData.username);
-    if (typeof res !== "string") return;
-    if (res !== "註冊成功") {
+    const res: string = await signup(signupData.email, signupData.password, signupData.identity, signupData.username);
+    if (res.includes("Error")) {
       setErrorMessage(res);
       return;
     }
-    setNeedSignup(false);
-    handleClose();
-    alert("恭喜您註冊成功!");
+    const uid = res;
+    const target = e.target as HTMLInputElement;
+    const fileInput = target.querySelector("input[type=file]") as HTMLInputElement;
+    if (fileInput?.files) {
+      const file = fileInput?.files[0];
+      const storageRef = ref(storage, `certificate/${userData.uid}-${file.name}`);
+      const uploadTask = uploadBytesResumable(storageRef, file);
+      uploadTask.on(
+        "state_changed",
+        () => {},
+        (error) => {
+          alert(error);
+        },
+        () => {
+          getDownloadURL(uploadTask.snapshot.ref).then((downloadURL) => {
+            const docRef = doc(db, "users", uid);
+            updateDoc(docRef, {
+              certificate: downloadURL,
+              teacher_introduction: teacherSignupData.introduction,
+              teacher_exprience: teacherSignupData.exprience,
+            });
+          });
+        }
+      );
+    }
+
+    // setNeedSignup(false);
+    // handleClose();
+    // alert("恭喜您註冊成功!");
   };
   const handleUploadAvatar = (e: React.FormEvent<HTMLLabelElement>): void => {
     const target = e.target as HTMLInputElement;
@@ -438,6 +476,42 @@ function MemberModal({
               }}
             />
           </RadioLabel>
+          {signupData.identity === "teacher" && (
+            <>
+              <Label>
+                <LabelText>自我介紹：</LabelText>
+                <FormTextarea
+                  placeholder="簡短介紹讓同學認識～"
+                  value={teacherSignupData.introduction}
+                  required
+                  onChange={(e: React.ChangeEvent<HTMLTextAreaElement>) => {
+                    setTeacherSignupData({
+                      ...teacherSignupData,
+                      introduction: e.target.value,
+                    });
+                  }}
+                />
+              </Label>
+              <Label>
+                <LabelText>師資班及教學經歷：</LabelText>
+                <FormTextarea
+                  placeholder="簡短描述過往經歷～"
+                  value={teacherSignupData.exprience}
+                  required
+                  onChange={(e: React.ChangeEvent<HTMLTextAreaElement>) => {
+                    setTeacherSignupData({
+                      ...teacherSignupData,
+                      exprience: e.target.value,
+                    });
+                  }}
+                />
+              </Label>
+              <Label>
+                <LabelText>證照上傳</LabelText>
+                <FormInput type="file" required />
+              </Label>
+            </>
+          )}
           <Button type="submit">送出</Button>
           <ErrorMessage>{errorMessage}</ErrorMessage>
         </Form>
