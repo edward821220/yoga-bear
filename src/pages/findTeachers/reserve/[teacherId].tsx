@@ -9,8 +9,8 @@ import Avatar from "../../../../public/member.png";
 import Star from "../../../../public/star.png";
 
 const Wrapper = styled.div`
-  background-color: #dfb098;
-  min-height: calc(100vh - 182px);
+  background-color: #f1ead8;
+  min-height: calc(100vh - 100px);
   padding: 20px;
   margin: 0 auto;
 `;
@@ -96,8 +96,9 @@ export default function Reserve() {
   const [teacherDatas, setTeacherDatas] = useState<{
     username: string;
     reviews?: ReviewInterface[];
+    avatar?: string;
   }>();
-  const [reviewsUsersDatas, setReviewsUsersDatas] = useState<{ index: number; username: string }[]>([]);
+  const [reviewsUsersDatas, setReviewsUsersDatas] = useState<{ index: number; username: string; avatar: string }[]>([]);
 
   useEffect(() => {
     const getTeacherData = async () => {
@@ -106,8 +107,9 @@ export default function Reserve() {
       const userSnap = await getDoc(userRef);
       if (!userSnap.exists()) return;
       const username = userSnap.data().username as string;
+      const avatar = userSnap.data().photoURL as string;
       const reviews = userSnap.data().reviews as ReviewInterface[];
-      setTeacherDatas({ username, reviews });
+      setTeacherDatas({ username, reviews, avatar });
 
       if (!Array.isArray(reviews)) return;
       reviews.forEach(async (review: { comments: string; score: number; userId: string }, index) => {
@@ -115,7 +117,8 @@ export default function Reserve() {
         const reviewUserSnap = await getDoc(reviewUserRef);
         if (!reviewUserSnap.exists()) return;
         const reviewUsername = reviewUserSnap.data().username;
-        setReviewsUsersDatas((prev) => [...prev, { index, username: reviewUsername }]);
+        const reviewUserAvatar = reviewUserSnap.data().photoURL;
+        setReviewsUsersDatas((prev) => [...prev, { index, username: reviewUsername, avatar: reviewUserAvatar }]);
       });
     };
     getTeacherData();
@@ -127,7 +130,7 @@ export default function Reserve() {
         <TeacherDetail>
           <TeacherInfo>
             <TeacherAvatar>
-              <Image src={Avatar} alt="avatar" fill sizes="contain" />
+              <Image src={teacherDatas?.avatar || Avatar} alt="avatar" fill sizes="contain" />
             </TeacherAvatar>
             <TeacherName>{teacherDatas?.username}</TeacherName>
           </TeacherInfo>
@@ -142,7 +145,14 @@ export default function Reserve() {
           <Review key={review.userId}>
             <User>
               <AvatarWrapper>
-                <Image src={Avatar} alt="avatar" fill sizes="contain" />
+                <Image
+                  src={
+                    reviewsUsersDatas.find((reviewUserData) => reviewUserData.index === reviewIndex)?.avatar || Avatar
+                  }
+                  alt="avatar"
+                  fill
+                  sizes="contain"
+                />
               </AvatarWrapper>
               <UserName>
                 {reviewsUsersDatas.find((reviewUserData) => reviewUserData.index === reviewIndex)?.username}

@@ -14,8 +14,8 @@ import LikeBlankIcon from "../../../../public/favorite-blank.png";
 import LikeIcon from "../../../../public/favorite.png";
 
 const Wrapper = styled.div`
-  background-color: #dfb098;
-  min-height: calc(100vh - 182px);
+  background-color: #f1ead8;
+  min-height: calc(100vh - 100px);
   padding: 20px 0;
 `;
 
@@ -118,20 +118,18 @@ const ActivityQty = styled.span`
 `;
 
 const MessagesContainer = styled.div`
-  background-color: #f2deba;
+  background-color: #eceae6;
   padding: 10px 0px;
   width: 100%;
 `;
 const Messages = styled.ul``;
 const MessageQty = styled.p`
   padding: 5px 5px 10px 20px;
-  border-bottom: 2px solid #654116;
-  margin-bottom: 10px;
+  border-bottom: 2px solid #e7daca;
+  margin: 0 10px 10px 10px;
 `;
 const Message = styled.li`
-  border-bottom: 1px solid #654116;
-  border: 2px solid #654116;
-  border-radius: 5px;
+  border-bottom: 2px solid #e7daca;
   margin: 0px 10px 10px 10px;
   padding: 10px 20px;
 `;
@@ -158,18 +156,29 @@ const MessageTime = styled.p`
 const MessageFloor = styled.p``;
 const MessageBlock = styled.div`
   display: flex;
+  justify-content: center;
+  align-items: center;
   width: 100%;
+  padding: 5px;
 `;
 const MessageTextArea = styled.textarea`
   resize: none;
   flex-basis: 90%;
   height: 50px;
+  border-radius: 5px;
+  border: none;
+  &:focus {
+    outline: none;
+  }
 `;
 const Button = styled.button`
-  background-color: #f7a537;
+  flex-basis: 8%;
+  color: #fff;
+  background-color: #5d7262;
+  border-radius: 5px;
+  height: 40px;
   padding: 5px;
-  flex-basis: 10%;
-  height: 50px;
+  cursor: pointer;
 `;
 
 interface MessageInterface {
@@ -177,8 +186,8 @@ interface MessageInterface {
   message: string;
   authorId: string;
   authorName: string;
+  authorAvatar?: string;
   identity: string;
-  avatar?: string;
   likes: string[];
 }
 interface ArticleInterface {
@@ -186,6 +195,7 @@ interface ArticleInterface {
   title: string;
   authorId: string;
   authorName: string;
+  authorAvatar: string;
   content: string;
   messages: MessageInterface[];
   likes: string[];
@@ -199,6 +209,7 @@ function Article() {
     title: "",
     authorId: "",
     authorName: "",
+    authorAvatar: "",
     content: "",
     messages: [],
     likes: [],
@@ -225,6 +236,7 @@ function Article() {
             const messageAuthorSnap = await getDoc(messageAuthorRef);
             if (messageAuthorSnap.exists()) {
               messages[index].authorName = messageAuthorSnap.data().username;
+              messages[index].authorAvatar = messageAuthorSnap.data().photoURL;
               messages[index].identity = messageAuthorSnap.data().identity;
             }
           })
@@ -237,6 +249,7 @@ function Article() {
         content: docSnap.data().content,
         messages: messages || [],
         authorName: userSnap.data().username,
+        authorAvatar: userSnap.data().photoURL,
         likes: docSnap.data().likes || [],
       };
       setArticle(datas);
@@ -321,6 +334,7 @@ function Article() {
         draft.messages.push({
           authorId: userData.uid,
           authorName: userData.username,
+          authorAvatar: userData.avatar,
           identity: userData.identity,
           time: Date.now(),
           message: inputMessage,
@@ -335,7 +349,7 @@ function Article() {
       <Container>
         <ArticleUser>
           <UserAvatarWrapper>
-            <Image src={Avatar} alt="avatar" fill sizes="contain" />
+            <Image src={article?.authorAvatar || Avatar} alt="avatar" fill sizes="contain" />
           </UserAvatarWrapper>
           <UserName>{article?.authorName}</UserName>
         </ArticleUser>
@@ -373,7 +387,6 @@ function Article() {
             </ArticleActivity>
           </ArticleContainer>
         )}
-
         {article && article?.messages?.length > 0 && (
           <MessagesContainer>
             <Messages>
@@ -384,7 +397,7 @@ function Article() {
                     {message.identity === "student" && (
                       <MessageAuthor>
                         <UserAvatarWrapper>
-                          <Image src={Avatar} alt="avatar" />
+                          <Image src={message.authorAvatar || Avatar} alt="avatar" fill sizes="contain" />
                         </UserAvatarWrapper>
                         <UserName>
                           {message.authorName} (學生)
@@ -399,7 +412,7 @@ function Article() {
                         }}
                       >
                         <UserAvatarWrapper>
-                          <Image src={Avatar} alt="avatar" />
+                          <Image src={message.authorAvatar || Avatar} alt="avatar" fill sizes="contain" />
                         </UserAvatarWrapper>
                         <UserName>
                           {message.authorName} (老師)
@@ -444,6 +457,7 @@ function Article() {
         <MessageBlock>
           <MessageTextArea
             value={inputMessage}
+            placeholder="留言......"
             onChange={(e) => {
               setInputMessage(e.target.value);
             }}

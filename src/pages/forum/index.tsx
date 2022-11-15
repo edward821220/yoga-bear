@@ -10,8 +10,8 @@ import Avatar from "../../../public/member.png";
 import { db } from "../../../lib/firebase";
 
 const Wrapper = styled.div`
-  background-color: #dfb098;
-  min-height: calc(100vh - 182px);
+  background-color: #f1ead8;
+  min-height: calc(100vh - 100px);
   padding-top: 20px;
 `;
 const Container = styled.div`
@@ -49,9 +49,11 @@ const AsideContent = styled.p`
   line-height: 24px;
 `;
 const Button = styled.button`
-  color: #654116;
   display: block;
-  background-color: transparent;
+  color: #fff;
+  background-color: #5d7262;
+  border-radius: 5px;
+  width: 120px;
   padding: 10px;
   margin: 0 auto;
   cursor: pointer;
@@ -165,6 +167,7 @@ function Forum() {
           const docSnap = await getDoc(docRef);
           if (docSnap.exists()) {
             results[index].authorName = docSnap.data().username;
+            results[index].authorAvatar = docSnap.data().photoURL;
           }
         })
       );
@@ -189,7 +192,7 @@ function Forum() {
               >
                 <ArticleUser>
                   <UserAvatarWrapper>
-                    <Image src={Avatar} alt="avatar" fill sizes="contain" />
+                    <Image src={article.authorAvatar || Avatar} alt="avatar" fill sizes="contain" />
                   </UserAvatarWrapper>
                   <UserName>{article.authorName}</UserName>
                 </ArticleUser>

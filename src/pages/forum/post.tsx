@@ -30,8 +30,8 @@ const Editor = dynamic(
 );
 
 const Wrapper = styled.div`
-  background-color: #dfb098;
-  min-height: calc(100vh - 182px);
+  background-color: #f1ead8;
+  min-height: calc(100vh - 100px);
   padding: 20px 0;
 `;
 
@@ -79,10 +79,13 @@ const Title = styled.input`
 `;
 const Button = styled.button`
   display: block;
-  background-color: transparent;
+  color: #fff;
+  background-color: #5d7262;
+  border-radius: 5px;
   padding: 10px;
   font-size: 18px;
   margin: 0 auto;
+  cursor: pointer;
 `;
 
 const formats = [
@@ -177,7 +180,7 @@ function Post() {
       <Container>
         <ArticleUser>
           <UserAvatarWrapper>
-            <Image src={Avatar} alt="avatar" fill sizes="contain" />
+            <Image src={userData.avatar || Avatar} alt="avatar" fill sizes="contain" />
           </UserAvatarWrapper>
           <UserName>{userData.username}</UserName>
         </ArticleUser>

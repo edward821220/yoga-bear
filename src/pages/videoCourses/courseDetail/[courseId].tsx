@@ -30,8 +30,10 @@ const Video = styled.video`
   margin-bottom: 20px;
 `;
 const Button = styled.button`
-  color: #654116;
-  background-color: orange;
+  color: #fff;
+  background-color: #5d7262;
+  border-radius: 5px;
+  width: 120px;
   padding: 10px;
   margin-bottom: 20px;
   cursor: pointer;
@@ -112,7 +114,7 @@ function CourseDetail() {
   const router = useRouter();
   const { courseId } = router.query;
   const [courseData, setCourseData] = useState<CourseDataInteface>();
-  const [reviewsUsersDatas, setReviewsUsersDatas] = useState<{ index: number; username: string }[]>([]);
+  const [reviewsUsersDatas, setReviewsUsersDatas] = useState<{ index: number; username: string; avatar: string }[]>([]);
   const [boughtCourses, setBoughtCourses] = useState<string[]>([]);
   const { isLogin, userData } = useContext(AuthContext);
   const [orderQty, setOrderQty] = useRecoilState(orderQtyState);
@@ -142,7 +144,8 @@ function CourseDetail() {
           const userSnap = await getDoc(userRef);
           if (!userSnap.exists()) return;
           const { username } = userSnap.data();
-          setReviewsUsersDatas((prev) => [...prev, { index, username }]);
+          const avatar = userSnap.data().photoURL;
+          setReviewsUsersDatas((prev) => [...prev, { index, username, avatar }]);
         });
       }
     };
@@ -242,7 +245,14 @@ function CourseDetail() {
             <Review key={review.userId}>
               <User>
                 <AvatarWrapper>
-                  <Image src={Avatar} alt="avatar" fill sizes="contain" />
+                  <Image
+                    src={
+                      reviewsUsersDatas.find((reviewUserData) => reviewUserData.index === reviewIndex)?.avatar || Avatar
+                    }
+                    alt="avatar"
+                    fill
+                    sizes="contain"
+                  />
                 </AvatarWrapper>
                 <UserName>
                   {reviewsUsersDatas.find((reviewUserData) => reviewUserData.index === reviewIndex)?.username}

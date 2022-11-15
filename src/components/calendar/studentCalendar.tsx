@@ -67,11 +67,13 @@ const StarWrapper = styled.div`
   cursor: pointer;
 `;
 const Button = styled.button`
-  color: #654116;
-  background-color: #f8a637;
+  color: #fff;
+  background-color: #5d7262;
+  border-radius: 5px;
   width: 100px;
   margin-bottom: 10px;
   padding: 10px;
+  cursor: pointer;
 `;
 
 function TextEditor(props: AppointmentForm.TextEditorProps) {
@@ -86,6 +88,9 @@ function BasicLayout({ onFieldChange, appointmentData, ...restProps }: Appointme
   const onDescriptionChange = (nextValue: string) => {
     onFieldChange({ description: nextValue });
   };
+  const onPriceChange = (nextValue: string) => {
+    onFieldChange({ price: nextValue });
+  };
   const onPrecautionChange = (nextValue: string) => {
     onFieldChange({ precaution: nextValue });
   };
@@ -97,6 +102,14 @@ function BasicLayout({ onFieldChange, appointmentData, ...restProps }: Appointme
         value={appointmentData.description}
         onValueChange={onDescriptionChange}
         placeholder="請輸入課程內容（若是實體課請填寫上課地點）"
+        type="ordinaryTextEditor"
+        readOnly
+      />
+      <AppointmentForm.Label text="課程價格" type="titleLabel" />
+      <AppointmentForm.TextEditor
+        value={appointmentData.price}
+        onValueChange={onPriceChange}
+        placeholder="請輸入課程價格"
         type="ordinaryTextEditor"
         readOnly
       />

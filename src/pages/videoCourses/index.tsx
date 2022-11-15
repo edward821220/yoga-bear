@@ -8,8 +8,8 @@ import StarIcon from "../../../public/star.png";
 import HalfStar from "../../../public/star-half.png";
 
 const Wrapper = styled.div`
-  background-color: #dfb098;
-  min-height: calc(100vh - 182px);
+  background-color: #f1ead8;
+  min-height: calc(100vh - 100px);
   padding-top: 20px;
 `;
 const Container = styled.div`
@@ -26,7 +26,7 @@ const CoursesList = styled.ul`
 `;
 const Course = styled.li`
   color: #654116;
-  background-color: #ffffff;
+  background-color: #fff;
   border: 2px solid #654116;
   border-radius: 5px;
   margin-right: 20px;

@@ -5,7 +5,7 @@ import Link from "next/link";
 import Image from "next/image";
 import { useRouter } from "next/router";
 import { ref, getDownloadURL, uploadBytesResumable } from "firebase/storage";
-import { collection, doc, setDoc, getDoc, updateDoc, arrayUnion } from "firebase/firestore";
+import { collection, doc, setDoc, getDoc, updateDoc, arrayUnion, getDocs, query, where } from "firebase/firestore";
 import { AuthContext } from "../../contexts/authContext";
 import { storage, db } from "../../../lib/firebase";
 import Modal from "../../components/modal";
@@ -17,8 +17,8 @@ import EmptyStar from "../../../public/star-empty.png";
 import Star from "../../../public/star.png";
 
 const Wrapper = styled.div`
-  background-color: #dfb098;
-  min-height: calc(100vh - 182px);
+  background-color: #f1ead8;
+  min-height: calc(100vh - 100px);
   display: flex;
   padding: 20px;
 `;
@@ -100,11 +100,13 @@ const LauchFormLabelTextarea = styled.textarea`
   resize: none;
 `;
 const Button = styled.button`
-  color: #654116;
-  background-color: #f8a637;
-  width: 100px;
+  color: #fff;
+  background-color: #5d7262;
+  border-radius: 5px;
+  width: 80px;
   margin-bottom: 10px;
   padding: 10px;
+  cursor: pointer;
 `;
 const ButtonWrapper = styled.div`
   display: flex;
@@ -317,8 +319,41 @@ function VideoCourses({ uid }: { uid: string }) {
     </MyCoursesList>
   );
 }
-function LaunchedVideoCourses() {
-  return <MainTitle>已上架影音課程</MainTitle>;
+function LaunchedVideoCourses({ uid }: { uid: string }) {
+  const [courses, setCourses] = useState<{ name: string; cover: string; id: string }[]>();
+
+  useEffect(() => {
+    const getLaunchedVideoCourses = async () => {
+      if (!uid) return;
+      const usersRef = collection(db, "video_courses");
+      const teachersQuery = query(usersRef, where("teacher_id", "==", uid));
+      const querySnapshot = await getDocs(teachersQuery);
+      const launchedVideoCourses = querySnapshot.docs.map((course) => {
+        const { name, cover, id } = course.data();
+        return { name, cover, id };
+      });
+      setCourses(launchedVideoCourses);
+    };
+    getLaunchedVideoCourses();
+  }, [uid]);
+
+  if (courses?.length === 0) {
+    return <p>目前沒有課程唷！</p>;
+  }
+  return (
+    <MyCoursesList>
+      {courses?.map((course) => (
+        <MyCourse key={course.name}>
+          <CourseCover>
+            <Link href={`/myCourses/classRoom/videoRoom/${course.id}`}>
+              <Image src={course.cover} alt="cover" fill sizes="cover" />
+            </Link>
+          </CourseCover>
+          <CourseTitle>{course.name}</CourseTitle>
+        </MyCourse>
+      ))}
+    </MyCoursesList>
+  );
 }
 function UploadProgressModal({ progressBar }: { progressBar: { file: string; progress: number } }) {
   const handleClose = () => {
@@ -626,7 +661,7 @@ function MyCourses() {
       <Main>
         {router.query.category === "videoCourses" && <VideoCourses uid={userData.uid} />}
         {router.query.category === "launchVideoCourse" && <LaunchVideoCourse uid={userData.uid} />}
-        {router.query.category === "launchedVideoCourses" && <LaunchedVideoCourses />}
+        {router.query.category === "launchedVideoCourses" && <LaunchedVideoCourses uid={userData.uid} />}
         {router.query.category === "teacherCalendar" && (
           <CalendarWrapper>
             <TeacherCalendar uid={userData.uid} />

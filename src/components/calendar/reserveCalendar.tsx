@@ -1,4 +1,5 @@
 import React, { useState, useEffect, useContext } from "react";
+import styled from "styled-components";
 import Paper from "@mui/material/Paper";
 import Image from "next/image";
 import { ViewState, EditingState, IntegratedEditing, AppointmentModel } from "@devexpress/dx-react-scheduler";
@@ -13,11 +14,12 @@ import {
   ConfirmationDialog,
 } from "@devexpress/dx-react-scheduler-material-ui";
 import { collection, getDocs, query, where, doc, updateDoc, arrayUnion } from "firebase/firestore";
-import styled from "styled-components";
+import { useRecoilState } from "recoil";
 import { db } from "../../../lib/firebase";
+import { AuthContext } from "../../contexts/authContext";
+import { bearMoneyState } from "../../../lib/recoil";
 import resources from "./resources";
 import ReserveButton from "../../../public/reserve.png";
-import { AuthContext } from "../../contexts/authContext";
 
 const ReserveButtonWrapper = styled.div`
   display: flex;
@@ -47,6 +49,9 @@ function BasicLayout({ onFieldChange, appointmentData, ...restProps }: Appointme
   const onDescriptionChange = (nextValue: string) => {
     onFieldChange({ description: nextValue });
   };
+  const onPriceChange = (nextValue: string) => {
+    onFieldChange({ price: nextValue });
+  };
   const onPrecautionChange = (nextValue: string) => {
     onFieldChange({ precaution: nextValue });
   };
@@ -58,6 +63,14 @@ function BasicLayout({ onFieldChange, appointmentData, ...restProps }: Appointme
         value={appointmentData.description}
         onValueChange={onDescriptionChange}
         placeholder="請輸入課程內容（若是實體課請填寫上課地點）"
+        type="ordinaryTextEditor"
+        readOnly
+      />
+      <AppointmentForm.Label text="課程價格" type="titleLabel" />
+      <AppointmentForm.TextEditor
+        value={appointmentData.price}
+        onValueChange={onPriceChange}
+        placeholder="請輸入課程價格"
         type="ordinaryTextEditor"
         readOnly
       />
@@ -76,6 +89,8 @@ function BasicLayout({ onFieldChange, appointmentData, ...restProps }: Appointme
 function Header({ appointmentData, ...restProps }: AppointmentTooltip.HeaderProps) {
   const { userData, isLogin } = useContext(AuthContext);
   const { username, email } = userData;
+  const [bearMoney, setBearMoney] = useRecoilState(bearMoneyState);
+
   return (
     <AppointmentTooltip.Header {...restProps} appointmentData={appointmentData}>
       <ReserveButtonWrapper>
@@ -88,11 +103,23 @@ function Header({ appointmentData, ...restProps }: AppointmentTooltip.HeaderProp
               alert("先登入才能預約課程唷！");
               return;
             }
-            const confirm = window.confirm("確定要預約嗎？");
-            if (!confirm || !appointmentData || typeof appointmentData.id !== "string") return;
-            const roomRef = doc(db, "rooms", appointmentData.id);
+            if (!appointmentData) return;
+            const price = Number(appointmentData.price as string) || 0;
+            const confirm = window.confirm(`確定要預約嗎？將扣除 ${price} 元熊幣`);
+            if (!confirm) return;
+            const roomRef = doc(db, "rooms", appointmentData.id as string);
             updateDoc(roomRef, {
               students: arrayUnion({ username, email }),
+            });
+            if (price > bearMoney) {
+              alert("熊幣餘額不足唷！請加值～");
+              return;
+            }
+            setBearMoney((prev) => prev - price);
+            const docRef = doc(db, "users", userData.uid);
+            updateDoc(docRef, {
+              cartItems: [],
+              bearMoney: bearMoney - price,
             });
             alert("您已預約成功！");
           }}
