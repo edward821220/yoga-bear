@@ -266,7 +266,7 @@ interface MemberModalProps {
   setOrderQty: SetterOrUpdater<number>;
   setShowMemberModal: Dispatch<SetStateAction<boolean>>;
   isLogin: boolean;
-  signup: (emil: string, password: string, identity: string, username: string) => string;
+  signup: (emil: string, password: string, identity: string, username: string) => Promise<string>;
   login(email: string, password: string): void;
   logout(): void;
   userData: {
@@ -371,10 +371,9 @@ function MemberModal({
         }
       );
     }
-
-    // setNeedSignup(false);
-    // handleClose();
-    // alert("恭喜您註冊成功!");
+    setNeedSignup(false);
+    handleClose();
+    alert("恭喜您註冊成功!");
   };
   const handleUploadAvatar = (e: React.FormEvent<HTMLLabelElement>): void => {
     const target = e.target as HTMLInputElement;
