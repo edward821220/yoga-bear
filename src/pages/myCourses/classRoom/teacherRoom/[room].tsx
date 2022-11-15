@@ -10,7 +10,7 @@ const Title = styled.h2`
 `;
 const Wrapper = styled.div`
   display: flex;
-  min-height: calc(100vh - 182px);
+  min-height: calc(100vh - 100px);
   padding: 20px;
   margin: 0 auto;
 `;

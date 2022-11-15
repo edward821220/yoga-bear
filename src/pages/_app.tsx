@@ -5,7 +5,6 @@ import { Reset } from "styled-reset";
 import React from "react";
 import { RecoilRoot } from "recoil";
 import Header from "../components/header";
-import Footer from "../components/footer";
 import { AuthContextProvider } from "../contexts/authContext";
 
 const GlobalStyle = createGlobalStyle`
@@ -43,7 +42,6 @@ export default function App({ Component, pageProps }: AppProps) {
         <RecoilRoot>
           <Header />
           <Component {...pageProps} />
-          <Footer />
         </RecoilRoot>
       </AuthContextProvider>
     </>

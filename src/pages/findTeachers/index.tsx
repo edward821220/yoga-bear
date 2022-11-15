@@ -10,7 +10,7 @@ import HalfStar from "../../../public/star-half.png";
 
 const Wrapper = styled.div`
   background-color: #f1ead8;
-  min-height: calc(100vh - 182px);
+  min-height: calc(100vh - 100px);
   display: flex;
   flex-direction: column;
   justify-content: center;

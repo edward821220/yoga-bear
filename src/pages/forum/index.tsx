@@ -11,7 +11,7 @@ import { db } from "../../../lib/firebase";
 
 const Wrapper = styled.div`
   background-color: #f1ead8;
-  min-height: calc(100vh - 182px);
+  min-height: calc(100vh - 100px);
   padding-top: 20px;
 `;
 const Container = styled.div`
