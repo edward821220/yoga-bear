@@ -167,6 +167,7 @@ function Forum() {
           const docSnap = await getDoc(docRef);
           if (docSnap.exists()) {
             results[index].authorName = docSnap.data().username;
+            results[index].authorAvatar = docSnap.data().photoURL;
           }
         })
       );
@@ -191,7 +192,7 @@ function Forum() {
               >
                 <ArticleUser>
                   <UserAvatarWrapper>
-                    <Image src={Avatar} alt="avatar" fill sizes="contain" />
+                    <Image src={article.authorAvatar || Avatar} alt="avatar" fill sizes="contain" />
                   </UserAvatarWrapper>
                   <UserName>{article.authorName}</UserName>
                 </ArticleUser>

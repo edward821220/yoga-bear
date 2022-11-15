@@ -5,7 +5,16 @@ import { auth, db } from "../../lib/firebase";
 
 interface AuthContextInterface {
   isLogin: boolean;
-  userData: { uid: string; email: string; identity: string; username: string };
+  userData: { uid: string; email: string; identity: string; username: string; avatar: string };
+  setUserData: React.Dispatch<
+    React.SetStateAction<{
+      uid: string;
+      email: string;
+      identity: string;
+      username: string;
+      avatar: string;
+    }>
+  >;
   signup: (emil: string, password: string, identity: string, username: string) => void;
   login(email: string, password: string): void;
   logout(): void;
@@ -13,7 +22,8 @@ interface AuthContextInterface {
 
 export const AuthContext = createContext<AuthContextInterface>({
   isLogin: false,
-  userData: { uid: "", email: "", identity: "", username: "" },
+  userData: { uid: "", email: "", identity: "", username: "", avatar: "" },
+  setUserData: () => {},
   signup: () => {},
   login: () => {},
   logout: () => {},
@@ -21,7 +31,7 @@ export const AuthContext = createContext<AuthContextInterface>({
 
 export function AuthContextProvider({ children }: { children: React.ReactNode }) {
   const [isLogin, setIsLogin] = useState(false);
-  const [userData, setUserData] = useState({ uid: "", email: "", identity: "", username: "" });
+  const [userData, setUserData] = useState({ uid: "", email: "", identity: "", username: "", avatar: "" });
 
   useEffect(() => {
     const unsubscribe = onAuthStateChanged(auth, async (user) => {
@@ -34,7 +44,8 @@ export function AuthContextProvider({ children }: { children: React.ReactNode })
         const data = res.data();
         const identity = data?.identity;
         const username = data?.username;
-        setUserData({ uid, email, identity, username });
+        const avatar = data?.photoURL;
+        setUserData({ uid, email, identity, username, avatar });
       }
     });
     return () => unsubscribe();
@@ -51,7 +62,7 @@ export function AuthContextProvider({ children }: { children: React.ReactNode })
         username,
       });
       if (typeof user.email === "string") {
-        setUserData({ uid: user.uid, email: user.email, identity, username });
+        setUserData({ uid: user.uid, email: user.email, identity, username, avatar: "" });
       }
       return "註冊成功";
     } catch (error) {
@@ -68,7 +79,13 @@ export function AuthContextProvider({ children }: { children: React.ReactNode })
       const result = await getDoc(doc(db, "users", user.uid));
       const data = result.data();
       if (!data) return;
-      setUserData({ uid: user.uid, email: user.email, identity: data.identity, username: data.username });
+      setUserData({
+        uid: user.uid,
+        email: user.email,
+        identity: data.identity,
+        username: data.username,
+        avatar: data.photoURL,
+      });
       setIsLogin(true);
       return "登入成功";
     } catch (error) {
@@ -79,12 +96,14 @@ export function AuthContextProvider({ children }: { children: React.ReactNode })
   const logout = () => {
     signOut(auth);
     setIsLogin(false);
-    setUserData({ uid: "", email: "", identity: "", username: "" });
+    setUserData({ uid: "", email: "", identity: "", username: "", avatar: "" });
     alert("您已登出帳號！");
   };
 
   return (
-    <AuthContext.Provider value={useMemo(() => ({ isLogin, userData, signup, login, logout }), [isLogin, userData])}>
+    <AuthContext.Provider
+      value={useMemo(() => ({ isLogin, userData, setUserData, signup, login, logout }), [isLogin, userData])}
+    >
       {children}
     </AuthContext.Provider>
   );

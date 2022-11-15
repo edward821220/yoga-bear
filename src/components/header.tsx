@@ -5,13 +5,14 @@ import styled from "styled-components";
 import { useRouter } from "next/router";
 import { useRecoilState, SetterOrUpdater } from "recoil";
 import { getDoc, doc, updateDoc } from "firebase/firestore";
+import { ref, uploadBytesResumable, getDownloadURL } from "firebase/storage";
 import BearLogo from "../../public/bear-logo2.png";
 import CartLogo from "../../public/cart.png";
 import MemberLogo from "../../public/member.png";
 import Modal from "./modal";
 import { AuthContext } from "../contexts/authContext";
 import { orderQtyState, bearMoneyState } from "../../lib/recoil";
-import { db } from "../../lib/firebase";
+import { db, storage } from "../../lib/firebase";
 import MoneyIcon from "../../public/newMoney.png";
 import PlusMoneyIcon from "../../public/add.png";
 
@@ -149,6 +150,12 @@ const FormTitle = styled.h4`
   text-align: center;
   margin-bottom: 36px;
 `;
+const Avatar = styled.div`
+  position: relative;
+  width: 200px;
+  height: 200px;
+  margin-bottom: 20px;
+`;
 const Label = styled.label``;
 const LabelText = styled.p`
   margin-bottom: 5px;
@@ -159,6 +166,7 @@ const FormInput = styled.input`
   width: 200px;
   padding-left: 5px;
 `;
+
 const RadioLabel = styled.label`
   display: flex;
   align-items: center;
@@ -167,14 +175,30 @@ const RadioLabel = styled.label`
 const RadioInput = styled.input`
   margin-left: 5px;
 `;
+const FileLable = styled.label`
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  font-size: 13.33px;
+  color: #fff;
+  background-color: #5d7262;
+  width: 100px;
+  height: 33.5px;
+  border-radius: 5px;
+  margin-bottom: 10px;
+  cursor: pointer;
+`;
+const FileInput = styled.input`
+  display: none;
+`;
 
 const Button = styled.button`
   display: block;
   color: #fff;
   background-color: #5d7262;
   border-radius: 5px;
-  width: 100px;
-  padding: 5px;
+  min-width: 80px;
+  padding: 5px 10px;
   margin-bottom: 10px;
   cursor: pointer;
 `;
@@ -236,9 +260,34 @@ interface MemberModalProps {
   signup: (emil: string, password: string, identity: string, username: string) => void;
   login(email: string, password: string): void;
   logout(): void;
+  userData: {
+    uid: string;
+    email: string;
+    identity: string;
+    username: string;
+    avatar: string;
+  };
+  setUserData: React.Dispatch<
+    React.SetStateAction<{
+      uid: string;
+      email: string;
+      identity: string;
+      username: string;
+      avatar: string;
+    }>
+  >;
 }
 
-function MemberModal({ setOrderQty, setShowMemberModal, isLogin, login, logout, signup }: MemberModalProps) {
+function MemberModal({
+  setOrderQty,
+  setShowMemberModal,
+  isLogin,
+  login,
+  logout,
+  signup,
+  userData,
+  setUserData,
+}: MemberModalProps) {
   const router = useRouter();
   const [errorMessage, setErrorMessage] = useState("");
   const [loginData, setloginData] = useState<Record<string, string>>({
@@ -252,7 +301,6 @@ function MemberModal({ setOrderQty, setShowMemberModal, isLogin, login, logout, 
     checkPassword: "",
     identity: "student",
   });
-
   const [needSignup, setNeedSignup] = useState(false);
 
   const handleClose = () => {
@@ -290,6 +338,30 @@ function MemberModal({ setOrderQty, setShowMemberModal, isLogin, login, logout, 
     handleClose();
     alert("恭喜您註冊成功!");
   };
+  const handleUploadAvatar = (e: React.FormEvent<HTMLLabelElement>): void => {
+    const target = e.target as HTMLInputElement;
+    if (!target.files) return;
+    const file = target?.files[0];
+    const storageRef = ref(storage, `avatars/${userData.uid}-${file.name}`);
+    const uploadTask = uploadBytesResumable(storageRef, file);
+    uploadTask.on(
+      "state_changed",
+      () => {},
+      (error) => {
+        alert(error);
+      },
+      () => {
+        getDownloadURL(uploadTask.snapshot.ref).then((downloadURL) => {
+          const docRef = doc(db, "users", userData.uid);
+          updateDoc(docRef, {
+            photoURL: downloadURL,
+          });
+          setUserData({ ...userData, avatar: downloadURL });
+        });
+      }
+    );
+  };
+
   return (
     <Modal handleClose={handleClose}>
       {!isLogin && !needSignup && (
@@ -373,7 +445,13 @@ function MemberModal({ setOrderQty, setShowMemberModal, isLogin, login, logout, 
       {isLogin && (
         <Form onSubmit={handleSignup}>
           <FormTitle>會員資訊</FormTitle>
-          <Image src={MemberLogo} alt="avatar" width={200} />
+          <Avatar>
+            <Image src={userData.avatar || MemberLogo} alt="avatar" fill sizes="contain" />
+          </Avatar>
+          <FileLable onChange={handleUploadAvatar}>
+            頭像上傳
+            <FileInput type="file" />
+          </FileLable>
           <Button
             type="submit"
             onClick={() => {
@@ -481,7 +559,7 @@ function Header() {
   const [showPaymentModal, setShowPaymentModal] = useState(false);
   const [orderQty, setOrderQty] = useRecoilState(orderQtyState);
   const [bearMoney, setBearMoney] = useRecoilState(bearMoneyState);
-  const { signup, isLogin, login, logout, userData } = useContext(AuthContext);
+  const { signup, isLogin, login, logout, userData, setUserData } = useContext(AuthContext);
   const router = useRouter();
 
   useEffect(() => {
@@ -584,6 +662,8 @@ function Header() {
           login={login}
           logout={logout}
           signup={signup}
+          userData={userData}
+          setUserData={setUserData}
         />
       )}
       {showPaymentModal && (

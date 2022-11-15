@@ -180,7 +180,7 @@ function Post() {
       <Container>
         <ArticleUser>
           <UserAvatarWrapper>
-            <Image src={Avatar} alt="avatar" fill sizes="contain" />
+            <Image src={userData.avatar || Avatar} alt="avatar" fill sizes="contain" />
           </UserAvatarWrapper>
           <UserName>{userData.username}</UserName>
         </ArticleUser>

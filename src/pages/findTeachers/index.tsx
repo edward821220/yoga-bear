@@ -78,19 +78,27 @@ const StarWrapper = styled.div`
   height: 20px;
 `;
 
+interface TeacherInterface {
+  name: string;
+  uid: string;
+  reviews: { score: number }[];
+  avatar: string;
+}
+
 function FindTeachers() {
-  const [teachersList, setTeachersList] = useState<{ name: string; uid: string; reviews: { score: number }[] }[]>([]);
+  const [teachersList, setTeachersList] = useState<TeacherInterface[]>([]);
   useEffect(() => {
     const getTeachersList = async () => {
       const usersRef = collection(db, "users");
       const teachersQuery = query(usersRef, where("identity", "==", "teacher"));
       const querySnapshot = await getDocs(teachersQuery);
-      const results: { name: string; uid: string; reviews: { score: number }[] }[] = [];
+      const results: { name: string; uid: string; reviews: { score: number }[]; avatar: string }[] = [];
       querySnapshot.forEach((data) => {
         results.push({
           uid: data.data().uid,
           name: data.data().username,
           reviews: data.data().reviews,
+          avatar: data.data().photoURL,
         });
       });
       setTeachersList(results);
@@ -105,7 +113,7 @@ function FindTeachers() {
             <Teacher key={teacher.uid}>
               <TeacherAvatar>
                 <Link href={`/findTeachers/reserve/${teacher.uid}`}>
-                  <Image src={BearAvatar} alt="avatar" width={100} />
+                  <Image src={teacher.avatar || BearAvatar} alt="avatar" width={100} height={100} />
                 </Link>
               </TeacherAvatar>
               <TeacherInfo>

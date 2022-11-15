@@ -114,7 +114,7 @@ function CourseDetail() {
   const router = useRouter();
   const { courseId } = router.query;
   const [courseData, setCourseData] = useState<CourseDataInteface>();
-  const [reviewsUsersDatas, setReviewsUsersDatas] = useState<{ index: number; username: string }[]>([]);
+  const [reviewsUsersDatas, setReviewsUsersDatas] = useState<{ index: number; username: string; avatar: string }[]>([]);
   const [boughtCourses, setBoughtCourses] = useState<string[]>([]);
   const { isLogin, userData } = useContext(AuthContext);
   const [orderQty, setOrderQty] = useRecoilState(orderQtyState);
@@ -144,7 +144,8 @@ function CourseDetail() {
           const userSnap = await getDoc(userRef);
           if (!userSnap.exists()) return;
           const { username } = userSnap.data();
-          setReviewsUsersDatas((prev) => [...prev, { index, username }]);
+          const avatar = userSnap.data().photoURL;
+          setReviewsUsersDatas((prev) => [...prev, { index, username, avatar }]);
         });
       }
     };
@@ -244,7 +245,14 @@ function CourseDetail() {
             <Review key={review.userId}>
               <User>
                 <AvatarWrapper>
-                  <Image src={Avatar} alt="avatar" fill sizes="contain" />
+                  <Image
+                    src={
+                      reviewsUsersDatas.find((reviewUserData) => reviewUserData.index === reviewIndex)?.avatar || Avatar
+                    }
+                    alt="avatar"
+                    fill
+                    sizes="contain"
+                  />
                 </AvatarWrapper>
                 <UserName>
                   {reviewsUsersDatas.find((reviewUserData) => reviewUserData.index === reviewIndex)?.username}
