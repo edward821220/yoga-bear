@@ -3,6 +3,7 @@ import Image from "next/image";
 import { doc, getDoc } from "firebase/firestore";
 import { useRouter } from "next/router";
 import styled from "styled-components";
+import { FullScreen, useFullScreenHandle } from "react-full-screen";
 import { db } from "../../../../../lib/firebase";
 import Play from "../../../../../public/play.png";
 import Pause from "../../../../../public/pause.png";
@@ -11,7 +12,8 @@ import Rewind from "../../../../../public/rewind.png";
 import Voice from "../../../../../public/voice.png";
 import Mute from "../../../../../public/mute.png";
 import Speed from "../../../../../public/speed.png";
-import FullScreen from "../../../../../public/full-screen.png";
+import FullScreenIcon from "../../../../../public/full-screen.png";
+import FullWindow from "../../../../../public/full-window.png";
 
 const Wrapper = styled.div`
   display: flex;
@@ -56,17 +58,18 @@ const Title = styled.h2`
 const CourseRoom = styled.div`
   display: flex;
 `;
-const VideoContainer = styled.div`
+const VideoContainer = styled.div<{ isFullScreen: boolean }>`
   position: relative;
-  width: 754px;
-  height: 417px;
+  width: ${(props) => (props.isFullScreen ? "100vw" : "754px")};
+  height: ${(props) => (props.isFullScreen ? "100vh" : "417px")};
   background-color: transparent;
 `;
 
-const Video = styled.video`
-  width: 754px;
-  height: 417px;
+const Video = styled.video<{ isFullScreen: boolean; showToolBar: boolean }>`
+  width: ${(props) => (props.isFullScreen ? "100vw" : "754px")};
+  height: ${(props) => (props.isFullScreen ? "100vh" : "417px")};
   margin-bottom: 20px;
+  cursor: ${(props) => props.showToolBar === false && "none"};
 `;
 const ChapterSelector = styled.div`
   display: flex;
@@ -166,7 +169,7 @@ const VoiceBarContainer = styled.div`
   display: flex;
   flex-direction: column-reverse;
   width: 24px;
-  height: 100px;
+  height: 120px;
   background-color: #484848;
 `;
 const VoiceBar = styled.div<{ height: number }>`
@@ -224,9 +227,12 @@ interface CourseDataInteface {
 function VideoRoom() {
   const router = useRouter();
   const { courseId } = router.query;
+  const handle = useFullScreenHandle();
   const videoRef = useRef<HTMLVideoElement>(null);
+  const timeoutRef = useRef<NodeJS.Timeout>();
   const [isPlaying, setIsPlaying] = useState(false);
   const [isMute, setIsMute] = useState(false);
+  const [isFullScreen, setIsFullScreen] = useState(false);
   const [showToolBar, setShowToolBar] = useState(false);
   const [showVoiceBar, setShowVoiceBar] = useState(false);
   const [showSpeedMenu, setShowSpeedMenu] = useState(false);
@@ -297,15 +303,12 @@ function VideoRoom() {
   };
 
   const handleSwitch = () => {
-    setIsPlaying(false);
     if (!courseData) return;
     if (courseData.chapters[selectChapter].units[selectUnit + 1]?.video) {
       setSelectUnit((prev) => prev + 1);
-      videoHandler("play");
     } else if (courseData.chapters[selectChapter + 1]?.units[0].video) {
       setSelectUnit(0);
       setSelectChpter((prev) => prev + 1);
-      videoHandler("play");
     } else {
       alert("恭喜您完課!");
     }
@@ -316,175 +319,199 @@ function VideoRoom() {
       <CourseContainer backgroundImage={courseData?.cover || ""}>
         <Title>{courseData?.name}</Title>
         <CourseRoom>
-          <VideoContainer
-            onMouseOver={() => {
-              setShowToolBar(true);
-            }}
-            onMouseOut={() => {
-              setShowToolBar(false);
-            }}
-            onKeyDown={(e) => {
-              if (e.key === "ArrowRight") {
-                videoHandler("forward");
-              } else if (e.key === "ArrowLeft") {
-                videoHandler("rewind");
-              } else if (e.key === " ") {
-                videoHandler(isPlaying ? "pause" : "play");
-              }
+          <FullScreen
+            handle={handle}
+            onChange={(e) => {
+              setIsFullScreen(e);
             }}
           >
-            <Video
-              src={courseData?.chapters[selectChapter].units[selectUnit].video}
-              onEnded={handleSwitch}
-              onClick={() => {
-                if (isPlaying) {
-                  videoHandler("pause");
-                } else {
-                  videoHandler("play");
+            <VideoContainer
+              isFullScreen={isFullScreen}
+              onMouseOver={() => {
+                setShowToolBar(true);
+              }}
+              onMouseOut={() => {
+                setShowToolBar(false);
+              }}
+              onMouseMove={() => {
+                clearTimeout(timeoutRef.current);
+                setShowToolBar(true);
+                timeoutRef.current = setTimeout(() => {
+                  setShowToolBar(false);
+                }, 5000);
+              }}
+              onKeyDown={(e) => {
+                if (e.key === "ArrowRight") {
+                  videoHandler("forward");
+                } else if (e.key === "ArrowLeft") {
+                  videoHandler("rewind");
+                } else if (e.key === " ") {
+                  videoHandler(isPlaying ? "pause" : "play");
                 }
               }}
-              onTimeUpdate={() => {
-                if (!videoRef.current) return;
-                setCurrentTime(videoRef.current?.currentTime);
-                setProgress((videoRef.current.currentTime / videoTime) * 100);
-              }}
-              ref={videoRef}
-            />
-            {showToolBar && (
-              <ToolBar>
-                <PlayControls>
-                  <ControlIcon
-                    onClick={() => {
-                      videoHandler("rewind");
-                    }}
-                  >
-                    <Image src={Rewind} alt="rewind" fill sizes="contain" />
-                  </ControlIcon>
-                  {isPlaying === false ? (
+            >
+              <Video
+                src={courseData?.chapters[selectChapter].units[selectUnit].video}
+                autoPlay
+                isFullScreen={isFullScreen}
+                showToolBar={showToolBar}
+                onEnded={handleSwitch}
+                onClick={() => {
+                  if (isPlaying) {
+                    videoHandler("pause");
+                  } else {
+                    videoHandler("play");
+                  }
+                }}
+                onTimeUpdate={() => {
+                  if (!videoRef.current) return;
+                  setCurrentTime(videoRef.current?.currentTime);
+                  setProgress((videoRef.current.currentTime / videoTime) * 100);
+                  setVideoTime(videoRef.current.duration);
+                }}
+                ref={videoRef}
+              />
+              {showToolBar && (
+                <ToolBar>
+                  <PlayControls>
                     <ControlIcon
                       onClick={() => {
-                        videoHandler("play");
+                        videoHandler("rewind");
                       }}
                     >
-                      <Image src={Play} alt="play" fill sizes="contain" />
+                      <Image src={Rewind} alt="rewind" fill sizes="contain" />
                     </ControlIcon>
-                  ) : (
-                    <ControlIcon
-                      onClick={() => {
-                        videoHandler("pause");
-                      }}
-                    >
-                      <Image src={Pause} alt="pause" fill sizes="contain" />
-                    </ControlIcon>
-                  )}
-                  <ControlIcon
-                    onClick={() => {
-                      videoHandler("forward");
-                    }}
-                  >
-                    <Image src={Forward} alt="forward" fill sizes="contain" />
-                  </ControlIcon>
-                </PlayControls>
-                <TimeControls>
-                  <ControlTime>
-                    {`${Math.floor(currentTime / 60)}:${`0${Math.floor(currentTime % 60)}`.slice(-2)}`}
-                  </ControlTime>
-                  <TimeProgressBarContainer
-                    onClick={(e) => {
-                      if (!videoRef.current) return;
-                      const target = e.currentTarget as HTMLDivElement;
-                      const timeAtProgressBar =
-                        (e.nativeEvent.offsetX / target.scrollWidth) * videoRef.current.duration;
-                      videoRef.current.currentTime = timeAtProgressBar;
-                      setCurrentTime(timeAtProgressBar);
-                    }}
-                  >
-                    <TimeProgressBar style={{ width: `${progress}%` }} />
-                  </TimeProgressBarContainer>
-                  <ControlTime>{`${Math.floor(videoTime / 60)}:${`0${Math.floor(videoTime % 60)}`.slice(
-                    -2
-                  )}`}</ControlTime>
-                </TimeControls>
-                <OtherControls>
-                  <ControlIcon
-                    onMouseOver={() => {
-                      setShowVoiceBar(true);
-                    }}
-                    onMouseOut={() => {
-                      setShowVoiceBar(false);
-                    }}
-                  >
-                    {showVoiceBar && (
-                      <VoiceBarContainer
-                        onClickCapture={(e) => {
-                          if (!videoRef.current) return;
-                          if (e.target === e.currentTarget) {
-                            const volume = Math.abs(e.nativeEvent.offsetY - 100);
-                            videoRef.current.volume = volume / 100;
-                            setVoice(volume);
-                          } else {
-                            const volume = Math.abs(e.nativeEvent.offsetY - voice);
-                            videoRef.current.volume = volume / 100;
-                            setVoice(volume);
-                          }
+                    {isPlaying === false ? (
+                      <ControlIcon
+                        onClick={() => {
+                          videoHandler("play");
                         }}
                       >
-                        <VoiceBar height={voice} />
-                      </VoiceBarContainer>
+                        <Image src={Play} alt="play" fill sizes="contain" />
+                      </ControlIcon>
+                    ) : (
+                      <ControlIcon
+                        onClick={() => {
+                          videoHandler("pause");
+                        }}
+                      >
+                        <Image src={Pause} alt="pause" fill sizes="contain" />
+                      </ControlIcon>
                     )}
-                    <Image
-                      src={isMute ? Mute : Voice}
-                      alt="voice"
-                      fill
-                      sizes="contain"
+                    <ControlIcon
                       onClick={() => {
-                        videoHandler(isMute ? "voice" : "mute");
+                        videoHandler("forward");
                       }}
-                    />
-                  </ControlIcon>
-                  <ControlIcon
-                    onMouseOver={() => {
-                      setShowSpeedMenu(true);
-                    }}
-                    onMouseOut={() => {
-                      setShowSpeedMenu(false);
-                    }}
-                  >
-                    {showSpeedMenu && (
-                      <SpeedMenu>
-                        {[0.5, 0.75, 1.0, 1.25, 1.5, 1.75, 2].map((rate) => (
-                          <SpeedOption
-                            key={rate}
-                            onClick={() => {
-                              if (!videoRef.current) return;
-                              videoRef.current.playbackRate = rate;
-                              setSpeed(rate);
-                            }}
-                          >
-                            {speed === rate && (
-                              <PlayIcon>
-                                <Image src={Play} alt="play" fill sizes="contain" />
-                              </PlayIcon>
-                            )}
-                            {rate}x
-                          </SpeedOption>
-                        ))}
-                      </SpeedMenu>
-                    )}
-                    <Image src={Speed} alt="speed" fill sizes="contain" />
-                  </ControlIcon>
-                  <ControlIcon
-                    onClick={() => {
-                      videoRef.current.requestFullscreen();
-                      setShowToolBar(true);
-                    }}
-                  >
-                    <Image src={FullScreen} alt="full-screen" fill sizes="contain" />
-                  </ControlIcon>
-                </OtherControls>
-              </ToolBar>
-            )}
-          </VideoContainer>
+                    >
+                      <Image src={Forward} alt="forward" fill sizes="contain" />
+                    </ControlIcon>
+                  </PlayControls>
+                  <TimeControls>
+                    <ControlTime>
+                      {`${Math.floor(currentTime / 60)}:${`0${Math.floor(currentTime % 60)}`.slice(-2)}`}
+                    </ControlTime>
+                    <TimeProgressBarContainer
+                      onClick={(e) => {
+                        if (!videoRef.current) return;
+                        const target = e.currentTarget as HTMLDivElement;
+                        const timeAtProgressBar =
+                          (e.nativeEvent.offsetX / target.scrollWidth) * videoRef.current.duration;
+                        videoRef.current.currentTime = timeAtProgressBar;
+                        setCurrentTime(timeAtProgressBar);
+                      }}
+                    >
+                      <TimeProgressBar style={{ width: `${progress}%` }} />
+                    </TimeProgressBarContainer>
+                    <ControlTime>{`${Math.floor(videoTime / 60)}:${`0${Math.floor(videoTime % 60)}`.slice(
+                      -2
+                    )}`}</ControlTime>
+                  </TimeControls>
+                  <OtherControls>
+                    <ControlIcon
+                      onMouseOver={() => {
+                        setShowVoiceBar(true);
+                      }}
+                      onMouseOut={() => {
+                        setShowVoiceBar(false);
+                      }}
+                    >
+                      {showVoiceBar && (
+                        <VoiceBarContainer
+                          onClickCapture={(e) => {
+                            if (!videoRef.current) return;
+                            if (e.target === e.currentTarget) {
+                              const volume = Math.abs(e.nativeEvent.offsetY - 100);
+                              videoRef.current.volume = volume / 100;
+                              setVoice(volume);
+                            } else {
+                              const volume = Math.abs(e.nativeEvent.offsetY - voice);
+                              videoRef.current.volume = volume / 100;
+                              setVoice(volume);
+                            }
+                          }}
+                        >
+                          <VoiceBar height={voice} />
+                        </VoiceBarContainer>
+                      )}
+                      <Image
+                        src={isMute ? Mute : Voice}
+                        alt="voice"
+                        fill
+                        sizes="contain"
+                        onClick={() => {
+                          videoHandler(isMute ? "voice" : "mute");
+                        }}
+                      />
+                    </ControlIcon>
+                    <ControlIcon
+                      onMouseOver={() => {
+                        setShowSpeedMenu(true);
+                      }}
+                      onMouseOut={() => {
+                        setShowSpeedMenu(false);
+                      }}
+                    >
+                      {showSpeedMenu && (
+                        <SpeedMenu>
+                          {[0.5, 0.75, 1.0, 1.25, 1.5, 1.75, 2].map((rate) => (
+                            <SpeedOption
+                              key={rate}
+                              onClick={() => {
+                                if (!videoRef.current) return;
+                                videoRef.current.playbackRate = rate;
+                                setSpeed(rate);
+                              }}
+                            >
+                              {speed === rate && (
+                                <PlayIcon>
+                                  <Image src={Play} alt="play" fill sizes="contain" />
+                                </PlayIcon>
+                              )}
+                              {rate}x
+                            </SpeedOption>
+                          ))}
+                        </SpeedMenu>
+                      )}
+                      <Image src={Speed} alt="speed" fill sizes="contain" />
+                    </ControlIcon>
+                    <ControlIcon
+                      onClick={() => {
+                        if (!isFullScreen) {
+                          handle.enter();
+                          setIsFullScreen(true);
+                        } else {
+                          handle.exit();
+                          setIsFullScreen(false);
+                        }
+                      }}
+                    >
+                      <Image src={FullScreenIcon} alt="full-screen" fill sizes="contain" />
+                    </ControlIcon>
+                  </OtherControls>
+                </ToolBar>
+              )}
+            </VideoContainer>
+          </FullScreen>
           <ChapterSelector>
             <SubTitle>課程章節</SubTitle>
             <Chapters>
