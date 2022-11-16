@@ -44,7 +44,6 @@ const CourseContainer = styled.div<{ backgroundImage: string }>`
     left: 0px;
     height: 610px;
     background-color: #f1ead888;
-    z-index: -8;
   }
 `;
 const Title = styled.h2`
@@ -52,6 +51,7 @@ const Title = styled.h2`
   font-weight: bold;
   color: ${(props) => props.theme.colors.color2};
   margin: 30px 0;
+  z-index: 8;
 `;
 const CourseRoom = styled.div`
   display: flex;
@@ -60,7 +60,7 @@ const VideoContainer = styled.div`
   position: relative;
   width: 754px;
   height: 417px;
-  background-color: ${(props) => props.theme.colors.color1};
+  background-color: transparent;
 `;
 
 const Video = styled.video`
@@ -80,6 +80,7 @@ const ChapterSelector = styled.div`
   border-radius: 5px;
   padding-top: 20px;
   overflow-y: auto;
+  z-index: 8;
 `;
 const SubTitle = styled.h3`
   font-size: 24px;
@@ -159,15 +160,19 @@ const ControlTime = styled.p`
   color: ${(props) => props.theme.colors.color3};
 `;
 const VoiceBarContainer = styled.div`
-  width: 10px;
-  height: 50px;
+  position: absolute;
+  bottom: 20px;
+  right: 1px;
+  display: flex;
+  flex-direction: column-reverse;
+  width: 24px;
+  height: 100px;
   background-color: #484848;
-  display: ${(props) => (props.show ? block : none)};
 `;
-const VoiceBar = styled.div`
-  border-radius: 15px;
+const VoiceBar = styled.div<{ height: number }>`
   background-color: ${(props) => props.theme.colors.color4};
   width: 100%;
+  height: ${(props) => props.height}%;
   filter: brightness(110%);
 `;
 
@@ -201,9 +206,11 @@ function VideoRoom() {
   const [isPlaying, setIsPlaying] = useState(false);
   const [isMute, setIsMute] = useState(false);
   const [showToolBar, setShowToolBar] = useState(false);
+  const [showVoiceBar, setShowVoiceBar] = useState(false);
   const [currentTime, setCurrentTime] = useState(0);
   const [videoTime, setVideoTime] = useState(0);
   const [progress, setProgress] = useState(0);
+  const [voice, setVoice] = useState(0);
   const [selectChapter, setSelectChpter] = useState(0);
   const [selectUnit, setSelectUnit] = useState(0);
   const [courseData, setCourseData] = useState<CourseDataInteface>();
@@ -228,6 +235,7 @@ function VideoRoom() {
         videoRef.current.play();
         setIsPlaying(true);
         setVideoTime(videoRef.current.duration);
+        setVoice(videoRef.current.volume * 100);
         break;
       }
       case "pause": {
@@ -263,6 +271,7 @@ function VideoRoom() {
     setSelectChpter(chapterIndex);
     setSelectUnit(unitIndex);
   };
+
   const handleSwitch = () => {
     setIsPlaying(false);
     if (!courseData) return;
@@ -283,9 +292,6 @@ function VideoRoom() {
       <CourseContainer backgroundImage={courseData?.cover || ""}>
         <Title>{courseData?.name}</Title>
         <CourseRoom>
-          {/* <Video
-            src={courseData?.chapters[selectChapter].units[selectUnit].video}
-          /> */}
           <VideoContainer
             onMouseOver={() => {
               setShowToolBar(true);
@@ -295,7 +301,7 @@ function VideoRoom() {
             }}
           >
             <Video
-              src="http://syddev.com/jquery.videoBG/assets/tunnel_animation.mp4"
+              src={courseData?.chapters[selectChapter].units[selectUnit].video}
               onEnded={handleSwitch}
               onClick={() => {
                 if (isPlaying) {
@@ -353,7 +359,7 @@ function VideoRoom() {
                   <TimeProgressBarContainer
                     onClick={(e) => {
                       if (!videoRef.current) return;
-                      const target = e.target as HTMLDivElement;
+                      const target = e.currentTarget as HTMLDivElement;
                       const timeAtProgressBar =
                         (e.nativeEvent.offsetX / target.scrollWidth) * videoRef.current.duration;
                       videoRef.current.currentTime = timeAtProgressBar;
@@ -367,23 +373,42 @@ function VideoRoom() {
                   )}`}</ControlTime>
                 </TimeControls>
                 <OtherControls>
-                  {isMute ? (
-                    <ControlIcon
+                  <ControlIcon
+                    onMouseOver={() => {
+                      setShowVoiceBar(true);
+                    }}
+                    onMouseOut={() => {
+                      setShowVoiceBar(false);
+                    }}
+                  >
+                    {showVoiceBar && (
+                      <VoiceBarContainer
+                        onClickCapture={(e) => {
+                          if (!videoRef.current) return;
+                          if (e.target === e.currentTarget) {
+                            const volume = Math.abs(e.nativeEvent.offsetY - 100);
+                            videoRef.current.volume = volume / 100;
+                            setVoice(volume);
+                          } else {
+                            const volume = Math.abs(e.nativeEvent.offsetY - voice);
+                            videoRef.current.volume = volume / 100;
+                            setVoice(volume);
+                          }
+                        }}
+                      >
+                        <VoiceBar height={voice} />
+                      </VoiceBarContainer>
+                    )}
+                    <Image
+                      src={isMute ? Mute : Voice}
+                      alt="voice"
+                      fill
+                      sizes="contain"
                       onClick={() => {
-                        videoHandler("voice");
+                        videoHandler(isMute ? "voice" : "mute");
                       }}
-                    >
-                      <Image src={Mute} alt="speed" fill sizes="contain" />
-                    </ControlIcon>
-                  ) : (
-                    <ControlIcon
-                      onClick={() => {
-                        videoHandler("mute");
-                      }}
-                    >
-                      <Image src={Voice} alt="voice" fill sizes="contain" />
-                    </ControlIcon>
-                  )}
+                    />
+                  </ControlIcon>
                   <ControlIcon onClick={() => {}}>
                     <Image src={Speed} alt="speed" fill sizes="contain" />
                   </ControlIcon>
