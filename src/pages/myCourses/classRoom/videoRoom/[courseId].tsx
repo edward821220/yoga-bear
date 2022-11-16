@@ -1,10 +1,16 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useRef } from "react";
 import Image from "next/image";
 import { doc, getDoc } from "firebase/firestore";
 import { useRouter } from "next/router";
 import styled from "styled-components";
 import { db } from "../../../../../lib/firebase";
 import Play from "../../../../../public/play.png";
+import Pause from "../../../../../public/pause.png";
+import Forward from "../../../../../public/forward.png";
+import Rewind from "../../../../../public/rewind.png";
+import Voice from "../../../../../public/voice.png";
+import Speed from "../../../../../public/speed.png";
+import Full from "../../../../../public/full-screen.png";
 
 const Wrapper = styled.div`
   display: flex;
@@ -46,9 +52,15 @@ const Title = styled.h2`
   color: ${(props) => props.theme.colors.color2};
   margin: 30px 0;
 `;
-const VideoContainer = styled.div`
+const CourseRoom = styled.div`
   display: flex;
 `;
+const VideoContainer = styled.div`
+  position: relative;
+  width: 754px;
+  height: 417px;
+`;
+
 const Video = styled.video`
   width: 754px;
   height: 417px;
@@ -104,6 +116,58 @@ const PlayIcon = styled.div`
   height: 16px;
   margin-right: 10px;
 `;
+const ToolBar = styled.div`
+  display: flex;
+  flex-wrap: wrap;
+  position: absolute;
+  bottom: 0;
+  width: 754px;
+  height: 66px;
+  background-color: #00000050;
+  padding: 10px 20px;
+`;
+const TimeControls = styled.div`
+  display: flex;
+  align-items: center;
+  justify-content: space-evenly;
+  flex-basis: 100%;
+  margin-bottom: 10px;
+`;
+const TimeProgressBarContainer = styled.div`
+  background-color: gray;
+  border-radius: 15px;
+  width: 550px;
+  height: 5px;
+  z-index: 30;
+  position: relative;
+  margin: 0 20px;
+`;
+const TimeProgressBar = styled.div`
+  border-radius: 15px;
+  background-color: ${(props) => props.theme.colors.color4};
+  height: 100%;
+`;
+const ControlTime = styled.p`
+  color: ${(props) => props.theme.colors.color3};
+`;
+const ControlButtons = styled.ul`
+  display: flex;
+  justify-content: space-between;
+  width: 100%;
+`;
+const PlayControls = styled.li`
+  display: flex;
+`;
+const OtherControls = styled.li`
+  display: flex;
+`;
+const ControlIcon = styled.div`
+  position: relative;
+  width: 20px;
+  height: 20px;
+  margin-right: 10px;
+  cursor: pointer;
+`;
 const CourseDetail = styled.div``;
 const Introduction = styled.p`
   font-size: 18px;
@@ -120,9 +184,15 @@ interface CourseDataInteface {
 function VideoRoom() {
   const router = useRouter();
   const { courseId } = router.query;
+  const videoRef = useRef<HTMLVideoElement>(null);
+  const [playing, setPlaying] = useState(false);
+  const [currentTime, setCurrentTime] = useState(0);
+  const [videoTime, setVideoTime] = useState(0);
+  const [progress, setProgress] = useState(0);
   const [courseData, setCourseData] = useState<CourseDataInteface>();
   const [selectChapter, setSelectChpter] = useState(0);
   const [selectUnit, setSelectUnit] = useState(0);
+
   useEffect(() => {
     const getCourse = async () => {
       if (typeof courseId !== "string") return;
@@ -136,17 +206,57 @@ function VideoRoom() {
     getCourse();
   }, [courseId]);
 
+  useEffect(() => {
+    const time = setInterval(() => {
+      if (!videoRef.current) return;
+      setCurrentTime(videoRef.current?.currentTime);
+      setProgress((videoRef.current.currentTime / videoTime) * 100);
+    }, 500);
+    return () => clearInterval(time);
+  }, [videoTime]);
+
+  const videoHandler = (control: string) => {
+    if (!videoRef.current) return;
+    switch (control) {
+      case "play": {
+        videoRef.current.play();
+        setPlaying(true);
+        setVideoTime(videoRef.current.duration);
+        break;
+      }
+      case "pause": {
+        videoRef.current.pause();
+        setPlaying(false);
+        break;
+      }
+      case "forward": {
+        videoRef.current.currentTime += 5;
+        break;
+      }
+      case "rewind": {
+        videoRef.current.currentTime -= 5;
+        break;
+      }
+      default: {
+        break;
+      }
+    }
+  };
+
   const handleSelect = (chapterIndex: number, unitIndex: number) => {
     setSelectChpter(chapterIndex);
     setSelectUnit(unitIndex);
   };
   const handleSwitch = () => {
+    setPlaying(false);
     if (!courseData) return;
     if (courseData.chapters[selectChapter].units[selectUnit + 1]?.video) {
       setSelectUnit((prev) => prev + 1);
+      videoHandler("play");
     } else if (courseData.chapters[selectChapter + 1]?.units[0].video) {
       setSelectUnit(0);
       setSelectChpter((prev) => prev + 1);
+      videoHandler("play");
     } else {
       alert("恭喜您完課!");
     }
@@ -156,14 +266,95 @@ function VideoRoom() {
     <Wrapper>
       <CourseContainer backgroundImage={courseData?.cover || ""}>
         <Title>{courseData?.name}</Title>
-        <VideoContainer>
-          <Video
+        <CourseRoom>
+          {/* <Video
             src={courseData?.chapters[selectChapter].units[selectUnit].video}
-            onEnded={handleSwitch}
-            autoPlay
-            controls
-            controlsList="nodownload"
-          />
+          /> */}
+          <VideoContainer>
+            <Video
+              src="http://syddev.com/jquery.videoBG/assets/tunnel_animation.mp4"
+              onEnded={handleSwitch}
+              onClick={() => {
+                if (playing) {
+                  videoHandler("pause");
+                } else {
+                  videoHandler("play");
+                }
+              }}
+              ref={videoRef}
+            />
+            <ToolBar>
+              <TimeControls>
+                <ControlTime>
+                  {`${Math.floor(currentTime / 60)}:${`0${Math.floor(currentTime % 60)}`.slice(-2)}`}
+                </ControlTime>
+                <TimeProgressBarContainer>
+                  <TimeProgressBar style={{ width: `${progress}%` }} />
+                </TimeProgressBarContainer>
+                <ControlTime>{`${Math.floor(videoTime / 60)}:${`0${Math.floor(videoTime % 60)}`.slice(
+                  -2
+                )}`}</ControlTime>
+              </TimeControls>
+              <ControlButtons>
+                <PlayControls>
+                  <ControlIcon
+                    onClick={() => {
+                      videoHandler("rewind");
+                    }}
+                  >
+                    <Image src={Rewind} alt="rewind" fill sizes="contain" />
+                  </ControlIcon>
+                  {playing === false ? (
+                    <ControlIcon
+                      onClick={() => {
+                        videoHandler("play");
+                      }}
+                    >
+                      <Image src={Play} alt="play" fill sizes="contain" />
+                    </ControlIcon>
+                  ) : (
+                    <ControlIcon
+                      onClick={() => {
+                        videoHandler("pause");
+                      }}
+                    >
+                      <Image src={Pause} alt="pause" fill sizes="contain" />
+                    </ControlIcon>
+                  )}
+                  <ControlIcon
+                    onClick={() => {
+                      videoHandler("forward");
+                    }}
+                  >
+                    <Image src={Forward} alt="forward" fill sizes="contain" />
+                  </ControlIcon>
+                </PlayControls>
+                <OtherControls>
+                  <ControlIcon
+                    onClick={() => {
+                      // videoHandler("pause");
+                    }}
+                  >
+                    <Image src={Voice} alt="voice" fill sizes="contain" />
+                  </ControlIcon>
+                  <ControlIcon
+                    onClick={() => {
+                      // videoHandler("pause");
+                    }}
+                  >
+                    <Image src={Speed} alt="speed" fill sizes="contain" />
+                  </ControlIcon>
+                  <ControlIcon
+                    onClick={() => {
+                      // videoHandler("pause");
+                    }}
+                  >
+                    <Image src={Full} alt="full" fill sizes="contain" />
+                  </ControlIcon>
+                </OtherControls>
+              </ControlButtons>
+            </ToolBar>
+          </VideoContainer>
           <ChapterSelector>
             <SubTitle>課程章節</SubTitle>
             <Chapters>
@@ -195,7 +386,7 @@ function VideoRoom() {
               ))}
             </Chapters>
           </ChapterSelector>
-        </VideoContainer>
+        </CourseRoom>
       </CourseContainer>
       <CourseDetail>
         <Introduction>{courseData?.introduction}</Introduction>
