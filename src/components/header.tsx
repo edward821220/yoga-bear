@@ -21,12 +21,12 @@ const Wrapper = styled.header`
   flex-wrap: wrap;
   align-items: center;
   justify-content: space-between;
-  background-color: #f2deba;
+  background-color: ${(props) => props.theme.colors.color6};
   height: 100px;
   position: sticky;
   top: 0;
   z-index: 99;
-  border-bottom: 6px solid #5d7262;
+  border-bottom: 6px solid ${(props) => props.theme.colors.color4};
 `;
 const LogoWrapper = styled.div`
   margin-right: 100px;
@@ -41,17 +41,17 @@ const HeaderLink = styled.li`
   margin-right: 36px;
   font-size: 18px;
   line-height: 40px;
-  border: 2px solid #5d7262;
+  border: 2px solid ${(props) => props.theme.colors.color4};
   border-radius: 5px;
-  background-color: #fff;
+  background-color: ${(props) => props.theme.colors.color3};
   width: 120px;
   text-align: center;
   a {
-    color: #654116;
+    color: ${(props) => props.theme.colors.color2};
   }
 `;
 const MycoursesLink = styled.span`
-  color: #654116;
+  color: ${(props) => props.theme.colors.color2};
   cursor: pointer;
 `;
 
@@ -69,7 +69,7 @@ const MoneyDisplay = styled.div`
   margin-right: 50px;
   justify-content: space-between;
   align-items: center;
-  background-color: #fff;
+  background-color: ${(props) => props.theme.colors.color3};
   border-radius: 5px;
 `;
 
@@ -101,8 +101,8 @@ const CartIconWrapper = styled.li`
     position: absolute;
     bottom: 0;
     transform: translateY(1px) translateX(-5px);
-    background-color: #f7ecde;
-    border: 2px solid #5d7262;
+    background-color: ${(props) => props.theme.colors.color5};
+    border: 2px solid ${(props) => props.theme.colors.color4};
     border-radius: 50%;
     z-index: -1;
   }
@@ -117,8 +117,8 @@ const OrderQty = styled.div`
   bottom: 0;
   right: -10px;
   border-radius: 50%;
-  background-color: #5d7262;
-  color: #fff;
+  color: ${(props) => props.theme.colors.color4};
+  color: ${(props) => props.theme.colors.color3};
 `;
 
 const MemberIconWrapper = styled.li`
@@ -133,9 +133,9 @@ const MemberIconWrapper = styled.li`
     bottom: 0;
     transform: translateY(5px) translateX(-5px);
     position: absolute;
-    background-color: #f7ecde;
+    background-color: ${(props) => props.theme.colors.color5};
     border-radius: 50%;
-    border: 2px solid #5d7262;
+    border: 2px solid ${(props) => props.theme.colors.color4};
     z-index: -1;
   }
 `;
@@ -189,8 +189,8 @@ const FileLable = styled.label`
   justify-content: center;
   align-items: center;
   font-size: 13.33px;
-  color: #fff;
-  background-color: #5d7262;
+  color: ${(props) => props.theme.colors.color3};
+  color: ${(props) => props.theme.colors.color4};
   width: 100px;
   height: 33.5px;
   border-radius: 5px;
@@ -207,8 +207,8 @@ const MemberInfo = styled.p`
 
 const Button = styled.button`
   display: block;
-  color: #fff;
-  background-color: #5d7262;
+  color: ${(props) => props.theme.colors.color3};
+  color: ${(props) => props.theme.colors.color4};
   border-radius: 5px;
   min-width: 80px;
   padding: 5px 10px;

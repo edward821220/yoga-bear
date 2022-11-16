@@ -10,7 +10,7 @@ import { orderQtyState, bearMoneyState } from "../../../lib/recoil";
 import RemoveIcon from "../../../public/trash.png";
 
 const Wrapper = styled.div`
-  background-color: #f1ead8;
+  background-color: ${(props) => props.theme.colors.color1};
   min-height: calc(100vh - 100px);
 `;
 const Container = styled.div`
@@ -21,13 +21,13 @@ const Container = styled.div`
 
 const CartContainer = styled.div`
   display: flex;
-  color: #654116;
+  color: ${(props) => props.theme.colors.color2};
 `;
 
 const CartItems = styled.ul`
-  background-color: #fff;
+  background-color: ${(props) => props.theme.colors.color3};
   width: 80%;
-  border: 2px solid #654116;
+  border: 2px solid ${(props) => props.theme.colors.color2};
   border-radius: 5px;
   padding: 20px 10px 0px 10px;
   margin-right: 20px;
@@ -72,9 +72,9 @@ const RemoveIconWrapper = styled.div`
 
 const OrderDetails = styled.div`
   flex-basis: 30%;
-  background-color: #fff;
+  background-color: ${(props) => props.theme.colors.color3};
   height: 50%;
-  border: 2px solid #654116;
+  border: 2px solid ${(props) => props.theme.colors.color2};
   border-radius: 5px;
   padding: 10px;
 `;
@@ -99,8 +99,8 @@ const Total = styled(DetailItems)`
 const Button = styled.button`
   display: block;
   font-size: 16px;
-  color: #fff;
-  background-color: #5d7262;
+  color: ${(props) => props.theme.colors.color3};
+  color: ${(props) => props.theme.colors.color4};
   border-radius: 5px;
   padding: 10px;
   width: 30%;

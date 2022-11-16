@@ -9,7 +9,7 @@ import StarIcon from "../../../public/star.png";
 import HalfStar from "../../../public/star-half.png";
 
 const Wrapper = styled.div`
-  background-color: #f1ead8;
+  background-color: ${(props) => props.theme.colors.color1};
   min-height: calc(100vh - 100px);
   display: flex;
   flex-direction: column;
@@ -34,11 +34,11 @@ const TeachersList = styled.ul`
 const Teacher = styled.li`
   flex-basis: 100%;
   display: flex;
-  border: 2px solid #654116;
+  border: 2px solid ${(props) => props.theme.colors.color2};
   border-radius: 5px;
   margin-bottom: 20px;
   padding: 10px 5px;
-  background-color: #fff;
+  background-color: ${(props) => props.theme.colors.color3};
   &:last-child {
     margin-bottom: 0;
   }
@@ -53,7 +53,7 @@ const TeacherInfo = styled.div`
   display: flex;
   flex-direction: column;
   justify-content: center;
-  color: #654116;
+  color: ${(props) => props.theme.colors.color2};
 `;
 const TeacherName = styled.p`
   font-size: 18px;

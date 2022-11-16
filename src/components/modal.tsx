@@ -19,7 +19,7 @@ const ModalContent = styled.div`
   height: 60%;
   overflow-y: auto;
   margin: 150px auto;
-  background-color: #fff;
+  background-color: ${(props) => props.theme.colors.color3};
   padding: 20px;
 `;
 const CloseButton = styled.div`

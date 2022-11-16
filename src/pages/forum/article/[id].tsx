@@ -14,18 +14,18 @@ import LikeBlankIcon from "../../../../public/favorite-blank.png";
 import LikeIcon from "../../../../public/favorite.png";
 
 const Wrapper = styled.div`
-  background-color: #f1ead8;
+  background-color: ${(props) => props.theme.colors.color1};
   min-height: calc(100vh - 100px);
   padding: 20px 0;
 `;
 
 const Container = styled.div`
-  color: #654116;
+  color: ${(props) => props.theme.colors.color2};
   max-width: 800px;
   margin: 0 auto;
-  border: 2px solid #654116;
+  border: 2px solid ${(props) => props.theme.colors.color2};
   border-radius: 5px;
-  background-color: #fff;
+  background-color: ${(props) => props.theme.colors.color3};
 `;
 
 const ArticleUser = styled.div`
@@ -173,8 +173,8 @@ const MessageTextArea = styled.textarea`
 `;
 const Button = styled.button`
   flex-basis: 8%;
-  color: #fff;
-  background-color: #5d7262;
+  color: ${(props) => props.theme.colors.color3};
+  color: ${(props) => props.theme.colors.color4};
   border-radius: 5px;
   height: 40px;
   padding: 5px;

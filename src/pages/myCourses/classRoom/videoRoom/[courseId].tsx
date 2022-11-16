@@ -11,7 +11,7 @@ const Wrapper = styled.div`
   flex-direction: column;
   align-items: center;
   position: relative;
-  background-color: #f1ead8;
+  background-color: ${(props) => props.theme.colors.color1};
   min-height: calc(100vh - 100px);
 `;
 
@@ -37,18 +37,17 @@ const CourseContainer = styled.div<{ backgroundImage: string }>`
     left: 0px;
     height: 610px;
     background-color: #f1ead888;
+    z-index: -8;
   }
 `;
 const Title = styled.h2`
   font-size: 40px;
   font-weight: bold;
-  color: #654116;
+  color: ${(props) => props.theme.colors.color2};
   margin: 30px 0;
-  z-index: 8;
 `;
 const VideoContainer = styled.div`
   display: flex;
-  z-index: 8;
 `;
 const Video = styled.video`
   width: 754px;
@@ -61,12 +60,12 @@ const ChapterSelector = styled.div`
   align-items: center;
   width: 406px;
   height: 417px;
-  color: #654116;
-  background-color: #f1ead8;
-  border: 2px solid #654116;
+  color: ${(props) => props.theme.colors.color2};
+  background-color: ${(props) => props.theme.colors.color1};
+  border: 2px solid ${(props) => props.theme.colors.color2};
   border-radius: 5px;
   padding-top: 20px;
-  overflow-y: scroll;
+  overflow-y: auto;
 `;
 const SubTitle = styled.h3`
   font-size: 24px;
@@ -87,8 +86,8 @@ const ChapterTitle = styled.h4`
 `;
 const Units = styled.ul``;
 const Unit = styled.li<{ focus: boolean }>`
-  color: ${(props) => props.focus && "#fff"};
-  background-color: ${(props) => props.focus && "#5d7262"};
+  color: ${(props) => props.focus && props.theme.colors.color3};
+  background-color: ${(props) => props.focus && props.theme.colors.color4};
   padding: 20px 0;
   padding-left: 20px;
   cursor: pointer;
