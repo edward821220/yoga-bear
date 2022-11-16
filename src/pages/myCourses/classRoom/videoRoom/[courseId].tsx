@@ -175,7 +175,29 @@ const VoiceBar = styled.div<{ height: number }>`
   height: ${(props) => props.height}%;
   filter: brightness(110%);
 `;
-
+const SpeedMenu = styled.ul`
+  position: absolute;
+  bottom: 20px;
+  transform: translateX(-24px);
+  display: flex;
+  flex-direction: column;
+  width: 88px;
+  background-color: #484848;
+`;
+const SpeedOption = styled.li`
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  color: ${(props) => props.theme.colors.color3};
+  font-size: 18px;
+  line-height: 24px;
+  height: 36px;
+  padding: 5px;
+  text-align: center;
+  &:hover {
+    background-color: ${(props) => props.theme.colors.color4};
+  }
+`;
 const OtherControls = styled.div`
   display: flex;
 `;
@@ -207,10 +229,12 @@ function VideoRoom() {
   const [isMute, setIsMute] = useState(false);
   const [showToolBar, setShowToolBar] = useState(false);
   const [showVoiceBar, setShowVoiceBar] = useState(false);
+  const [showSpeedMenu, setShowSpeedMenu] = useState(false);
   const [currentTime, setCurrentTime] = useState(0);
   const [videoTime, setVideoTime] = useState(0);
   const [progress, setProgress] = useState(0);
   const [voice, setVoice] = useState(0);
+  const [speed, setSpeed] = useState(1.0);
   const [selectChapter, setSelectChpter] = useState(0);
   const [selectUnit, setSelectUnit] = useState(0);
   const [courseData, setCourseData] = useState<CourseDataInteface>();
@@ -409,7 +433,35 @@ function VideoRoom() {
                       }}
                     />
                   </ControlIcon>
-                  <ControlIcon onClick={() => {}}>
+                  <ControlIcon
+                    onMouseOver={() => {
+                      setShowSpeedMenu(true);
+                    }}
+                    onMouseOut={() => {
+                      setShowSpeedMenu(false);
+                    }}
+                  >
+                    {showSpeedMenu && (
+                      <SpeedMenu>
+                        {[0.5, 0.75, 1.0, 1.25, 1.5, 1.75, 2].map((rate) => (
+                          <SpeedOption
+                            key={rate}
+                            onClick={() => {
+                              if (!videoRef.current) return;
+                              videoRef.current.playbackRate = rate;
+                              setSpeed(rate);
+                            }}
+                          >
+                            {speed === rate && (
+                              <PlayIcon>
+                                <Image src={Play} alt="play" fill sizes="contain" />
+                              </PlayIcon>
+                            )}
+                            {rate}x
+                          </SpeedOption>
+                        ))}
+                      </SpeedMenu>
+                    )}
                     <Image src={Speed} alt="speed" fill sizes="contain" />
                   </ControlIcon>
                   <ControlIcon
