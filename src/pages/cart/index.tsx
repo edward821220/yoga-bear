@@ -99,8 +99,8 @@ const Total = styled(DetailItems)`
 const Button = styled.button`
   display: block;
   font-size: 16px;
+  background-color: ${(props) => props.theme.colors.color4};
   color: ${(props) => props.theme.colors.color3};
-  color: ${(props) => props.theme.colors.color4};
   border-radius: 5px;
   padding: 10px;
   width: 30%;

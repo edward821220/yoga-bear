@@ -173,8 +173,8 @@ const MessageTextArea = styled.textarea`
 `;
 const Button = styled.button`
   flex-basis: 8%;
+  background-color: ${(props) => props.theme.colors.color4};
   color: ${(props) => props.theme.colors.color3};
-  color: ${(props) => props.theme.colors.color4};
   border-radius: 5px;
   height: 40px;
   padding: 5px;

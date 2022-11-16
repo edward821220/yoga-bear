@@ -94,10 +94,10 @@ const LauchFormLabelTextarea = styled.textarea`
   resize: none;
 `;
 const Button = styled.button`
+  background-color: ${(props) => props.theme.colors.color4};
   color: ${(props) => props.theme.colors.color3};
-  color: ${(props) => props.theme.colors.color4};
   border-radius: 5px;
-  width: 80px;
+  min-width: 100px;
   margin-bottom: 10px;
   padding: 10px;
   cursor: pointer;

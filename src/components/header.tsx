@@ -189,8 +189,8 @@ const FileLable = styled.label`
   justify-content: center;
   align-items: center;
   font-size: 13.33px;
+  background-color: ${(props) => props.theme.colors.color4};
   color: ${(props) => props.theme.colors.color3};
-  color: ${(props) => props.theme.colors.color4};
   width: 100px;
   height: 33.5px;
   border-radius: 5px;
@@ -207,8 +207,8 @@ const MemberInfo = styled.p`
 
 const Button = styled.button`
   display: block;
+  background-color: ${(props) => props.theme.colors.color4};
   color: ${(props) => props.theme.colors.color3};
-  color: ${(props) => props.theme.colors.color4};
   border-radius: 5px;
   min-width: 80px;
   padding: 5px 10px;
@@ -526,7 +526,7 @@ function MemberModal({
             <Image src={userData.avatar || MemberLogo} alt="avatar" fill sizes="contain" />
           </Avatar>
           <MemberInfo>用戶名稱：{userData.username}</MemberInfo>
-          <MemberInfo>用戶身份：{userData.identity}</MemberInfo>
+          <MemberInfo>用戶身份：{userData.identity === "teacher" ? "老師" : "學生"}</MemberInfo>
           <FileLable onChange={handleUploadAvatar}>
             頭像上傳
             <FileInput type="file" accept="image/*" />

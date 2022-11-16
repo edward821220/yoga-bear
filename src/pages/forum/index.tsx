@@ -50,8 +50,8 @@ const AsideContent = styled.p`
 `;
 const Button = styled.button`
   display: block;
+  background-color: ${(props) => props.theme.colors.color4};
   color: ${(props) => props.theme.colors.color3};
-  color: ${(props) => props.theme.colors.color4};
   border-radius: 5px;
   width: 120px;
   padding: 10px;

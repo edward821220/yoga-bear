@@ -9,8 +9,9 @@ import Pause from "../../../../../public/pause.png";
 import Forward from "../../../../../public/forward.png";
 import Rewind from "../../../../../public/rewind.png";
 import Voice from "../../../../../public/voice.png";
+import Mute from "../../../../../public/mute.png";
 import Speed from "../../../../../public/speed.png";
-import Full from "../../../../../public/full-screen.png";
+import FullScreen from "../../../../../public/full-screen.png";
 
 const Wrapper = styled.div`
   display: flex;
@@ -59,6 +60,7 @@ const VideoContainer = styled.div`
   position: relative;
   width: 754px;
   height: 417px;
+  background-color: ${(props) => props.theme.colors.color1};
 `;
 
 const Video = styled.video`
@@ -118,47 +120,58 @@ const PlayIcon = styled.div`
 `;
 const ToolBar = styled.div`
   display: flex;
-  flex-wrap: wrap;
+  justify-content: space-between;
+  align-items: center;
   position: absolute;
   bottom: 0;
-  width: 754px;
-  height: 66px;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 740px;
+  height: 60px;
   background-color: #00000050;
   padding: 10px 20px;
+`;
+const PlayControls = styled.div`
+  display: flex;
 `;
 const TimeControls = styled.div`
   display: flex;
   align-items: center;
   justify-content: space-evenly;
-  flex-basis: 100%;
-  margin-bottom: 10px;
 `;
 const TimeProgressBarContainer = styled.div`
-  background-color: gray;
+  background-color: #484848;
   border-radius: 15px;
-  width: 550px;
-  height: 5px;
+  width: 360px;
+  height: 10px;
   z-index: 30;
   position: relative;
   margin: 0 20px;
+  cursor: pointer;
 `;
 const TimeProgressBar = styled.div`
   border-radius: 15px;
   background-color: ${(props) => props.theme.colors.color4};
   height: 100%;
+  filter: brightness(110%);
 `;
 const ControlTime = styled.p`
   color: ${(props) => props.theme.colors.color3};
 `;
-const ControlButtons = styled.ul`
-  display: flex;
-  justify-content: space-between;
+const VoiceBarContainer = styled.div`
+  width: 10px;
+  height: 50px;
+  background-color: #484848;
+  display: ${(props) => (props.show ? block : none)};
+`;
+const VoiceBar = styled.div`
+  border-radius: 15px;
+  background-color: ${(props) => props.theme.colors.color4};
   width: 100%;
+  filter: brightness(110%);
 `;
-const PlayControls = styled.li`
-  display: flex;
-`;
-const OtherControls = styled.li`
+
+const OtherControls = styled.div`
   display: flex;
 `;
 const ControlIcon = styled.div`
@@ -185,13 +198,15 @@ function VideoRoom() {
   const router = useRouter();
   const { courseId } = router.query;
   const videoRef = useRef<HTMLVideoElement>(null);
-  const [playing, setPlaying] = useState(false);
+  const [isPlaying, setIsPlaying] = useState(false);
+  const [isMute, setIsMute] = useState(false);
+  const [showToolBar, setShowToolBar] = useState(false);
   const [currentTime, setCurrentTime] = useState(0);
   const [videoTime, setVideoTime] = useState(0);
   const [progress, setProgress] = useState(0);
-  const [courseData, setCourseData] = useState<CourseDataInteface>();
   const [selectChapter, setSelectChpter] = useState(0);
   const [selectUnit, setSelectUnit] = useState(0);
+  const [courseData, setCourseData] = useState<CourseDataInteface>();
 
   useEffect(() => {
     const getCourse = async () => {
@@ -206,27 +221,18 @@ function VideoRoom() {
     getCourse();
   }, [courseId]);
 
-  useEffect(() => {
-    const time = setInterval(() => {
-      if (!videoRef.current) return;
-      setCurrentTime(videoRef.current?.currentTime);
-      setProgress((videoRef.current.currentTime / videoTime) * 100);
-    }, 500);
-    return () => clearInterval(time);
-  }, [videoTime]);
-
   const videoHandler = (control: string) => {
     if (!videoRef.current) return;
     switch (control) {
       case "play": {
         videoRef.current.play();
-        setPlaying(true);
+        setIsPlaying(true);
         setVideoTime(videoRef.current.duration);
         break;
       }
       case "pause": {
         videoRef.current.pause();
-        setPlaying(false);
+        setIsPlaying(false);
         break;
       }
       case "forward": {
@@ -235,6 +241,16 @@ function VideoRoom() {
       }
       case "rewind": {
         videoRef.current.currentTime -= 5;
+        break;
+      }
+      case "mute": {
+        setIsMute(true);
+        videoRef.current.muted = true;
+        break;
+      }
+      case "voice": {
+        setIsMute(false);
+        videoRef.current.muted = false;
         break;
       }
       default: {
@@ -248,7 +264,7 @@ function VideoRoom() {
     setSelectUnit(unitIndex);
   };
   const handleSwitch = () => {
-    setPlaying(false);
+    setIsPlaying(false);
     if (!courseData) return;
     if (courseData.chapters[selectChapter].units[selectUnit + 1]?.video) {
       setSelectUnit((prev) => prev + 1);
@@ -270,32 +286,33 @@ function VideoRoom() {
           {/* <Video
             src={courseData?.chapters[selectChapter].units[selectUnit].video}
           /> */}
-          <VideoContainer>
+          <VideoContainer
+            onMouseOver={() => {
+              setShowToolBar(true);
+            }}
+            onMouseOut={() => {
+              setShowToolBar(false);
+            }}
+          >
             <Video
               src="http://syddev.com/jquery.videoBG/assets/tunnel_animation.mp4"
               onEnded={handleSwitch}
               onClick={() => {
-                if (playing) {
+                if (isPlaying) {
                   videoHandler("pause");
                 } else {
                   videoHandler("play");
                 }
               }}
+              onTimeUpdate={() => {
+                if (!videoRef.current) return;
+                setCurrentTime(videoRef.current?.currentTime);
+                setProgress((videoRef.current.currentTime / videoTime) * 100);
+              }}
               ref={videoRef}
             />
-            <ToolBar>
-              <TimeControls>
-                <ControlTime>
-                  {`${Math.floor(currentTime / 60)}:${`0${Math.floor(currentTime % 60)}`.slice(-2)}`}
-                </ControlTime>
-                <TimeProgressBarContainer>
-                  <TimeProgressBar style={{ width: `${progress}%` }} />
-                </TimeProgressBarContainer>
-                <ControlTime>{`${Math.floor(videoTime / 60)}:${`0${Math.floor(videoTime % 60)}`.slice(
-                  -2
-                )}`}</ControlTime>
-              </TimeControls>
-              <ControlButtons>
+            {showToolBar && (
+              <ToolBar>
                 <PlayControls>
                   <ControlIcon
                     onClick={() => {
@@ -304,7 +321,7 @@ function VideoRoom() {
                   >
                     <Image src={Rewind} alt="rewind" fill sizes="contain" />
                   </ControlIcon>
-                  {playing === false ? (
+                  {isPlaying === false ? (
                     <ControlIcon
                       onClick={() => {
                         videoHandler("play");
@@ -329,19 +346,45 @@ function VideoRoom() {
                     <Image src={Forward} alt="forward" fill sizes="contain" />
                   </ControlIcon>
                 </PlayControls>
+                <TimeControls>
+                  <ControlTime>
+                    {`${Math.floor(currentTime / 60)}:${`0${Math.floor(currentTime % 60)}`.slice(-2)}`}
+                  </ControlTime>
+                  <TimeProgressBarContainer
+                    onClick={(e) => {
+                      if (!videoRef.current) return;
+                      const target = e.target as HTMLDivElement;
+                      const timeAtProgressBar =
+                        (e.nativeEvent.offsetX / target.scrollWidth) * videoRef.current.duration;
+                      videoRef.current.currentTime = timeAtProgressBar;
+                      setCurrentTime(timeAtProgressBar);
+                    }}
+                  >
+                    <TimeProgressBar style={{ width: `${progress}%` }} />
+                  </TimeProgressBarContainer>
+                  <ControlTime>{`${Math.floor(videoTime / 60)}:${`0${Math.floor(videoTime % 60)}`.slice(
+                    -2
+                  )}`}</ControlTime>
+                </TimeControls>
                 <OtherControls>
-                  <ControlIcon
-                    onClick={() => {
-                      // videoHandler("pause");
-                    }}
-                  >
-                    <Image src={Voice} alt="voice" fill sizes="contain" />
-                  </ControlIcon>
-                  <ControlIcon
-                    onClick={() => {
-                      // videoHandler("pause");
-                    }}
-                  >
+                  {isMute ? (
+                    <ControlIcon
+                      onClick={() => {
+                        videoHandler("voice");
+                      }}
+                    >
+                      <Image src={Mute} alt="speed" fill sizes="contain" />
+                    </ControlIcon>
+                  ) : (
+                    <ControlIcon
+                      onClick={() => {
+                        videoHandler("mute");
+                      }}
+                    >
+                      <Image src={Voice} alt="voice" fill sizes="contain" />
+                    </ControlIcon>
+                  )}
+                  <ControlIcon onClick={() => {}}>
                     <Image src={Speed} alt="speed" fill sizes="contain" />
                   </ControlIcon>
                   <ControlIcon
@@ -349,11 +392,11 @@ function VideoRoom() {
                       // videoHandler("pause");
                     }}
                   >
-                    <Image src={Full} alt="full" fill sizes="contain" />
+                    <Image src={FullScreen} alt="full-screen" fill sizes="contain" />
                   </ControlIcon>
                 </OtherControls>
-              </ControlButtons>
-            </ToolBar>
+              </ToolBar>
+            )}
           </VideoContainer>
           <ChapterSelector>
             <SubTitle>課程章節</SubTitle>

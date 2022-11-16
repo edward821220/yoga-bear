@@ -79,8 +79,8 @@ const Title = styled.input`
 `;
 const Button = styled.button`
   display: block;
+  background-color: ${(props) => props.theme.colors.color4};
   color: ${(props) => props.theme.colors.color3};
-  color: ${(props) => props.theme.colors.color4};
   border-radius: 5px;
   padding: 10px;
   font-size: 18px;
