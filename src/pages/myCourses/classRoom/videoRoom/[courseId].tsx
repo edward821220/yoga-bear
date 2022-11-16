@@ -323,6 +323,15 @@ function VideoRoom() {
             onMouseOut={() => {
               setShowToolBar(false);
             }}
+            onKeyDown={(e) => {
+              if (e.key === "ArrowRight") {
+                videoHandler("forward");
+              } else if (e.key === "ArrowLeft") {
+                videoHandler("rewind");
+              } else if (e.key === " ") {
+                videoHandler(isPlaying ? "pause" : "play");
+              }
+            }}
           >
             <Video
               src={courseData?.chapters[selectChapter].units[selectUnit].video}
@@ -466,7 +475,8 @@ function VideoRoom() {
                   </ControlIcon>
                   <ControlIcon
                     onClick={() => {
-                      // videoHandler("pause");
+                      videoRef.current.requestFullscreen();
+                      setShowToolBar(true);
                     }}
                   >
                     <Image src={FullScreen} alt="full-screen" fill sizes="contain" />
