@@ -25,7 +25,7 @@ const Wrapper = styled.header`
   height: 100px;
   position: sticky;
   top: 0;
-  z-index: 99;
+  z-index: 66;
   border-bottom: 6px solid ${(props) => props.theme.colors.color4};
 `;
 const LogoWrapper = styled.div`

@@ -58,16 +58,19 @@ const Title = styled.h2`
 const CourseRoom = styled.div`
   display: flex;
 `;
-const VideoContainer = styled.div<{ isFullScreen: boolean }>`
-  position: relative;
-  width: ${(props) => (props.isFullScreen ? "100vw" : "754px")};
-  height: ${(props) => (props.isFullScreen ? "100vh" : "417px")};
+const VideoContainer = styled.div<{ isFullScreen: boolean; isFullWindow: boolean }>`
+  position: ${(props) => (props.isFullWindow ? "fixed" : "relative")};
+  top: ${(props) => props.isFullWindow && "0"};
+  left: ${(props) => props.isFullWindow && "0"};
+  z-index: ${(props) => props.isFullWindow && "88"};
+  width: ${(props) => (props.isFullScreen || props.isFullWindow ? "100vw" : "754px")};
+  height: ${(props) => (props.isFullScreen || props.isFullWindow ? "100vh" : "417px")};
   background-color: transparent;
 `;
 
-const Video = styled.video<{ isFullScreen: boolean; showToolBar: boolean }>`
-  width: ${(props) => (props.isFullScreen ? "100vw" : "754px")};
-  height: ${(props) => (props.isFullScreen ? "100vh" : "417px")};
+const Video = styled.video<{ isFullScreen: boolean; showToolBar: boolean; isFullWindow: boolean }>`
+  width: ${(props) => (props.isFullScreen || props.isFullWindow ? "100vw" : "754px")};
+  height: ${(props) => (props.isFullScreen || props.isFullWindow ? "100vh" : "417px")};
   margin-bottom: 20px;
   cursor: ${(props) => props.showToolBar === false && "none"};
 `;
@@ -233,6 +236,7 @@ function VideoRoom() {
   const [isPlaying, setIsPlaying] = useState(false);
   const [isMute, setIsMute] = useState(false);
   const [isFullScreen, setIsFullScreen] = useState(false);
+  const [isFullWindow, setIsFullWindow] = useState(false);
   const [showToolBar, setShowToolBar] = useState(false);
   const [showVoiceBar, setShowVoiceBar] = useState(false);
   const [showSpeedMenu, setShowSpeedMenu] = useState(false);
@@ -327,6 +331,7 @@ function VideoRoom() {
           >
             <VideoContainer
               isFullScreen={isFullScreen}
+              isFullWindow={isFullWindow}
               onMouseOver={() => {
                 setShowToolBar(true);
               }}
@@ -354,6 +359,7 @@ function VideoRoom() {
                 src={courseData?.chapters[selectChapter].units[selectUnit].video}
                 autoPlay
                 isFullScreen={isFullScreen}
+                isFullWindow={isFullWindow}
                 showToolBar={showToolBar}
                 onEnded={handleSwitch}
                 onClick={() => {
@@ -493,6 +499,17 @@ function VideoRoom() {
                         </SpeedMenu>
                       )}
                       <Image src={Speed} alt="speed" fill sizes="contain" />
+                    </ControlIcon>
+                    <ControlIcon
+                      onClick={() => {
+                        if (!isFullWindow) {
+                          setIsFullWindow(true);
+                        } else {
+                          setIsFullWindow(false);
+                        }
+                      }}
+                    >
+                      <Image src={FullWindow} alt="full-screen" fill sizes="contain" />
                     </ControlIcon>
                     <ControlIcon
                       onClick={() => {
