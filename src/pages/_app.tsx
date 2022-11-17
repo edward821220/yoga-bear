@@ -37,6 +37,7 @@ const theme: DefaultTheme = {
     color4: "#f7ecde",
     color5: "#f2deba",
     color6: "#00000080",
+    color7: "#3f3f3f",
   },
 };
 

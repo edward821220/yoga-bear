@@ -239,7 +239,7 @@ const CourseDetailContainer = styled.div`
   margin: 0 auto;
 `;
 const Introduction = styled.div`
-  color: #3f3f3f;
+  color: ${(props) => props.theme.colors.color7};
   font-size: 18px;
   line-height: 36px;
   margin-bottom: 50px;
@@ -248,7 +248,7 @@ const About = styled.div`
   display: flex;
 `;
 const TeacherInfo = styled.div`
-  color: #3f3f3f;
+  color: ${(props) => props.theme.colors.color7};
   margin-right: 10px;
   cursor: pointer;
 `;
