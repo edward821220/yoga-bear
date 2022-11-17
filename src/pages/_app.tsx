@@ -31,12 +31,12 @@ a {
 `;
 const theme: DefaultTheme = {
   colors: {
-    color1: "#f1ead8",
+    color1: "#fff",
     color2: "#654116",
-    color3: "#fff",
-    color4: "#5d7262",
-    color5: "#f7ecde",
-    color6: "#f2deba;",
+    color3: "#5d7262",
+    color4: "#f7ecde",
+    color5: "#f2deba",
+    color6: "#00000080",
   },
 };
 

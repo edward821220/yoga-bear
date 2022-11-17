@@ -31,7 +31,7 @@ const BannerWrapper = styled.div`
 `;
 const Aside = styled.div`
   color: ${(props) => props.theme.colors.color2};
-  background-color: ${(props) => props.theme.colors.color3};
+  background-color: ${(props) => props.theme.colors.color1};
   flex-basis: 30%;
   height: 300px;
   border: 2px solid ${(props) => props.theme.colors.color2};
@@ -50,8 +50,8 @@ const AsideContent = styled.p`
 `;
 const Button = styled.button`
   display: block;
-  background-color: ${(props) => props.theme.colors.color4};
-  color: ${(props) => props.theme.colors.color3};
+  background-color: ${(props) => props.theme.colors.color3};
+  color: ${(props) => props.theme.colors.color1};
   border-radius: 5px;
   width: 120px;
   padding: 10px;
@@ -62,7 +62,7 @@ const Articles = styled.ul``;
 
 const Article = styled.li`
   color: ${(props) => props.theme.colors.color2};
-  background-color: ${(props) => props.theme.colors.color3};
+  background-color: ${(props) => props.theme.colors.color1};
   border: 2px solid ${(props) => props.theme.colors.color2};
   border-radius: 5px;
   padding: 20px;

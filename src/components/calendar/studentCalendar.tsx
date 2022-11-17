@@ -67,8 +67,8 @@ const StarWrapper = styled.div`
   cursor: pointer;
 `;
 const Button = styled.button`
-  background-color: ${(props) => props.theme.colors.color4};
-  color: ${(props) => props.theme.colors.color3};
+  background-color: ${(props) => props.theme.colors.color3};
+  color: ${(props) => props.theme.colors.color1};
   border-radius: 5px;
   width: 100px;
   margin-bottom: 10px;

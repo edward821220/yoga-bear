@@ -21,16 +21,20 @@ const Container = styled.div`
 `;
 const CoursesList = styled.ul`
   display: flex;
+  justify-content: center;
   flex-wrap: wrap;
   width: 80%;
 `;
 const Course = styled.li`
   color: ${(props) => props.theme.colors.color2};
-  background-color: ${(props) => props.theme.colors.color3};
+  background-color: ${(props) => props.theme.colors.color1};
   border: 2px solid ${(props) => props.theme.colors.color2};
   border-radius: 5px;
   margin-right: 20px;
   margin-bottom: 20px;
+  &:nth-child(3n) {
+    margin-right: 0;
+  }
 `;
 const CourseCover = styled.div`
   position: relative;

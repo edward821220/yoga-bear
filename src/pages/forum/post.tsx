@@ -38,7 +38,7 @@ const Wrapper = styled.div`
 const Container = styled.div`
   max-width: 810px;
   margin: 0 auto;
-  background-color: ${(props) => props.theme.colors.color3};
+  background-color: ${(props) => props.theme.colors.color1};
   padding: 20px;
 `;
 
@@ -79,8 +79,8 @@ const Title = styled.input`
 `;
 const Button = styled.button`
   display: block;
-  background-color: ${(props) => props.theme.colors.color4};
-  color: ${(props) => props.theme.colors.color3};
+  background-color: ${(props) => props.theme.colors.color3};
+  color: ${(props) => props.theme.colors.color1};
   border-radius: 5px;
   padding: 10px;
   font-size: 18px;

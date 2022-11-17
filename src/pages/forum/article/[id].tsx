@@ -6,12 +6,12 @@ import { doc, getDoc, updateDoc, arrayUnion, arrayRemove } from "firebase/firest
 import produce from "immer";
 import { db } from "../../../../lib/firebase";
 import { AuthContext } from "../../../contexts/authContext";
-import "react-quill/dist/quill.snow.css";
 import Avatar from "../../../../public/member.png";
 import LikeQtyIcon from "../../../../public/like.png";
 import MessageIcon from "../../../../public/message.png";
 import LikeBlankIcon from "../../../../public/favorite-blank.png";
 import LikeIcon from "../../../../public/favorite.png";
+import "react-quill/dist/quill.snow.css";
 
 const Wrapper = styled.div`
   background-color: ${(props) => props.theme.colors.color1};
@@ -25,7 +25,7 @@ const Container = styled.div`
   margin: 0 auto;
   border: 2px solid ${(props) => props.theme.colors.color2};
   border-radius: 5px;
-  background-color: ${(props) => props.theme.colors.color3};
+  background-color: ${(props) => props.theme.colors.color1};
 `;
 
 const ArticleUser = styled.div`
@@ -173,8 +173,8 @@ const MessageTextArea = styled.textarea`
 `;
 const Button = styled.button`
   flex-basis: 8%;
-  background-color: ${(props) => props.theme.colors.color4};
-  color: ${(props) => props.theme.colors.color3};
+  background-color: ${(props) => props.theme.colors.color3};
+  color: ${(props) => props.theme.colors.color1};
   border-radius: 5px;
   height: 40px;
   padding: 5px;

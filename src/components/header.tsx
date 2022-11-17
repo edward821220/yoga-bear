@@ -22,15 +22,16 @@ const Wrapper = styled.header`
   flex-wrap: wrap;
   align-items: center;
   justify-content: space-between;
-  background-color: ${(props) => props.theme.colors.color6};
+  background-color: ${(props) => props.theme.colors.color5};
   height: 100px;
   position: sticky;
   top: 0;
   z-index: 66;
-  border-bottom: 6px solid ${(props) => props.theme.colors.color4};
+  box-shadow: 0 2px 5px rgba(0, 0, 0, 0.2);
 `;
 const LogoWrapper = styled.div`
-  margin-right: 100px;
+  margin-right: 40px;
+  margin-left: 20px;
   flex-basis: 200px;
 `;
 const HeaderLinks = styled.ul`
@@ -39,13 +40,10 @@ const HeaderLinks = styled.ul`
   margin-right: auto;
 `;
 const HeaderLink = styled.li`
-  margin-right: 36px;
+  margin-right: 20px;
   font-size: 18px;
   line-height: 40px;
-  border: 2px solid ${(props) => props.theme.colors.color4};
-  border-radius: 5px;
-  background-color: ${(props) => props.theme.colors.color3};
-  width: 120px;
+  width: 80px;
   text-align: center;
   a {
     color: ${(props) => props.theme.colors.color2};
@@ -67,10 +65,11 @@ const MoneyDisplay = styled.div`
   display: flex;
   align-items: center;
   padding-left: 10px;
+  padding-right: 4px;
   margin-right: 50px;
   justify-content: space-between;
   align-items: center;
-  background-color: ${(props) => props.theme.colors.color3};
+  background-color: ${(props) => props.theme.colors.color1};
   border-radius: 5px;
 `;
 
@@ -102,8 +101,8 @@ const CartIconWrapper = styled.li`
     position: absolute;
     bottom: 0;
     transform: translateY(1px) translateX(-5px);
-    background-color: ${(props) => props.theme.colors.color5};
-    border: 2px solid ${(props) => props.theme.colors.color4};
+    background-color: ${(props) => props.theme.colors.color4};
+    border: 2px solid ${(props) => props.theme.colors.color3};
     border-radius: 50%;
     z-index: -1;
   }
@@ -118,8 +117,8 @@ const OrderQty = styled.div`
   bottom: 0;
   right: -10px;
   border-radius: 50%;
-  color: ${(props) => props.theme.colors.color3};
-  background-color: ${(props) => props.theme.colors.color4};
+  color: ${(props) => props.theme.colors.color1};
+  background-color: ${(props) => props.theme.colors.color3};
 `;
 
 const MemberIconWrapper = styled.li`
@@ -134,9 +133,9 @@ const MemberIconWrapper = styled.li`
     bottom: 0;
     transform: translateY(5px) translateX(-5px);
     position: absolute;
-    background-color: ${(props) => props.theme.colors.color5};
+    background-color: ${(props) => props.theme.colors.color4};
     border-radius: 50%;
-    border: 2px solid ${(props) => props.theme.colors.color4};
+    border: 2px solid ${(props) => props.theme.colors.color3};
     z-index: -1;
   }
 `;
@@ -181,8 +180,8 @@ const FileLable = styled.label`
   justify-content: center;
   align-items: center;
   font-size: 13.33px;
-  background-color: ${(props) => props.theme.colors.color4};
-  color: ${(props) => props.theme.colors.color3};
+  background-color: ${(props) => props.theme.colors.color3};
+  color: ${(props) => props.theme.colors.color1};
   width: 100px;
   height: 33.5px;
   border-radius: 5px;
@@ -199,8 +198,8 @@ const MemberInfo = styled.p`
 
 const Button = styled.button`
   display: block;
-  background-color: ${(props) => props.theme.colors.color4};
-  color: ${(props) => props.theme.colors.color3};
+  background-color: ${(props) => props.theme.colors.color3};
+  color: ${(props) => props.theme.colors.color1};
   border-radius: 5px;
   min-width: 80px;
   padding: 5px 10px;

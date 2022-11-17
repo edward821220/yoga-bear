@@ -25,7 +25,7 @@ const CartContainer = styled.div`
 `;
 
 const CartItems = styled.ul`
-  background-color: ${(props) => props.theme.colors.color3};
+  background-color: ${(props) => props.theme.colors.color1};
   width: 80%;
   border: 2px solid ${(props) => props.theme.colors.color2};
   border-radius: 5px;
@@ -72,7 +72,7 @@ const RemoveIconWrapper = styled.div`
 
 const OrderDetails = styled.div`
   flex-basis: 30%;
-  background-color: ${(props) => props.theme.colors.color3};
+  background-color: ${(props) => props.theme.colors.color1};
   height: 50%;
   border: 2px solid ${(props) => props.theme.colors.color2};
   border-radius: 5px;
@@ -99,8 +99,8 @@ const Total = styled(DetailItems)`
 const Button = styled.button`
   display: block;
   font-size: 16px;
-  background-color: ${(props) => props.theme.colors.color4};
-  color: ${(props) => props.theme.colors.color3};
+  background-color: ${(props) => props.theme.colors.color3};
+  color: ${(props) => props.theme.colors.color1};
   border-radius: 5px;
   padding: 10px;
   width: 30%;

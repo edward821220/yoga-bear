@@ -28,7 +28,7 @@ const SideBar = styled.div`
   flex-direction: column;
   justify-content: center;
   text-align: center;
-  background-color: ${(props) => props.theme.colors.color3};
+  background-color: ${(props) => props.theme.colors.color1};
   width: 20%;
   height: 500px;
   border: 2px solid ${(props) => props.theme.colors.color2};
@@ -51,7 +51,7 @@ const SideBarLink = styled.li`
     transition: 0.2s color linear;
     color: ${(props) => props.theme.colors.color2};
     &:hover {
-      color: ${(props) => props.theme.colors.color4};
+      color: ${(props) => props.theme.colors.color3};
     }
   }
 `;
@@ -64,7 +64,7 @@ const LauchForm = styled.form`
   justify-content: center;
   align-items: center;
   width: 60%;
-  background-color: ${(props) => props.theme.colors.color3};
+  background-color: ${(props) => props.theme.colors.color1};
   border: 2px solid ${(props) => props.theme.colors.color2};
   border-radius: 5px;
   padding: 20px;
@@ -90,8 +90,8 @@ const LauchFormLabelInput = styled.input`
 `;
 
 const Button = styled.button`
-  background-color: ${(props) => props.theme.colors.color4};
-  color: ${(props) => props.theme.colors.color3};
+  background-color: ${(props) => props.theme.colors.color3};
+  color: ${(props) => props.theme.colors.color1};
   border-radius: 5px;
   min-width: 100px;
   margin-bottom: 10px;
@@ -118,7 +118,7 @@ const MyCourse = styled.li`
   color: ${(props) => props.theme.colors.color2};
   align-items: center;
   flex-basis: 48%;
-  background-color: ${(props) => props.theme.colors.color3};
+  background-color: ${(props) => props.theme.colors.color1};
   padding: 10px;
   border: 2px solid ${(props) => props.theme.colors.color2};
   border-radius: 5px;
