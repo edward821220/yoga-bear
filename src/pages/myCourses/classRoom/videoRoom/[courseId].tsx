@@ -17,6 +17,7 @@ import FullScreenIcon from "../../../../../public/full-screen.png";
 import FullWindow from "../../../../../public/full-window.png";
 import Avatar from "../../../../../public/member.png";
 import Star from "../../../../../public/star.png";
+import HalfStar from "../../../../../public/star-half.png";
 import Loading from "../../../../../public/loading.gif";
 import "react-quill/dist/quill.snow.css";
 
@@ -271,12 +272,30 @@ const Reviews = styled.ul`
   justify-content: center;
   align-items: center;
 `;
-
+const ScoreContainer = styled.div`
+  display: flex;
+  margin-bottom: 20px;
+`;
+const Average = styled.h5`
+  font-size: 66px;
+  font-weight: bold;
+  margin-right: 30px;
+`;
+const ReviewsInfo = styled.div`
+  padding: 10px;
+`;
+const StarIcons = styled.div`
+  display: flex;
+  margin-bottom: 10px;
+`;
+const ReviewQty = styled.p`
+  font-size: 20px;
+`;
 const Review = styled.li`
   display: flex;
   background-color: #f4f7f7;
   border-radius: 5px;
-  width: 88%;
+  width: 100%;
   height: 150px;
   padding: 24px;
   margin-bottom: 20px;
@@ -285,7 +304,7 @@ const User = styled.div`
   display: flex;
   flex-direction: column;
   justify-content: center;
-  margin-right: 60px;
+  margin-right: 80px;
 `;
 const AvatarWrapper = styled.div`
   display: flex;
@@ -639,6 +658,34 @@ function CourseDetail({ courseData, teacherData, reviewsUsersDatas }: CourseDeta
         <Introduction className="ql-editor" dangerouslySetInnerHTML={{ __html: teacherData.teacherExprience }} />
       </About>
       <SubTitle>課程評價</SubTitle>
+      <ScoreContainer>
+        <Average>
+          {(courseData.reviews.reduce((acc, cur) => acc + cur.score, 0) / courseData.reviews.length || 0).toFixed(1) ||
+            0}
+        </Average>
+        <ReviewsInfo>
+          <StarIcons>
+            {Array.from(
+              {
+                length: Math.floor(
+                  courseData.reviews.reduce((acc, cur) => acc + cur.score, 0) / courseData.reviews.length
+                ),
+              },
+              (v, i) => i + 1
+            ).map((starIndex) => (
+              <StarWrapper key={starIndex}>
+                <Image src={Star} alt="star" fill sizes="contain" />
+              </StarWrapper>
+            ))}
+            {(courseData.reviews.reduce((acc, cur) => acc + cur.score, 0) / courseData.reviews.length) % 1 !== 0 && (
+              <StarWrapper>
+                <Image src={HalfStar} alt="star" fill sizes="contain" />
+              </StarWrapper>
+            )}
+          </StarIcons>
+          <ReviewQty>{courseData.reviews.length} 則評價</ReviewQty>
+        </ReviewsInfo>
+      </ScoreContainer>
       <Reviews>
         {courseData &&
           courseData?.reviews?.map((review, reviewIndex) => (
