@@ -52,9 +52,11 @@ const CourseInfo = styled.p`
 `;
 const CourseScore = styled.div`
   display: flex;
+`;
+const CourseReviewsInfo = styled.p`
+  height: 26px;
   margin-bottom: 10px;
 `;
-const CourseReviewsInfo = styled.p``;
 
 const StarIcons = styled.div`
   display: flex;

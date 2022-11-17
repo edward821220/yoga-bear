@@ -255,10 +255,11 @@ const TeacherWrapper = styled.div`
   display: flex;
   justify-content: center;
   align-items: center;
-  background-color: #c8c8c8;
   width: 60px;
   height: 60px;
   border-radius: 50%;
+  margin-bottom: 10px;
+  overflow: hidden;
 `;
 const TeacherName = styled.p`
   text-align: center;
@@ -270,34 +271,49 @@ const Reviews = styled.ul`
   justify-content: center;
   align-items: center;
 `;
+
 const Review = styled.li`
-  border: 2px solid ${(props) => props.theme.colors.color2};
+  display: flex;
+  background-color: #f4f7f7;
   border-radius: 5px;
-  width: 80%;
-  padding: 10px;
+  width: 88%;
+  height: 150px;
+  padding: 24px;
   margin-bottom: 20px;
 `;
 const User = styled.div`
   display: flex;
-  margin-bottom: 10px;
+  flex-direction: column;
+  justify-content: center;
+  margin-right: 60px;
 `;
 const AvatarWrapper = styled.div`
-  position: relative;
-  width: 24px;
-  height: 24px;
-  margin-right: 10px;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  width: 66px;
+  height: 66px;
+  border-radius: 50%;
+  overflow: hidden;
+  margin-bottom: 10px;
 `;
-const UserName = styled.p``;
+const UserName = styled.p`
+  text-align: center;
+`;
+const CommentWrapper = styled.div``;
 const Score = styled.div`
   margin-bottom: 10px;
   display: flex;
+  margin-bottom: 20px;
 `;
 const StarWrapper = styled.div`
   position: relative;
   width: 24px;
   height: 24px;
 `;
-const Comments = styled.p``;
+const Comments = styled.p`
+  font-size: 18px;
+`;
 
 interface ChapterInterface {
   id: number;
@@ -616,7 +632,7 @@ function CourseDetail({ courseData, teacherData, reviewsUsersDatas }: CourseDeta
           }}
         >
           <TeacherWrapper>
-            <Image src={teacherData.teacherAvatar} alt="avatar" width={100} height={100} />
+            <Image src={teacherData.teacherAvatar} alt="avatar" width={120} height={120} />
           </TeacherWrapper>
           <TeacherName>{teacherData.teacherName}</TeacherName>
         </TeacherInfo>
@@ -634,27 +650,29 @@ function CourseDetail({ courseData, teacherData, reviewsUsersDatas }: CourseDeta
                       reviewsUsersDatas.find((reviewUserData) => reviewUserData.index === reviewIndex)?.avatar || Avatar
                     }
                     alt="avatar"
-                    fill
-                    sizes="contain"
+                    width={120}
+                    height={120}
                   />
                 </AvatarWrapper>
                 <UserName>
                   {reviewsUsersDatas.find((reviewUserData) => reviewUserData.index === reviewIndex)?.username}
                 </UserName>
               </User>
-              <Score>
-                {Array.from(
-                  {
-                    length: review.score,
-                  },
-                  (v, i) => i + 1
-                ).map((starIndex) => (
-                  <StarWrapper key={starIndex}>
-                    <Image src={Star} alt="star" fill sizes="contain" />
-                  </StarWrapper>
-                ))}
-              </Score>
-              <Comments>{review.comments}</Comments>
+              <CommentWrapper>
+                <Score>
+                  {Array.from(
+                    {
+                      length: review.score,
+                    },
+                    (v, i) => i + 1
+                  ).map((starIndex) => (
+                    <StarWrapper key={starIndex}>
+                      <Image src={Star} alt="star" fill sizes="contain" />
+                    </StarWrapper>
+                  ))}
+                </Score>
+                <Comments>{review.comments}</Comments>
+              </CommentWrapper>
             </Review>
           ))}
       </Reviews>
