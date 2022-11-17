@@ -6,13 +6,14 @@ import { useRouter } from "next/router";
 import { useRecoilState, SetterOrUpdater } from "recoil";
 import { getDoc, doc, updateDoc } from "firebase/firestore";
 import { ref, uploadBytesResumable, getDownloadURL } from "firebase/storage";
-import BearLogo from "../../public/bear-logo2.png";
-import CartLogo from "../../public/cart.png";
-import MemberLogo from "../../public/member.png";
 import Modal from "./modal";
+import Editor from "./editor";
 import { AuthContext } from "../contexts/authContext";
 import { orderQtyState, bearMoneyState } from "../../lib/recoil";
 import { db, storage } from "../../lib/firebase";
+import BearLogo from "../../public/bear-logo2.png";
+import CartLogo from "../../public/cart.png";
+import MemberLogo from "../../public/member.png";
 import MoneyIcon from "../../public/newMoney.png";
 import PlusMoneyIcon from "../../public/add.png";
 
@@ -166,15 +167,6 @@ const FormInput = styled.input`
   width: 200px;
   padding-left: 5px;
 `;
-const FormTextarea = styled.textarea`
-  font-size: 14px;
-  width: 200px;
-  height: 60px;
-  padding-top: 5px;
-  padding-left: 5px;
-  margin-bottom: 10px;
-  resize: none;
-`;
 
 const RadioLabel = styled.label`
   display: flex;
@@ -314,10 +306,8 @@ function MemberModal({
     checkPassword: "",
     identity: "student",
   });
-  const [teacherSignupData, setTeacherSignupData] = useState<Record<string, string>>({
-    introduction: "",
-    exprience: "",
-  });
+  const [teacherIntroduction, setTeacherIntroduction] = useState("");
+  const [teacherExprience, setTeacherExprience] = useState("");
   const [needSignup, setNeedSignup] = useState(false);
 
   const handleClose = () => {
@@ -368,8 +358,8 @@ function MemberModal({
             const docRef = doc(db, "users", uid);
             updateDoc(docRef, {
               certificate: downloadURL,
-              teacher_introduction: teacherSignupData.introduction,
-              teacher_exprience: teacherSignupData.exprience,
+              teacher_introduction: teacherIntroduction,
+              teacher_exprience: teacherExprience,
             });
           });
         }
@@ -483,30 +473,20 @@ function MemberModal({
             <>
               <Label>
                 <LabelText>自我介紹：</LabelText>
-                <FormTextarea
+                <Editor
+                  content={teacherIntroduction}
+                  setContent={setTeacherIntroduction}
+                  style={{ width: "200px", height: "100px", border: "1px solid gray", marginBottom: "10px" }}
                   placeholder="簡短介紹讓同學認識～"
-                  value={teacherSignupData.introduction}
-                  required
-                  onChange={(e: React.ChangeEvent<HTMLTextAreaElement>) => {
-                    setTeacherSignupData({
-                      ...teacherSignupData,
-                      introduction: e.target.value,
-                    });
-                  }}
                 />
               </Label>
               <Label>
                 <LabelText>師資班及教學經歷：</LabelText>
-                <FormTextarea
+                <Editor
+                  content={teacherExprience}
+                  setContent={setTeacherExprience}
+                  style={{ width: "200px", height: "100px", border: "1px solid gray", marginBottom: "10px" }}
                   placeholder="簡短描述過往經歷～"
-                  value={teacherSignupData.exprience}
-                  required
-                  onChange={(e: React.ChangeEvent<HTMLTextAreaElement>) => {
-                    setTeacherSignupData({
-                      ...teacherSignupData,
-                      exprience: e.target.value,
-                    });
-                  }}
                 />
               </Label>
               <Label>
