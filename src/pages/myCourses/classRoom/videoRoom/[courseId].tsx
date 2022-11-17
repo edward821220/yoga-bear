@@ -233,7 +233,7 @@ function VideoRoom() {
   const handle = useFullScreenHandle();
   const videoRef = useRef<HTMLVideoElement>(null);
   const timeoutRef = useRef<NodeJS.Timeout>();
-  const [isPlaying, setIsPlaying] = useState(false);
+  const [isPlaying, setIsPlaying] = useState(true);
   const [isMute, setIsMute] = useState(false);
   const [isFullScreen, setIsFullScreen] = useState(false);
   const [isFullWindow, setIsFullWindow] = useState(false);

@@ -117,8 +117,8 @@ const OrderQty = styled.div`
   bottom: 0;
   right: -10px;
   border-radius: 50%;
-  color: ${(props) => props.theme.colors.color4};
   color: ${(props) => props.theme.colors.color3};
+  background-color: ${(props) => props.theme.colors.color4};
 `;
 
 const MemberIconWrapper = styled.li`

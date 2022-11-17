@@ -9,6 +9,7 @@ import { collection, doc, setDoc, getDoc, updateDoc, arrayUnion, getDocs, query,
 import { AuthContext } from "../../contexts/authContext";
 import { storage, db } from "../../../lib/firebase";
 import Modal from "../../components/modal";
+import Editor from "../../components/editor";
 import Bear from "../../../public/bear.png";
 import Trash from "../../../public/trash.png";
 import TeacherCalendar from "../../components/calendar/teacherCalendar";
@@ -87,12 +88,7 @@ const LauchFormLabelInput = styled.input`
   line-height: 24px;
   margin-bottom: 20px;
 `;
-const LauchFormLabelTextarea = styled.textarea`
-  width: 500px;
-  height: 200px;
-  margin-bottom: 20px;
-  resize: none;
-`;
+
 const Button = styled.button`
   background-color: ${(props) => props.theme.colors.color4};
   color: ${(props) => props.theme.colors.color3};
@@ -490,12 +486,11 @@ function LaunchVideoCourse({ uid }: { uid: string }) {
         </LauchFormLabel>
         <LauchFormLabel>
           <LauchFormLabelText>課程描述</LauchFormLabelText>
-          <LauchFormLabelTextarea
-            value={introduction}
-            required
-            onChange={(e) => {
-              setIntroduction(e.target.value);
-            }}
+          <Editor
+            content={introduction}
+            setContent={setIntroduction}
+            style={{ width: "500px", height: "300px", border: "1px solid gray" }}
+            placeholder="請輸入課程簡介"
           />
         </LauchFormLabel>
 
