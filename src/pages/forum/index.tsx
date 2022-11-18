@@ -10,7 +10,7 @@ import Avatar from "../../../public/member.png";
 import { db } from "../../../lib/firebase";
 
 const Wrapper = styled.div`
-  background-color: #f1ead8;
+  background-color: ${(props) => props.theme.colors.color1};
   min-height: calc(100vh - 100px);
   padding-top: 20px;
 `;
@@ -30,11 +30,11 @@ const BannerWrapper = styled.div`
   margin-bottom: 20px;
 `;
 const Aside = styled.div`
-  color: #654116;
-  background-color: #fff;
+  color: ${(props) => props.theme.colors.color2};
+  background-color: ${(props) => props.theme.colors.color1};
   flex-basis: 30%;
   height: 300px;
-  border: 2px solid #654116;
+  border: 2px solid ${(props) => props.theme.colors.color2};
   border-radius: 5px;
   padding: 10px;
 `;
@@ -50,8 +50,8 @@ const AsideContent = styled.p`
 `;
 const Button = styled.button`
   display: block;
-  color: #fff;
-  background-color: #5d7262;
+  background-color: ${(props) => props.theme.colors.color3};
+  color: ${(props) => props.theme.colors.color1};
   border-radius: 5px;
   width: 120px;
   padding: 10px;
@@ -61,9 +61,9 @@ const Button = styled.button`
 const Articles = styled.ul``;
 
 const Article = styled.li`
-  color: #654116;
-  background-color: #fff;
-  border: 2px solid #654116;
+  color: ${(props) => props.theme.colors.color2};
+  background-color: ${(props) => props.theme.colors.color1};
+  border: 2px solid ${(props) => props.theme.colors.color2};
   border-radius: 5px;
   padding: 20px;
   margin-bottom: 20px;

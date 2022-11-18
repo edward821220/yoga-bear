@@ -9,6 +9,7 @@ import { collection, doc, setDoc, getDoc, updateDoc, arrayUnion, getDocs, query,
 import { AuthContext } from "../../contexts/authContext";
 import { storage, db } from "../../../lib/firebase";
 import Modal from "../../components/modal";
+import Editor from "../../components/editor";
 import Bear from "../../../public/bear.png";
 import Trash from "../../../public/trash.png";
 import TeacherCalendar from "../../components/calendar/teacherCalendar";
@@ -17,7 +18,7 @@ import EmptyStar from "../../../public/star-empty.png";
 import Star from "../../../public/star.png";
 
 const Wrapper = styled.div`
-  background-color: #f1ead8;
+  background-color: ${(props) => props.theme.colors.color1};
   min-height: calc(100vh - 100px);
   display: flex;
   padding: 20px;
@@ -27,10 +28,10 @@ const SideBar = styled.div`
   flex-direction: column;
   justify-content: center;
   text-align: center;
-  background-color: #fff;
+  background-color: ${(props) => props.theme.colors.color1};
   width: 20%;
   height: 500px;
-  border: 2px solid #654116;
+  border: 2px solid ${(props) => props.theme.colors.color2};
   border-radius: 5px;
   margin-right: 20px;
 `;
@@ -41,27 +42,21 @@ const SideBarTitle = styled.h3`
   font-size: 24px;
   font-weight: bold;
   margin-bottom: 20px;
-  color: #654116;
+  color: ${(props) => props.theme.colors.color2};
 `;
 const SideBarLink = styled.li`
   font-size: 16px;
   margin-bottom: 20px;
-
   a {
     transition: 0.2s color linear;
-    color: #654116;
+    color: ${(props) => props.theme.colors.color2};
     &:hover {
-      color: #5d7262;
+      color: ${(props) => props.theme.colors.color3};
     }
   }
 `;
 const Main = styled.div`
   width: 80%;
-`;
-const MainTitle = styled.h2`
-  font-size: 36px;
-  text-align: center;
-  margin-bottom: 30px;
 `;
 const LauchForm = styled.form`
   display: flex;
@@ -69,12 +64,12 @@ const LauchForm = styled.form`
   justify-content: center;
   align-items: center;
   width: 60%;
-  background-color: #fff;
-  border: 2px solid #654116;
+  background-color: ${(props) => props.theme.colors.color1};
+  border: 2px solid ${(props) => props.theme.colors.color2};
   border-radius: 5px;
   padding: 20px;
   margin: 0 auto;
-  color: #654116;
+  color: ${(props) => props.theme.colors.color2};
 `;
 const LauchFormLabel = styled.label`
   display: flex;
@@ -93,17 +88,12 @@ const LauchFormLabelInput = styled.input`
   line-height: 24px;
   margin-bottom: 20px;
 `;
-const LauchFormLabelTextarea = styled.textarea`
-  width: 500px;
-  height: 200px;
-  margin-bottom: 20px;
-  resize: none;
-`;
+
 const Button = styled.button`
-  color: #fff;
-  background-color: #5d7262;
+  background-color: ${(props) => props.theme.colors.color3};
+  color: ${(props) => props.theme.colors.color1};
   border-radius: 5px;
-  width: 80px;
+  min-width: 100px;
   margin-bottom: 10px;
   padding: 10px;
   cursor: pointer;
@@ -125,12 +115,12 @@ const MyCourse = styled.li`
   flex-direction: column;
   justify-content: center;
   text-align: center;
-  color: #654116;
+  color: ${(props) => props.theme.colors.color2};
   align-items: center;
   flex-basis: 48%;
-  background-color: #fff;
+  background-color: ${(props) => props.theme.colors.color1};
   padding: 10px;
-  border: 2px solid #654116;
+  border: 2px solid ${(props) => props.theme.colors.color2};
   border-radius: 5px;
   margin-right: 20px;
   margin-bottom: 20px;
@@ -155,7 +145,7 @@ const ReviewForm = styled.form`
   justify-content: center;
   align-items: center;
   height: 100%;
-  color: #654116;
+  color: ${(props) => props.theme.colors.color2};
 `;
 const ReviewLabel = styled.label`
   display: flex;
@@ -496,12 +486,11 @@ function LaunchVideoCourse({ uid }: { uid: string }) {
         </LauchFormLabel>
         <LauchFormLabel>
           <LauchFormLabelText>課程描述</LauchFormLabelText>
-          <LauchFormLabelTextarea
-            value={introduction}
-            required
-            onChange={(e) => {
-              setIntroduction(e.target.value);
-            }}
+          <Editor
+            content={introduction}
+            setContent={setIntroduction}
+            style={{ width: "500px", height: "300px", border: "1px solid gray" }}
+            placeholder="請輸入課程簡介"
           />
         </LauchFormLabel>
 

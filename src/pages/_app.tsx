@@ -1,6 +1,6 @@
 import Head from "next/head";
 import type { AppProps } from "next/app";
-import { createGlobalStyle } from "styled-components";
+import { createGlobalStyle, DefaultTheme, ThemeProvider } from "styled-components";
 import { Reset } from "styled-reset";
 import React from "react";
 import { RecoilRoot } from "recoil";
@@ -29,6 +29,17 @@ a {
   color: #000000;
 }
 `;
+const theme: DefaultTheme = {
+  colors: {
+    color1: "#fff",
+    color2: "#654116",
+    color3: "#5d7262",
+    color4: "#f7ecde",
+    color5: "#f2deba",
+    color6: "#00000080",
+    color7: "#3f3f3f",
+  },
+};
 
 export default function App({ Component, pageProps }: AppProps) {
   return (
@@ -40,8 +51,10 @@ export default function App({ Component, pageProps }: AppProps) {
       <GlobalStyle />
       <AuthContextProvider>
         <RecoilRoot>
-          <Header />
-          <Component {...pageProps} />
+          <ThemeProvider theme={theme}>
+            <Header />
+            <Component {...pageProps} />
+          </ThemeProvider>
         </RecoilRoot>
       </AuthContextProvider>
     </>

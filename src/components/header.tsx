@@ -6,13 +6,14 @@ import { useRouter } from "next/router";
 import { useRecoilState, SetterOrUpdater } from "recoil";
 import { getDoc, doc, updateDoc } from "firebase/firestore";
 import { ref, uploadBytesResumable, getDownloadURL } from "firebase/storage";
-import BearLogo from "../../public/bear-logo2.png";
-import CartLogo from "../../public/cart.png";
-import MemberLogo from "../../public/member.png";
 import Modal from "./modal";
+import Editor from "./editor";
 import { AuthContext } from "../contexts/authContext";
 import { orderQtyState, bearMoneyState } from "../../lib/recoil";
 import { db, storage } from "../../lib/firebase";
+import BearLogo from "../../public/bear-logo2.png";
+import CartLogo from "../../public/cart.png";
+import MemberLogo from "../../public/member.png";
 import MoneyIcon from "../../public/newMoney.png";
 import PlusMoneyIcon from "../../public/add.png";
 
@@ -21,15 +22,16 @@ const Wrapper = styled.header`
   flex-wrap: wrap;
   align-items: center;
   justify-content: space-between;
-  background-color: #f2deba;
+  background-color: ${(props) => props.theme.colors.color5};
   height: 100px;
   position: sticky;
   top: 0;
-  z-index: 99;
-  border-bottom: 6px solid #5d7262;
+  z-index: 66;
+  box-shadow: 0 2px 5px rgba(0, 0, 0, 0.2);
 `;
 const LogoWrapper = styled.div`
-  margin-right: 100px;
+  margin-right: 40px;
+  margin-left: 20px;
   flex-basis: 200px;
 `;
 const HeaderLinks = styled.ul`
@@ -38,20 +40,17 @@ const HeaderLinks = styled.ul`
   margin-right: auto;
 `;
 const HeaderLink = styled.li`
-  margin-right: 36px;
+  margin-right: 20px;
   font-size: 18px;
   line-height: 40px;
-  border: 2px solid #5d7262;
-  border-radius: 5px;
-  background-color: #fff;
-  width: 120px;
+  width: 80px;
   text-align: center;
   a {
-    color: #654116;
+    color: ${(props) => props.theme.colors.color2};
   }
 `;
 const MycoursesLink = styled.span`
-  color: #654116;
+  color: ${(props) => props.theme.colors.color2};
   cursor: pointer;
 `;
 
@@ -66,10 +65,11 @@ const MoneyDisplay = styled.div`
   display: flex;
   align-items: center;
   padding-left: 10px;
+  padding-right: 4px;
   margin-right: 50px;
   justify-content: space-between;
   align-items: center;
-  background-color: #fff;
+  background-color: ${(props) => props.theme.colors.color1};
   border-radius: 5px;
 `;
 
@@ -101,8 +101,8 @@ const CartIconWrapper = styled.li`
     position: absolute;
     bottom: 0;
     transform: translateY(1px) translateX(-5px);
-    background-color: #f7ecde;
-    border: 2px solid #5d7262;
+    background-color: ${(props) => props.theme.colors.color4};
+    border: 2px solid ${(props) => props.theme.colors.color3};
     border-radius: 50%;
     z-index: -1;
   }
@@ -117,8 +117,8 @@ const OrderQty = styled.div`
   bottom: 0;
   right: -10px;
   border-radius: 50%;
-  background-color: #5d7262;
-  color: #fff;
+  color: ${(props) => props.theme.colors.color1};
+  background-color: ${(props) => props.theme.colors.color3};
 `;
 
 const MemberIconWrapper = styled.li`
@@ -133,9 +133,9 @@ const MemberIconWrapper = styled.li`
     bottom: 0;
     transform: translateY(5px) translateX(-5px);
     position: absolute;
-    background-color: #f7ecde;
+    background-color: ${(props) => props.theme.colors.color4};
     border-radius: 50%;
-    border: 2px solid #5d7262;
+    border: 2px solid ${(props) => props.theme.colors.color3};
     z-index: -1;
   }
 `;
@@ -166,15 +166,6 @@ const FormInput = styled.input`
   width: 200px;
   padding-left: 5px;
 `;
-const FormTextarea = styled.textarea`
-  font-size: 14px;
-  width: 200px;
-  height: 60px;
-  padding-top: 5px;
-  padding-left: 5px;
-  margin-bottom: 10px;
-  resize: none;
-`;
 
 const RadioLabel = styled.label`
   display: flex;
@@ -189,8 +180,8 @@ const FileLable = styled.label`
   justify-content: center;
   align-items: center;
   font-size: 13.33px;
-  color: #fff;
-  background-color: #5d7262;
+  background-color: ${(props) => props.theme.colors.color3};
+  color: ${(props) => props.theme.colors.color1};
   width: 100px;
   height: 33.5px;
   border-radius: 5px;
@@ -201,13 +192,14 @@ const FileInput = styled.input`
   display: none;
 `;
 const MemberInfo = styled.p`
-  margin-bottom: 20px;
+  line-height: 20px;
+  margin-bottom: 10px;
 `;
 
 const Button = styled.button`
   display: block;
-  color: #fff;
-  background-color: #5d7262;
+  background-color: ${(props) => props.theme.colors.color3};
+  color: ${(props) => props.theme.colors.color1};
   border-radius: 5px;
   min-width: 80px;
   padding: 5px 10px;
@@ -313,10 +305,8 @@ function MemberModal({
     checkPassword: "",
     identity: "student",
   });
-  const [teacherSignupData, setTeacherSignupData] = useState<Record<string, string>>({
-    introduction: "",
-    exprience: "",
-  });
+  const [teacherIntroduction, setTeacherIntroduction] = useState("");
+  const [teacherExprience, setTeacherExprience] = useState("");
   const [needSignup, setNeedSignup] = useState(false);
 
   const handleClose = () => {
@@ -367,8 +357,8 @@ function MemberModal({
             const docRef = doc(db, "users", uid);
             updateDoc(docRef, {
               certificate: downloadURL,
-              teacher_introduction: teacherSignupData.introduction,
-              teacher_exprience: teacherSignupData.exprience,
+              teacher_introduction: teacherIntroduction,
+              teacher_exprience: teacherExprience,
             });
           });
         }
@@ -482,30 +472,20 @@ function MemberModal({
             <>
               <Label>
                 <LabelText>自我介紹：</LabelText>
-                <FormTextarea
+                <Editor
+                  content={teacherIntroduction}
+                  setContent={setTeacherIntroduction}
+                  style={{ width: "200px", height: "100px", border: "1px solid gray", marginBottom: "10px" }}
                   placeholder="簡短介紹讓同學認識～"
-                  value={teacherSignupData.introduction}
-                  required
-                  onChange={(e: React.ChangeEvent<HTMLTextAreaElement>) => {
-                    setTeacherSignupData({
-                      ...teacherSignupData,
-                      introduction: e.target.value,
-                    });
-                  }}
                 />
               </Label>
               <Label>
                 <LabelText>師資班及教學經歷：</LabelText>
-                <FormTextarea
+                <Editor
+                  content={teacherExprience}
+                  setContent={setTeacherExprience}
+                  style={{ width: "200px", height: "100px", border: "1px solid gray", marginBottom: "10px" }}
                   placeholder="簡短描述過往經歷～"
-                  value={teacherSignupData.exprience}
-                  required
-                  onChange={(e: React.ChangeEvent<HTMLTextAreaElement>) => {
-                    setTeacherSignupData({
-                      ...teacherSignupData,
-                      exprience: e.target.value,
-                    });
-                  }}
                 />
               </Label>
               <Label>
@@ -525,7 +505,7 @@ function MemberModal({
             <Image src={userData.avatar || MemberLogo} alt="avatar" fill sizes="contain" />
           </Avatar>
           <MemberInfo>用戶名稱：{userData.username}</MemberInfo>
-          <MemberInfo>用戶身份：{userData.identity}</MemberInfo>
+          <MemberInfo>用戶身份：{userData.identity === "teacher" ? "老師" : "學生"}</MemberInfo>
           <FileLable onChange={handleUploadAvatar}>
             頭像上傳
             <FileInput type="file" accept="image/*" />

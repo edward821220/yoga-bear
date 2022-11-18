@@ -6,26 +6,26 @@ import { doc, getDoc, updateDoc, arrayUnion, arrayRemove } from "firebase/firest
 import produce from "immer";
 import { db } from "../../../../lib/firebase";
 import { AuthContext } from "../../../contexts/authContext";
-import "react-quill/dist/quill.snow.css";
 import Avatar from "../../../../public/member.png";
 import LikeQtyIcon from "../../../../public/like.png";
 import MessageIcon from "../../../../public/message.png";
 import LikeBlankIcon from "../../../../public/favorite-blank.png";
 import LikeIcon from "../../../../public/favorite.png";
+import "react-quill/dist/quill.snow.css";
 
 const Wrapper = styled.div`
-  background-color: #f1ead8;
+  background-color: ${(props) => props.theme.colors.color1};
   min-height: calc(100vh - 100px);
   padding: 20px 0;
 `;
 
 const Container = styled.div`
-  color: #654116;
+  color: ${(props) => props.theme.colors.color2};
   max-width: 800px;
   margin: 0 auto;
-  border: 2px solid #654116;
+  border: 2px solid ${(props) => props.theme.colors.color2};
   border-radius: 5px;
-  background-color: #fff;
+  background-color: ${(props) => props.theme.colors.color1};
 `;
 
 const ArticleUser = styled.div`
@@ -173,8 +173,8 @@ const MessageTextArea = styled.textarea`
 `;
 const Button = styled.button`
   flex-basis: 8%;
-  color: #fff;
-  background-color: #5d7262;
+  background-color: ${(props) => props.theme.colors.color3};
+  color: ${(props) => props.theme.colors.color1};
   border-radius: 5px;
   height: 40px;
   padding: 5px;
@@ -236,7 +236,7 @@ function Article() {
             const messageAuthorSnap = await getDoc(messageAuthorRef);
             if (messageAuthorSnap.exists()) {
               messages[index].authorName = messageAuthorSnap.data().username;
-              messages[index].authorAvatar = messageAuthorSnap.data().photoURL;
+              messages[index].authorAvatar = messageAuthorSnap.data().photoURL || "";
               messages[index].identity = messageAuthorSnap.data().identity;
             }
           })
@@ -289,24 +289,22 @@ function Article() {
       alert("登入後才能按讚唷！");
       return;
     }
-    setArticle(
-      produce((draft: ArticleInterface) => {
-        draft.messages[index].likes.push(userData.uid);
-        const articleRef = doc(db, "posts", id);
-        updateDoc(articleRef, { messages: draft.messages });
-      })
-    );
+    const updatedArticle = produce(article, (draft) => {
+      draft.messages[index].likes.push(userData.uid);
+    });
+    setArticle(updatedArticle);
+    const articleRef = doc(db, "posts", id);
+    updateDoc(articleRef, { messages: updatedArticle.messages });
   };
 
   const handleDislikeMessage = (index: number) => {
     if (typeof id !== "string") return;
-    setArticle(
-      produce((draft: ArticleInterface) => {
-        draft.messages[index].likes.splice(draft.messages[index].likes.indexOf(userData.uid), 1);
-        const articleRef = doc(db, "posts", id);
-        updateDoc(articleRef, { messages: draft.messages });
-      })
-    );
+    const updatedArticle = produce(article, (draft) => {
+      draft.messages[index].likes.splice(draft.messages[index].likes.indexOf(userData.uid), 1);
+    });
+    setArticle(updatedArticle);
+    const articleRef = doc(db, "posts", id);
+    updateDoc(articleRef, { messages: updatedArticle.messages });
   };
 
   const handleMessage = async () => {

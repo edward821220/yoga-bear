@@ -48,7 +48,7 @@ const ReviewForm = styled.form`
   justify-content: center;
   align-items: center;
   height: 100%;
-  color: #654116;
+  color: ${(props) => props.theme.colors.color2};
 `;
 const ReviewLabel = styled.label`
   display: flex;
@@ -67,8 +67,8 @@ const StarWrapper = styled.div`
   cursor: pointer;
 `;
 const Button = styled.button`
-  color: #fff;
-  background-color: #5d7262;
+  background-color: ${(props) => props.theme.colors.color3};
+  color: ${(props) => props.theme.colors.color1};
   border-radius: 5px;
   width: 100px;
   margin-bottom: 10px;

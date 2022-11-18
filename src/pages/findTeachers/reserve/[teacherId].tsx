@@ -7,9 +7,10 @@ import { db } from "../../../../lib/firebase";
 import ReserveCalendar from "../../../components/calendar/reserveCalendar";
 import Avatar from "../../../../public/member.png";
 import Star from "../../../../public/star.png";
+import HalfStar from "../../../../public/star-half.png";
 
 const Wrapper = styled.div`
-  background-color: #f1ead8;
+  background-color: ${(props) => props.theme.colors.color1};
   min-height: calc(100vh - 100px);
   padding: 20px;
   margin: 0 auto;
@@ -29,60 +30,105 @@ const TeacherInfo = styled.div`
   margin-bottom: 20px;
 `;
 const TeacherAvatar = styled.div`
-  position: relative;
-  width: 36px;
-  height: 36px;
+  width: 66px;
+  height: 66px;
+  border-radius: 50%;
+  overflow: hidden;
   margin-right: 20px;
 `;
-const TeacherName = styled.p``;
-const IntroductionTitle = styled.h2`
-  font-size: 36px;
-  margin-bottom: 20px;
+const TeacherName = styled.p`
+  font-size: 22px;
+  color: ${(props) => props.theme.colors.color2};
 `;
-const Introduction = styled.p``;
+const Introduction = styled.div`
+  padding: 0 10px;
+`;
+const IntroductionTitle = styled.h2`
+  font-size: 24px;
+  font-weight: bold;
+  margin-bottom: 10px;
+  color: ${(props) => props.theme.colors.color2};
+`;
+const IntroductionContents = styled.p`
+  margin-bottom: 20px;
+  color: ${(props) => props.theme.colors.color7};
+`;
 const CalendarWrapper = styled.div`
   flex-basis: 50%;
 `;
 const Reviews = styled.ul`
+  width: 100%;
   display: flex;
   flex-direction: column;
+  justify-content: center;
   align-items: center;
-  width: 100%;
+`;
+const ScoreContainer = styled.div`
+  display: flex;
+  margin-bottom: 20px;
+  width: 60%;
+`;
+const Average = styled.h5`
+  font-size: 66px;
+  font-weight: bold;
+  margin-right: 30px;
+`;
+const ReviewsInfo = styled.div`
+  padding: 10px;
+`;
+const StarIcons = styled.div`
+  display: flex;
+  margin-bottom: 10px;
 `;
 const ReviewQty = styled.p`
-  margin-bottom: 20px;
+  font-size: 20px;
 `;
 const Review = styled.li`
-  width: 50%;
-  border: 2px solid #654116;
+  display: flex;
+  background-color: #f4f7f7;
   border-radius: 5px;
-  padding: 10px;
+  width: 60%;
+  height: 150px;
+  padding: 24px;
   margin-bottom: 20px;
 `;
 const User = styled.div`
   display: flex;
-  margin-bottom: 10px;
+  flex-direction: column;
+  justify-content: center;
+  margin-right: 80px;
 `;
 const AvatarWrapper = styled.div`
-  position: relative;
-  width: 24px;
-  height: 24px;
-  margin-right: 10px;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  width: 66px;
+  height: 66px;
+  border-radius: 50%;
+  overflow: hidden;
+  margin-bottom: 10px;
 `;
-const UserName = styled.p``;
+const UserName = styled.p`
+  text-align: center;
+`;
+const CommentWrapper = styled.div``;
 const Score = styled.div`
   margin-bottom: 10px;
   display: flex;
+  margin-bottom: 20px;
 `;
 const StarWrapper = styled.div`
   position: relative;
   width: 24px;
   height: 24px;
 `;
+const Comments = styled.p`
+  font-size: 18px;
+`;
+
 const Class = styled.p`
   margin-bottom: 10px;
 `;
-const Comments = styled.p``;
 
 interface ReviewInterface {
   class: string;
@@ -95,6 +141,8 @@ export default function Reserve() {
   const { teacherId } = router.query;
   const [teacherDatas, setTeacherDatas] = useState<{
     username: string;
+    introduction: string;
+    exprience: string;
     reviews?: ReviewInterface[];
     avatar?: string;
   }>();
@@ -107,9 +155,11 @@ export default function Reserve() {
       const userSnap = await getDoc(userRef);
       if (!userSnap.exists()) return;
       const username = userSnap.data().username as string;
+      const introduction = userSnap.data().teacher_introduction as string;
+      const exprience = userSnap.data().teacher_exprience as string;
       const avatar = userSnap.data().photoURL as string;
       const reviews = userSnap.data().reviews as ReviewInterface[];
-      setTeacherDatas({ username, reviews, avatar });
+      setTeacherDatas({ username, introduction, exprience, reviews, avatar });
 
       if (!Array.isArray(reviews)) return;
       reviews.forEach(async (review: { comments: string; score: number; userId: string }, index) => {
@@ -130,50 +180,99 @@ export default function Reserve() {
         <TeacherDetail>
           <TeacherInfo>
             <TeacherAvatar>
-              <Image src={teacherDatas?.avatar || Avatar} alt="avatar" fill sizes="contain" />
+              <Image src={teacherDatas?.avatar || Avatar} alt="avatar" width={120} height={120} />
             </TeacherAvatar>
             <TeacherName>{teacherDatas?.username}</TeacherName>
           </TeacherInfo>
-          <IntroductionTitle>自我介紹</IntroductionTitle>
-          <Introduction>Hi 各位同學大家好</Introduction>
+          <Introduction>
+            <IntroductionTitle>自我介紹</IntroductionTitle>
+            {teacherDatas && (
+              <IntroductionContents
+                className="ql-editor"
+                dangerouslySetInnerHTML={{ __html: teacherDatas.introduction }}
+              />
+            )}
+            <IntroductionTitle>老師經歷</IntroductionTitle>
+            {teacherDatas && (
+              <IntroductionContents
+                className="ql-editor"
+                dangerouslySetInnerHTML={{ __html: teacherDatas.exprience }}
+              />
+            )}
+          </Introduction>
         </TeacherDetail>
         <CalendarWrapper>{typeof teacherId === "string" && <ReserveCalendar teacherId={teacherId} />}</CalendarWrapper>
       </TeacherContainer>
+
       <Reviews>
-        <ReviewQty>共 {teacherDatas?.reviews?.length} 筆給老師的評價</ReviewQty>
-        {teacherDatas?.reviews?.map((review, reviewIndex) => (
-          <Review key={review.userId}>
-            <User>
-              <AvatarWrapper>
-                <Image
-                  src={
-                    reviewsUsersDatas.find((reviewUserData) => reviewUserData.index === reviewIndex)?.avatar || Avatar
-                  }
-                  alt="avatar"
-                  fill
-                  sizes="contain"
-                />
-              </AvatarWrapper>
-              <UserName>
-                {reviewsUsersDatas.find((reviewUserData) => reviewUserData.index === reviewIndex)?.username}
-              </UserName>
-            </User>
-            <Class>課程：{review.class}</Class>
-            <Score>
-              {Array.from(
-                {
-                  length: review.score,
-                },
-                (v, i) => i + 1
-              ).map((starIndex) => (
-                <StarWrapper key={starIndex}>
-                  <Image src={Star} alt="star" fill sizes="contain" />
-                </StarWrapper>
-              ))}
-            </Score>
-            <Comments>{review.comments}</Comments>
-          </Review>
-        ))}
+        {teacherDatas?.reviews && (
+          <ScoreContainer>
+            <Average>
+              {(
+                teacherDatas.reviews.reduce((acc, cur) => acc + cur.score, 0) / teacherDatas.reviews.length || 0
+              ).toFixed(1) || 0}
+            </Average>
+            <ReviewsInfo>
+              <StarIcons>
+                {Array.from(
+                  {
+                    length: Math.floor(
+                      teacherDatas.reviews.reduce((acc, cur) => acc + cur.score, 0) / teacherDatas.reviews.length
+                    ),
+                  },
+                  (v, i) => i + 1
+                ).map((starIndex) => (
+                  <StarWrapper key={starIndex}>
+                    <Image src={Star} alt="star" fill sizes="contain" />
+                  </StarWrapper>
+                ))}
+                {(teacherDatas.reviews.reduce((acc, cur) => acc + cur.score, 0) / teacherDatas.reviews.length) % 1 !==
+                  0 && (
+                  <StarWrapper>
+                    <Image src={HalfStar} alt="star" fill sizes="contain" />
+                  </StarWrapper>
+                )}
+              </StarIcons>
+              <ReviewQty>{teacherDatas.reviews.length} 則評價</ReviewQty>
+            </ReviewsInfo>
+          </ScoreContainer>
+        )}
+        {teacherDatas &&
+          teacherDatas?.reviews?.map((review, reviewIndex) => (
+            <Review key={review.userId}>
+              <User>
+                <AvatarWrapper>
+                  <Image
+                    src={
+                      reviewsUsersDatas.find((reviewUserData) => reviewUserData.index === reviewIndex)?.avatar || Avatar
+                    }
+                    alt="avatar"
+                    width={120}
+                    height={120}
+                  />
+                </AvatarWrapper>
+                <UserName>
+                  {reviewsUsersDatas.find((reviewUserData) => reviewUserData.index === reviewIndex)?.username}
+                </UserName>
+              </User>
+              <CommentWrapper>
+                <Score>
+                  {Array.from(
+                    {
+                      length: review.score,
+                    },
+                    (v, i) => i + 1
+                  ).map((starIndex) => (
+                    <StarWrapper key={starIndex}>
+                      <Image src={Star} alt="star" fill sizes="contain" />
+                    </StarWrapper>
+                  ))}
+                </Score>
+                <Class>課程：{review.class}</Class>
+                <Comments>{review.comments}</Comments>
+              </CommentWrapper>
+            </Review>
+          ))}
       </Reviews>
     </Wrapper>
   );

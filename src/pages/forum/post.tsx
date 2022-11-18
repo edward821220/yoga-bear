@@ -30,7 +30,7 @@ const Editor = dynamic(
 );
 
 const Wrapper = styled.div`
-  background-color: #f1ead8;
+  background-color: ${(props) => props.theme.colors.color1};
   min-height: calc(100vh - 100px);
   padding: 20px 0;
 `;
@@ -38,7 +38,7 @@ const Wrapper = styled.div`
 const Container = styled.div`
   max-width: 810px;
   margin: 0 auto;
-  background-color: #fff;
+  background-color: ${(props) => props.theme.colors.color1};
   padding: 20px;
 `;
 
@@ -79,8 +79,8 @@ const Title = styled.input`
 `;
 const Button = styled.button`
   display: block;
-  color: #fff;
-  background-color: #5d7262;
+  background-color: ${(props) => props.theme.colors.color3};
+  color: ${(props) => props.theme.colors.color1};
   border-radius: 5px;
   padding: 10px;
   font-size: 18px;
