@@ -10,7 +10,8 @@ import HalfStar from "../../../public/star-half.png";
 const Wrapper = styled.div`
   background-color: ${(props) => props.theme.colors.color1};
   min-height: calc(100vh - 100px);
-  padding-top: 20px;
+  padding-top: 40px;
+  padding-bottom: 20px;
 `;
 const Container = styled.div`
   max-width: 1280px;
@@ -28,10 +29,11 @@ const CoursesList = styled.ul`
 const Course = styled.li`
   color: ${(props) => props.theme.colors.color2};
   background-color: ${(props) => props.theme.colors.color1};
-  border: 2px solid ${(props) => props.theme.colors.color2};
+  border: 1px solid lightgray;
   border-radius: 5px;
   margin-right: 20px;
   margin-bottom: 20px;
+  box-shadow: 0 0 5px #00000050;
   &:nth-child(3n) {
     margin-right: 0;
   }
@@ -45,6 +47,11 @@ const CourseCover = styled.div`
 const CourseInfos = styled.div`
   width: 100%;
   margin-left: 10px;
+`;
+const CourseTitle = styled.p`
+  font-size: 18px;
+  font-weight: bold;
+  margin-bottom: 10px;
 `;
 const CourseInfo = styled.p`
   font-size: 18px;
@@ -115,7 +122,7 @@ function VideoCourses() {
                 </Link>
               </CourseCover>
               <CourseInfos>
-                <CourseInfo>{course.name}</CourseInfo>
+                <CourseTitle>{course.name}</CourseTitle>
                 <CourseInfo>NT. {course.price}</CourseInfo>
                 {course?.reviews?.length > 0 ? (
                   <CourseScore>

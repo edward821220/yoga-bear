@@ -16,7 +16,7 @@ const Wrapper = styled.div`
   flex-direction: column;
   justify-content: center;
   align-items: center;
-  padding: 20px;
+  padding: 40px;
 `;
 
 const Container = styled.div`
@@ -40,6 +40,7 @@ const Teacher = styled.li`
   margin-bottom: 20px;
   padding: 20px;
   background-color: ${(props) => props.theme.colors.color1};
+  box-shadow: 0 0 5px #00000050;
   &:last-child {
     margin-bottom: 0;
   }

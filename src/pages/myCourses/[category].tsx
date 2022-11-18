@@ -16,37 +16,37 @@ import TeacherCalendar from "../../components/calendar/teacherCalendar";
 import StudentCalendar from "../../components/calendar/studentCalendar";
 import EmptyStar from "../../../public/star-empty.png";
 import Star from "../../../public/star.png";
+import HalfStar from "../../../public/star-half.png";
 
 const Wrapper = styled.div`
   background-color: ${(props) => props.theme.colors.color1};
   min-height: calc(100vh - 100px);
-  display: flex;
-  padding: 20px;
+  margin: 0 auto;
+  max-width: 1280px;
+  padding-bottom: 40px;
 `;
 const SideBar = styled.div`
-  display: flex;
-  flex-direction: column;
-  justify-content: center;
-  text-align: center;
-  background-color: ${(props) => props.theme.colors.color1};
-  width: 20%;
-  height: 500px;
-  border: 2px solid ${(props) => props.theme.colors.color2};
-  border-radius: 5px;
-  margin-right: 20px;
+  background-color: ${(props) => props.theme.colors.color4};
+  width: 100%;
+  margin-bottom: 20px;
+  padding: 20px 0;
 `;
+
 const SideBarSection = styled.ul`
-  margin-bottom: 50px;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  margin-bottom: 20px;
 `;
 const SideBarTitle = styled.h3`
-  font-size: 24px;
+  font-size: 20px;
   font-weight: bold;
-  margin-bottom: 20px;
+  margin-right: 20px;
   color: ${(props) => props.theme.colors.color2};
 `;
 const SideBarLink = styled.li`
   font-size: 16px;
-  margin-bottom: 20px;
+  margin-right: 20px;
   a {
     transition: 0.2s color linear;
     color: ${(props) => props.theme.colors.color2};
@@ -56,7 +56,10 @@ const SideBarLink = styled.li`
   }
 `;
 const Main = styled.div`
-  width: 80%;
+  width: 100%;
+  display: flex;
+  justify-content: center;
+  align-items: center;
 `;
 const LauchForm = styled.form`
   display: flex;
@@ -106,35 +109,53 @@ const ButtonWrapper = styled.div`
 const RemoveIcon = styled.div`
   margin-bottom: 10px;
 `;
-const MyCoursesList = styled.ul`
+const CoursesList = styled.ul`
   display: flex;
+  justify-content: space-between;
   flex-wrap: wrap;
+  width: 80%;
 `;
-const MyCourse = styled.li`
-  display: flex;
-  flex-direction: column;
-  justify-content: center;
-  text-align: center;
+const Course = styled.li`
   color: ${(props) => props.theme.colors.color2};
-  align-items: center;
-  flex-basis: 48%;
   background-color: ${(props) => props.theme.colors.color1};
-  padding: 10px;
-  border: 2px solid ${(props) => props.theme.colors.color2};
+  border: 1px solid lightgrey;
+  box-shadow: 0 0 5px #00000050;
   border-radius: 5px;
-  margin-right: 20px;
   margin-bottom: 20px;
 `;
 const CourseCover = styled.div`
   position: relative;
-  width: 480px;
-  height: 270px;
+  width: 300px;
+  height: 180px;
   margin-bottom: 10px;
 `;
-const CourseTitle = styled.h3`
-  font-size: 24px;
+const CourseInfos = styled.div`
+  width: 100%;
+  margin-left: 10px;
+`;
+const CourseTitle = styled.p`
+  font-size: 18px;
+  font-weight: bold;
   margin-bottom: 10px;
 `;
+const CourseScore = styled.div`
+  display: flex;
+`;
+const CourseReviewsInfo = styled.p`
+  height: 26px;
+  margin-bottom: 10px;
+`;
+
+const StarIcons = styled.div`
+  display: flex;
+  margin-right: 10px;
+`;
+const CourseStarWrapper = styled.div`
+  position: relative;
+  width: 20px;
+  height: 20px;
+`;
+
 const CalendarWrapper = styled.div`
   width: 90%;
   margin: 0 auto;
@@ -170,8 +191,14 @@ interface Review {
   comments: string;
 }
 
+interface CourseInterface {
+  name: string;
+  id: string;
+  cover: string;
+  reviews: { userId: string; score: number; comments: string }[];
+}
 function VideoCourses({ uid }: { uid: string }) {
-  const [courses, setCourses] = useState<{ name: string; cover: string; id: string; reviews?: Review[] }[]>();
+  const [courses, setCourses] = useState<CourseInterface[]>();
   const [showReviewModal, setShowReviewModal] = useState<number | boolean>(false);
   const [score, setScore] = useState(0);
   const [comments, setComments] = useState("");
@@ -219,15 +246,49 @@ function VideoCourses({ uid }: { uid: string }) {
     return <p>目前沒有課程唷！</p>;
   }
   return (
-    <MyCoursesList>
+    <CoursesList>
       {courses?.map((course, courseIndex) => (
-        <MyCourse key={course.name}>
+        <Course key={course.id}>
           <CourseCover>
-            <Link href={`/myCourses/classRoom/videoRoom/${course.id}`}>
-              <Image src={course.cover} alt="cover" fill sizes="cover" />
+            <Link href={`/videoCourses/courseDetail/${course.id}`}>
+              <Image src={course.cover} alt="cover" fill />
             </Link>
           </CourseCover>
-          <CourseTitle>{course.name}</CourseTitle>
+          <CourseInfos>
+            <CourseTitle>{course.name}</CourseTitle>
+            {course?.reviews?.length > 0 ? (
+              <CourseScore>
+                <StarIcons>
+                  {/* eslint-disable no-unsafe-optional-chaining */}
+                  {Array.from(
+                    {
+                      length: Math.floor(
+                        course?.reviews?.reduce((acc, cur) => acc + cur.score, 0) / course?.reviews?.length
+                      ),
+                    },
+                    (v, i) => i + 1
+                  ).map((starIndex) => (
+                    <CourseStarWrapper key={starIndex}>
+                      <Image src={Star} alt="star" fill sizes="contain" />
+                    </CourseStarWrapper>
+                  ))}
+                  {(course?.reviews?.reduce((acc, cur) => acc + cur.score, 0) / course?.reviews?.length) % 1 !== 0 && (
+                    <CourseStarWrapper>
+                      <Image src={HalfStar} alt="star" fill sizes="contain" />
+                    </CourseStarWrapper>
+                  )}
+                </StarIcons>
+                <CourseReviewsInfo>
+                  {(course?.reviews?.reduce((acc, cur) => acc + cur.score, 0) / course?.reviews?.length || 0).toFixed(
+                    1
+                  ) || 0}
+                  分 ，{course?.reviews?.length || 0}則評論
+                </CourseReviewsInfo>
+              </CourseScore>
+            ) : (
+              <CourseReviewsInfo>目前無評價</CourseReviewsInfo>
+            )}
+          </CourseInfos>
           {course?.reviews?.some((review) => review.userId === uid) || (
             <ButtonWrapper>
               <Button
@@ -304,13 +365,13 @@ function VideoCourses({ uid }: { uid: string }) {
               </ReviewForm>
             </Modal>
           )}
-        </MyCourse>
+        </Course>
       ))}
-    </MyCoursesList>
+    </CoursesList>
   );
 }
 function LaunchedVideoCourses({ uid }: { uid: string }) {
-  const [courses, setCourses] = useState<{ name: string; cover: string; id: string }[]>();
+  const [courses, setCourses] = useState<CourseInterface[]>();
 
   useEffect(() => {
     const getLaunchedVideoCourses = async () => {
@@ -319,8 +380,8 @@ function LaunchedVideoCourses({ uid }: { uid: string }) {
       const teachersQuery = query(usersRef, where("teacher_id", "==", uid));
       const querySnapshot = await getDocs(teachersQuery);
       const launchedVideoCourses = querySnapshot.docs.map((course) => {
-        const { name, cover, id } = course.data();
-        return { name, cover, id };
+        const { name, cover, id, reviews } = course.data();
+        return { name, cover, id, reviews };
       });
       setCourses(launchedVideoCourses);
     };
@@ -331,18 +392,52 @@ function LaunchedVideoCourses({ uid }: { uid: string }) {
     return <p>目前沒有課程唷！</p>;
   }
   return (
-    <MyCoursesList>
+    <CoursesList>
       {courses?.map((course) => (
-        <MyCourse key={course.name}>
+        <Course key={course.name}>
           <CourseCover>
             <Link href={`/myCourses/classRoom/videoRoom/${course.id}`}>
               <Image src={course.cover} alt="cover" fill sizes="cover" />
             </Link>
           </CourseCover>
-          <CourseTitle>{course.name}</CourseTitle>
-        </MyCourse>
+          <CourseInfos>
+            <CourseTitle>{course.name}</CourseTitle>
+            {course?.reviews?.length > 0 ? (
+              <CourseScore>
+                <StarIcons>
+                  {/* eslint-disable no-unsafe-optional-chaining */}
+                  {Array.from(
+                    {
+                      length: Math.floor(
+                        course?.reviews?.reduce((acc, cur) => acc + cur.score, 0) / course?.reviews?.length
+                      ),
+                    },
+                    (v, i) => i + 1
+                  ).map((starIndex) => (
+                    <CourseStarWrapper key={starIndex}>
+                      <Image src={Star} alt="star" fill sizes="contain" />
+                    </CourseStarWrapper>
+                  ))}
+                  {(course?.reviews?.reduce((acc, cur) => acc + cur.score, 0) / course?.reviews?.length) % 1 !== 0 && (
+                    <CourseStarWrapper>
+                      <Image src={HalfStar} alt="star" fill sizes="contain" />
+                    </CourseStarWrapper>
+                  )}
+                </StarIcons>
+                <CourseReviewsInfo>
+                  {(course?.reviews?.reduce((acc, cur) => acc + cur.score, 0) / course?.reviews?.length || 0).toFixed(
+                    1
+                  ) || 0}
+                  分 ，{course?.reviews?.length || 0}則評論
+                </CourseReviewsInfo>
+              </CourseScore>
+            ) : (
+              <CourseReviewsInfo>目前無評價</CourseReviewsInfo>
+            )}
+          </CourseInfos>
+        </Course>
       ))}
-    </MyCoursesList>
+    </CoursesList>
   );
 }
 function UploadProgressModal({ progressBar }: { progressBar: { file: string; progress: number } }) {
