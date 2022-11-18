@@ -236,7 +236,7 @@ function Article() {
             const messageAuthorSnap = await getDoc(messageAuthorRef);
             if (messageAuthorSnap.exists()) {
               messages[index].authorName = messageAuthorSnap.data().username;
-              messages[index].authorAvatar = messageAuthorSnap.data().photoURL;
+              messages[index].authorAvatar = messageAuthorSnap.data().photoURL || "";
               messages[index].identity = messageAuthorSnap.data().identity;
             }
           })
@@ -289,24 +289,22 @@ function Article() {
       alert("登入後才能按讚唷！");
       return;
     }
-    setArticle(
-      produce((draft: ArticleInterface) => {
-        draft.messages[index].likes.push(userData.uid);
-        const articleRef = doc(db, "posts", id);
-        updateDoc(articleRef, { messages: draft.messages });
-      })
-    );
+    const updatedArticle = produce(article, (draft) => {
+      draft.messages[index].likes.push(userData.uid);
+    });
+    setArticle(updatedArticle);
+    const articleRef = doc(db, "posts", id);
+    updateDoc(articleRef, { messages: updatedArticle.messages });
   };
 
   const handleDislikeMessage = (index: number) => {
     if (typeof id !== "string") return;
-    setArticle(
-      produce((draft: ArticleInterface) => {
-        draft.messages[index].likes.splice(draft.messages[index].likes.indexOf(userData.uid), 1);
-        const articleRef = doc(db, "posts", id);
-        updateDoc(articleRef, { messages: draft.messages });
-      })
-    );
+    const updatedArticle = produce(article, (draft) => {
+      draft.messages[index].likes.splice(draft.messages[index].likes.indexOf(userData.uid), 1);
+    });
+    setArticle(updatedArticle);
+    const articleRef = doc(db, "posts", id);
+    updateDoc(articleRef, { messages: updatedArticle.messages });
   };
 
   const handleMessage = async () => {
