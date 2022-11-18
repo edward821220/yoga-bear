@@ -23,10 +23,12 @@ const TeacherContainer = styled.div`
 `;
 
 const TeacherDetail = styled.div`
-  flex-basis: 50%;
+  flex-basis: 40%;
+  margin-right: 20px;
 `;
 const TeacherInfo = styled.div`
   display: flex;
+  align-items: center;
   margin-bottom: 20px;
 `;
 const TeacherAvatar = styled.div`
@@ -49,12 +51,16 @@ const IntroductionTitle = styled.h2`
   margin-bottom: 10px;
   color: ${(props) => props.theme.colors.color2};
 `;
-const IntroductionContents = styled.p`
-  margin-bottom: 20px;
+const IntroductionContents = styled.div`
   color: ${(props) => props.theme.colors.color7};
+  margin-bottom: 20px;
+  p {
+    line-height: 28px;
+  }
 `;
 const CalendarWrapper = styled.div`
-  flex-basis: 50%;
+  flex-basis: 60%;
+  margin-top: 86px;
 `;
 const Reviews = styled.ul`
   width: 100%;
@@ -182,7 +188,7 @@ export default function Reserve() {
             <TeacherAvatar>
               <Image src={teacherDatas?.avatar || Avatar} alt="avatar" width={120} height={120} />
             </TeacherAvatar>
-            <TeacherName>{teacherDatas?.username}</TeacherName>
+            <TeacherName>{teacherDatas?.username} 老師</TeacherName>
           </TeacherInfo>
           <Introduction>
             <IntroductionTitle>自我介紹</IntroductionTitle>
