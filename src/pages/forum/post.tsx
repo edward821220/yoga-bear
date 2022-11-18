@@ -9,6 +9,7 @@ import ReactQuill, { ReactQuillProps } from "react-quill";
 import Avatar from "../../../public/member.png";
 import { db, storage } from "../../../lib/firebase";
 import { AuthContext } from "../../contexts/authContext";
+import Bear from "../../../public/Yoga-Bear.png";
 import "react-quill/dist/quill.snow.css";
 
 interface EditorInterface extends ReactQuillProps {
@@ -87,6 +88,37 @@ const Button = styled.button`
   font-size: 18px;
   margin: 0 auto;
   cursor: pointer;
+`;
+const SpeechBubble = styled.div`
+  position: fixed;
+  bottom: 220px;
+  right: 40px;
+  background: #ddd;
+  color: #333;
+  display: inline-block;
+  font-size: 14px;
+  line-height: 28px;
+  margin-bottom: 1em;
+  padding: 10px;
+  text-align: center;
+  vertical-align: top;
+  width: 250px;
+  &::after {
+    border: 1em solid transparent;
+    border-top-color: #ddd;
+    content: "";
+    margin-left: -1em;
+    position: absolute;
+    top: 100%;
+    left: 50%;
+    width: 0;
+    height: 0;
+  }
+`;
+const BearWrapper = styled.div`
+  position: fixed;
+  bottom: 20px;
+  right: 60px;
 `;
 
 const formats = [
@@ -198,7 +230,6 @@ function Post() {
             theme="snow"
             value={content}
             onChange={setContent}
-            placeholder="瑜伽相關的任何問題都非常歡迎大家提問唷～"
             modules={modules}
             formats={formats}
             forwardedRef={quillRef}
@@ -208,6 +239,14 @@ function Post() {
           </Button>
         </Form>
       </Container>
+      <SpeechBubble>
+        瑜伽相關的問題都歡迎大家提問唷
+        <br />
+        不要害羞～本熊會陪著你問問題的
+      </SpeechBubble>
+      <BearWrapper>
+        <Image src={Bear} alt="bear" width={200} height={200} />
+      </BearWrapper>
     </Wrapper>
   );
 }
