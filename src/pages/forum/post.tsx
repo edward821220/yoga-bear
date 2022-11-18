@@ -48,13 +48,13 @@ const ArticleUser = styled.div`
 `;
 const UserAvatarWrapper = styled.div`
   position: relative;
-  width: 30px;
-  height: 30px;
-  margin-right: 10px;
+  width: 66px;
+  height: 66px;
+  margin-right: 20px;
 `;
 const UserName = styled.span`
-  font-size: 22px;
-  line-height: 30px;
+  font-size: 24px;
+  line-height: 66px;
 `;
 
 const Form = styled.form`
@@ -76,6 +76,7 @@ const Title = styled.input`
   font-size: 18px;
   line-height: 40px;
   padding-left: 10px;
+  border: 1px solid lightgray;
 `;
 const Button = styled.button`
   display: block;
