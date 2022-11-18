@@ -146,6 +146,9 @@ function Post() {
     if (!title.trim()) {
       alert("請輸入標題");
     }
+    if (!content.trim()) {
+      alert("請輸入內容");
+    }
     const newPostRef = doc(collection(db, "posts"));
     await setDoc(newPostRef, {
       id: newPostRef.id,

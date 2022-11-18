@@ -293,7 +293,7 @@ const ReviewQty = styled.p`
 `;
 const Review = styled.li`
   display: flex;
-  background-color: #f4f7f7;
+  background-color: ${(props) => props.theme.colors.color8};
   border-radius: 5px;
   width: 100%;
   height: 150px;

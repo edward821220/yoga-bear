@@ -76,7 +76,7 @@ const OrderDetails = styled.div`
   height: 50%;
   border: 2px solid ${(props) => props.theme.colors.color2};
   border-radius: 5px;
-  padding: 10px;
+  padding: 20px 10px;
 `;
 const DetailsTitle = styled.h3`
   font-size: 18px;

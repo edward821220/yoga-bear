@@ -102,6 +102,8 @@ const Qtys = styled.div`
 `;
 const ClickLike = styled.div`
   display: flex;
+  justify-content: center;
+  align-items: center;
   position: relative;
   cursor: pointer;
 `;
@@ -118,18 +120,18 @@ const ActivityQty = styled.span`
 `;
 
 const MessagesContainer = styled.div`
-  background-color: #eceae6;
+  background-color: ${(props) => props.theme.colors.color8};
   padding: 10px 0px;
   width: 100%;
 `;
 const Messages = styled.ul``;
 const MessageQty = styled.p`
   padding: 5px 5px 10px 20px;
-  border-bottom: 2px solid #e7daca;
+  border-bottom: 1px solid #e7daca;
   margin: 0 10px 10px 10px;
 `;
 const Message = styled.li`
-  border-bottom: 2px solid #e7daca;
+  border-bottom: 1px solid #e7daca;
   margin: 0px 10px 10px 10px;
   padding: 10px 20px;
 `;
@@ -148,10 +150,15 @@ const MessageContent = styled.p`
 const MessageInfo = styled.div`
   display: flex;
   justify-content: flex-end;
+  align-items: center;
+  line-height: 24px;
 `;
 const MessageTime = styled.p`
   margin-right: 20px;
   margin-left: 20px;
+`;
+const LikeQty = styled.span`
+  line-height: 24px;
 `;
 const MessageFloor = styled.p``;
 const MessageBlock = styled.div`
@@ -164,7 +171,7 @@ const MessageBlock = styled.div`
 const MessageTextArea = styled.textarea`
   resize: none;
   flex-basis: 90%;
-  height: 50px;
+  height: 60px;
   border-radius: 5px;
   border: none;
   &:focus {
@@ -441,7 +448,7 @@ function Article() {
                           <IconWrapper>
                             <Image src={LikeIcon} alt="like-cliked" fill sizes="contain" />
                           </IconWrapper>
-                          <span>{message?.likes?.length || 0}</span>
+                          <LikeQty>{message?.likes?.length || 0}</LikeQty>
                         </ClickLike>
                       )}
                       <MessageTime>{new Date(message.time).toLocaleString()}</MessageTime>

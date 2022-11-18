@@ -38,6 +38,7 @@ const theme: DefaultTheme = {
     color5: "#f2deba",
     color6: "#00000080",
     color7: "#3f3f3f",
+    color8: "#f4f7f7",
   },
 };
 

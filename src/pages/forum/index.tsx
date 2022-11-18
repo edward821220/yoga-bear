@@ -2,8 +2,8 @@ import Image from "next/image";
 import React, { useState, useEffect } from "react";
 import styled from "styled-components";
 import { useRouter } from "next/router";
-import { collection, doc, getDoc, getDocs } from "firebase/firestore";
-import BannerPic from "../../../public/yoga-banner.jpg";
+import { collection, doc, getDoc, getDocs, query, orderBy } from "firebase/firestore";
+import BannerPic from "../../../public/yoga-beach.jpeg";
 import LikeIcon from "../../../public/like.png";
 import MessageIcon from "../../../public/message.png";
 import Avatar from "../../../public/member.png";
@@ -12,7 +12,19 @@ import { db } from "../../../lib/firebase";
 const Wrapper = styled.div`
   background-color: ${(props) => props.theme.colors.color1};
   min-height: calc(100vh - 100px);
-  padding-top: 20px;
+`;
+const Banner = styled.div`
+  position: relative;
+  width: 100%;
+  height: auto;
+  max-height: 400px;
+  margin-bottom: 20px;
+  overflow: hidden;
+`;
+const BannerImage = styled(Image)`
+  height: auto;
+  width: 100%;
+  transform: translate(0, -30%);
 `;
 const Container = styled.div`
   max-width: 1096px;
@@ -24,19 +36,18 @@ const Main = styled.main`
   flex-basis: 70%;
   margin-right: 10px;
 `;
-const BannerWrapper = styled.div`
-  position: relative;
-  height: 350px;
-  margin-bottom: 20px;
-`;
 const Aside = styled.div`
+  flex-basis: 30%;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
   color: ${(props) => props.theme.colors.color2};
   background-color: ${(props) => props.theme.colors.color1};
-  flex-basis: 30%;
   height: 300px;
-  border: 2px solid ${(props) => props.theme.colors.color2};
+  border: 1px solid ${(props) => props.theme.colors.color2};
   border-radius: 5px;
-  padding: 10px;
+  padding: 0 10px;
 `;
 const AsideTitle = styled.h3`
   font-size: 20px;
@@ -58,15 +69,15 @@ const Button = styled.button`
   margin: 0 auto;
   cursor: pointer;
 `;
-const Articles = styled.ul``;
+const Articles = styled.ul`
+  background-color: ${(props) => props.theme.colors.color8};
+`;
 
 const Article = styled.li`
   color: ${(props) => props.theme.colors.color2};
-  background-color: ${(props) => props.theme.colors.color1};
-  border: 2px solid ${(props) => props.theme.colors.color2};
-  border-radius: 5px;
-  padding: 20px;
-  margin-bottom: 20px;
+  border-bottom: 1px solid #e7daca;
+  padding: 35px 20px;
+  height: 180px;
   cursor: pointer;
 `;
 const ArticleUser = styled.div`
@@ -100,10 +111,22 @@ const ArticleTitle = styled.h4`
   font-size: 18px;
   font-weight: bolder;
   margin-bottom: 10px;
+  width: 100%;
+  overflow: hidden;
 `;
 const ArticlePreview = styled.div`
+  line-height: 20px;
+  width: 500px;
+  height: 24px;
   margin-bottom: 20px;
+  text-overflow: ellipsis;
+  overflow: hidden;
 `;
+const OtherInfos = styled.div`
+  display: flex;
+  justify-content: space-between;
+`;
+const ArticleTime = styled.p``;
 const ArticleActivity = styled.div`
   display: flex;
 `;
@@ -120,6 +143,7 @@ const ActivityQty = styled.span`
 
 interface PostInterface {
   id: string;
+  time: string;
   title: string;
   content: string;
   preview?: string;
@@ -139,7 +163,8 @@ function Forum() {
 
   useEffect(() => {
     const getPosts = async () => {
-      const querySnapshot = await getDocs(collection(db, "posts"));
+      const q = query(collection(db, "posts"), orderBy("time", "desc"));
+      const querySnapshot = await getDocs(q);
       const results: PostInterface[] = querySnapshot.docs.map((data) => {
         const article = data.data() as PostInterface;
         const images = article?.content?.match(/<img.*?>/g);
@@ -148,10 +173,11 @@ function Forum() {
         const likesQty = article?.likes?.length || 0;
         let preview = "";
         let picPreview = "";
-        if (paragraphs) preview = `${paragraphs[0].slice(3, -4)} ......`;
+        if (paragraphs) preview = `${paragraphs[0].slice(3, -4)}...`;
         if (images) [picPreview] = images;
         return {
           id: data.data().id,
+          time: new Date(data.data().time as string).toLocaleString(),
           title: data.data().title,
           content: data.data().content,
           authorId: data.data().author,
@@ -177,11 +203,11 @@ function Forum() {
   }, []);
   return (
     <Wrapper>
+      <Banner>
+        <BannerImage src={BannerPic} alt="banner" />
+      </Banner>
       <Container>
         <Main>
-          <BannerWrapper>
-            <Image src={BannerPic} alt="banner" fill sizes="contain" />
-          </BannerWrapper>
           <Articles>
             {posts.map((article) => (
               <Article
@@ -203,16 +229,19 @@ function Forum() {
                   </ArticleText>
                   {article.picPreview && <PicPreview dangerouslySetInnerHTML={{ __html: article?.picPreview }} />}
                 </ArticleInfo>
-                <ArticleActivity>
-                  <IconWrapper>
-                    <Image src={LikeIcon} alt="like" fill sizes="contain" />
-                  </IconWrapper>
-                  <ActivityQty>{article.likesQty}</ActivityQty>
-                  <IconWrapper>
-                    <Image src={MessageIcon} alt="like" fill sizes="contain" />
-                  </IconWrapper>
-                  <ActivityQty>{article.messagesQty}</ActivityQty>
-                </ArticleActivity>
+                <OtherInfos>
+                  <ArticleActivity>
+                    <IconWrapper>
+                      <Image src={LikeIcon} alt="like" fill sizes="contain" />
+                    </IconWrapper>
+                    <ActivityQty>{article.likesQty}</ActivityQty>
+                    <IconWrapper>
+                      <Image src={MessageIcon} alt="like" fill sizes="contain" />
+                    </IconWrapper>
+                    <ActivityQty>{article.messagesQty}</ActivityQty>
+                  </ArticleActivity>
+                  <ArticleTime>{article.time}</ArticleTime>
+                </OtherInfos>
               </Article>
             ))}
           </Articles>
