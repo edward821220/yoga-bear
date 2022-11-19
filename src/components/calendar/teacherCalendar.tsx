@@ -48,6 +48,9 @@ const RoomButtonWrapper = styled.div`
     background-color: #eeeeee;
   }
 `;
+const SwitcherWrapper = styled.div`
+  padding: 5px 0 0 10px;
+`;
 
 function TextEditor(props: AppointmentForm.TextEditorProps) {
   // eslint-disable-next-line react/destructuring-assignment
@@ -196,12 +199,14 @@ export default function TeacherCalendar({ uid }: { uid: string }) {
   };
   return (
     <>
-      <ExternalViewSwitcher
-        currentViewName={view}
-        onChange={(e: React.ChangeEvent<HTMLInputElement>): void => {
-          setView(e.target.value);
-        }}
-      />
+      <SwitcherWrapper>
+        <ExternalViewSwitcher
+          currentViewName={view}
+          onChange={(e: React.ChangeEvent<HTMLInputElement>): void => {
+            setView(e.target.value);
+          }}
+        />
+      </SwitcherWrapper>
       <Paper>
         <Scheduler data={data} height={600}>
           <ViewState

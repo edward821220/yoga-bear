@@ -12,6 +12,7 @@ import Modal from "../../components/modal";
 import Editor from "../../components/editor";
 import Bear from "../../../public/bear.png";
 import Trash from "../../../public/trash.png";
+import Upload from "../../../public/upload.png";
 import TeacherCalendar from "../../components/calendar/teacherCalendar";
 import StudentCalendar from "../../components/calendar/studentCalendar";
 import EmptyStar from "../../../public/star-empty.png";
@@ -23,28 +24,26 @@ const Wrapper = styled.div`
   min-height: calc(100vh - 100px);
   margin: 0 auto;
   max-width: 1280px;
-  padding-bottom: 40px;
+  padding: 40px 0;
 `;
-const SideBar = styled.div`
-  background-color: ${(props) => props.theme.colors.color4};
+const Bar = styled.div`
   width: 100%;
-  margin-bottom: 20px;
-  padding: 20px 0;
+  margin-bottom: 40px;
 `;
 
-const SideBarSection = styled.ul`
+const BarSection = styled.ul`
   display: flex;
   justify-content: center;
   align-items: center;
   margin-bottom: 20px;
 `;
-const SideBarTitle = styled.h3`
-  font-size: 20px;
+const BarTitle = styled.h3`
+  font-size: 18px;
   font-weight: bold;
   margin-right: 20px;
   color: ${(props) => props.theme.colors.color2};
 `;
-const SideBarLink = styled.li`
+const BarLink = styled.li`
   font-size: 16px;
   margin-right: 20px;
   a {
@@ -66,13 +65,15 @@ const LauchForm = styled.form`
   flex-direction: column;
   justify-content: center;
   align-items: center;
-  width: 60%;
-  background-color: ${(props) => props.theme.colors.color1};
-  border: 2px solid ${(props) => props.theme.colors.color2};
-  border-radius: 5px;
-  padding: 20px;
-  margin: 0 auto;
   color: ${(props) => props.theme.colors.color2};
+  background-color: ${(props) => props.theme.colors.color1};
+  width: 60%;
+  border: 1px solid lightgrey;
+  border-radius: 5px;
+  box-shadow: 0 0 5px #00000050;
+  padding-top: 20px;
+  padding-bottom: 10px;
+  margin: 0 auto;
 `;
 const LauchFormLabel = styled.label`
   display: flex;
@@ -81,7 +82,10 @@ const LauchFormLabel = styled.label`
   align-items: center;
   margin-bottom: 20px;
 `;
-const LauchFormLabelText = styled.p`
+const LauchFormLabelText = styled.div`
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
   margin-bottom: 10px;
   width: 100%;
 `;
@@ -89,30 +93,67 @@ const LauchFormLabelInput = styled.input`
   display: block;
   width: 500px;
   line-height: 24px;
+  padding-left: 5px;
   margin-bottom: 20px;
 `;
-
-const Button = styled.button`
-  background-color: ${(props) => props.theme.colors.color3};
-  color: ${(props) => props.theme.colors.color1};
+const LauchFormLabelFile = styled.label`
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  margin-bottom: 20px;
+  cursor: pointer;
+`;
+const LaunchFormLabelFileButton = styled.div`
+  font-size: 16px;
+  text-align: center;
+  color: gray;
+  background-color: white;
+  max-width: 150px;
+  border: 1px solid gray;
+  border-radius: 5px;
+  padding: 10px;
+  margin: 0 auto;
+  margin-bottom: 10px;
+`;
+const LauchFormLabelInputFile = styled.input`
+  display: none;
+  width: 500px;
+  line-height: 24px;
+  padding-left: 5px;
+  margin-bottom: 20px;
+`;
+const PlusButton = styled.button`
+  background-color: ${(props) => props.theme.colors.color4};
+  color: ${(props) => props.theme.colors.color2};
+  border: none;
   border-radius: 5px;
   min-width: 100px;
   margin-bottom: 10px;
   padding: 10px;
   cursor: pointer;
 `;
-const ButtonWrapper = styled.div`
-  display: flex;
-  justify-content: end;
-  width: 100%;
-`;
-const RemoveIcon = styled.div`
+
+const Button = styled.button`
+  background-color: ${(props) => props.theme.colors.color3};
+  color: ${(props) => props.theme.colors.color1};
+  border: none;
+  border-radius: 5px;
+  min-width: 100px;
   margin-bottom: 10px;
+  padding: 10px;
+  cursor: pointer;
+`;
+
+const RemoveIcon = styled(Image)`
+  width: 20px;
+  height: auto;
+  cursor: pointer;
 `;
 const CoursesList = styled.ul`
-  display: flex;
-  justify-content: space-between;
-  flex-wrap: wrap;
+  display: grid;
+  grid-template-columns: repeat(auto-fill, 300px);
+  grid-column-gap: calc((1024px - 900px) / 2);
+  grid-row-gap: 20px;
   width: 80%;
 `;
 const Course = styled.li`
@@ -121,7 +162,6 @@ const Course = styled.li`
   border: 1px solid lightgrey;
   box-shadow: 0 0 5px #00000050;
   border-radius: 5px;
-  margin-bottom: 20px;
 `;
 const CourseCover = styled.div`
   position: relative;
@@ -130,6 +170,7 @@ const CourseCover = styled.div`
   margin-bottom: 10px;
 `;
 const CourseInfos = styled.div`
+  position: relative;
   width: 100%;
   margin-left: 10px;
 `;
@@ -156,9 +197,23 @@ const CourseStarWrapper = styled.div`
   height: 20px;
 `;
 
+const ReviewButton = styled.button`
+  position: absolute;
+  right: 20px;
+  top: 0;
+  background-color: ${(props) => props.theme.colors.color3};
+  color: ${(props) => props.theme.colors.color1};
+  border-radius: 5px;
+  border: none;
+  width: 60px;
+  height: 18px;
+  cursor: pointer;
+`;
 const CalendarWrapper = styled.div`
   width: 90%;
   margin: 0 auto;
+  border: 1px solid lightgray;
+  box-shadow: 0 0 5px #00000050;
 `;
 const ReviewForm = styled.form`
   display: flex;
@@ -288,19 +343,17 @@ function VideoCourses({ uid }: { uid: string }) {
             ) : (
               <CourseReviewsInfo>目前無評價</CourseReviewsInfo>
             )}
-          </CourseInfos>
-          {course?.reviews?.some((review) => review.userId === uid) || (
-            <ButtonWrapper>
-              <Button
+            {course?.reviews?.some((review) => review.userId === uid) || (
+              <ReviewButton
                 type="button"
                 onClick={() => {
                   setShowReviewModal(courseIndex);
                 }}
               >
                 評價
-              </Button>
-            </ButtonWrapper>
-          )}
+              </ReviewButton>
+            )}
+          </CourseInfos>
           {showReviewModal === courseIndex && (
             <Modal handleClose={handleClose}>
               <ReviewForm>
@@ -405,7 +458,6 @@ function LaunchedVideoCourses({ uid }: { uid: string }) {
             {course?.reviews?.length > 0 ? (
               <CourseScore>
                 <StarIcons>
-                  {/* eslint-disable no-unsafe-optional-chaining */}
                   {Array.from(
                     {
                       length: Math.floor(
@@ -478,8 +530,9 @@ function LaunchVideoCourse({ uid }: { uid: string }) {
   const [price, setPrice] = useState("");
   const [introduction, setIntroduction] = useState("");
   const [coverPreview, setCoverPreview] = useState("");
+  const [coursePreview, setCoursePreview] = useState("");
   const [chapters, setChapters] = useState<
-    { id: number; title: string; units: { id: number; title: string; video: string }[] }[]
+    { id: number; title: string; units: { id: number; title: string; filname: string; video: string }[] }[]
   >([]);
   const [showMemberModal, setShowMemberModal] = useState(false);
   const [progressBar, setProgressBar] = useState<{ file: string; progress: number }>({ file: "", progress: 0 });
@@ -553,7 +606,7 @@ function LaunchVideoCourse({ uid }: { uid: string }) {
     });
     setShowMemberModal(false);
     alert("課程上架完成！");
-    router.push("/myCourses/videoCourses");
+    router.push("/myCourses/launchedVideoCourses");
   };
 
   return (
@@ -572,6 +625,10 @@ function LaunchVideoCourse({ uid }: { uid: string }) {
         <LauchFormLabel>
           <LauchFormLabelText>課程價格</LauchFormLabelText>
           <LauchFormLabelInput
+            type="number"
+            step="50"
+            min="0"
+            max="10000"
             value={price}
             required
             onChange={(e) => {
@@ -584,14 +641,13 @@ function LaunchVideoCourse({ uid }: { uid: string }) {
           <Editor
             content={introduction}
             setContent={setIntroduction}
-            style={{ width: "500px", height: "300px", border: "1px solid gray" }}
+            style={{ color: "#000", width: "500px", height: "300px", border: "1px solid gray" }}
             placeholder="請輸入課程簡介"
           />
         </LauchFormLabel>
-
-        <LauchFormLabel>
-          <LauchFormLabelText>上傳課程封面</LauchFormLabelText>
-          <LauchFormLabelInput
+        <LauchFormLabelFile>
+          <LaunchFormLabelFileButton>上傳課程封面</LaunchFormLabelFileButton>
+          <LauchFormLabelInputFile
             type="file"
             accept="image/*"
             required
@@ -600,27 +656,47 @@ function LaunchVideoCourse({ uid }: { uid: string }) {
               setCoverPreview(URL.createObjectURL(e.target.files[0]));
             }}
           />
-          {coverPreview && <Image src={coverPreview} alt="cover" width={500} height={300} />}
-        </LauchFormLabel>
-        <LauchFormLabel>
-          <LauchFormLabelText>上傳課程介紹影片</LauchFormLabelText>
-          <LauchFormLabelInput type="file" accept="video/mp4,video/x-m4v,video/*" required />
-        </LauchFormLabel>
-        <Button
+        </LauchFormLabelFile>
+        {coverPreview && (
+          <Image src={coverPreview} alt="cover" width={500} height={300} style={{ marginBottom: "20px" }} />
+        )}
+        <LauchFormLabelFile>
+          <LaunchFormLabelFileButton>上傳課程介紹影片</LaunchFormLabelFileButton>
+          <LauchFormLabelInputFile
+            type="file"
+            accept="video/mp4,video/x-m4v,video/*"
+            required
+            onChange={(e) => {
+              if (!e.target.files) return;
+              setCoursePreview(e.target.files[0].name);
+            }}
+          />
+          {coursePreview && (
+            <span style={{ fontSize: "14px", textAlign: "right", marginLeft: "5px" }}>{coursePreview}</span>
+          )}
+        </LauchFormLabelFile>
+        <PlusButton
           type="button"
           onClick={() => {
             setChapters([
               ...chapters,
-              { id: chapters.length + 1, title: "", units: [{ id: 1, title: "", video: "" }] },
+              { id: chapters.length + 1, title: "", units: [{ id: 1, title: "", filname: "", video: "" }] },
             ]);
           }}
         >
           課程章節++
-        </Button>
+        </PlusButton>
         {chapters.map((chapter, chapterIndex) => (
           <LauchFormLabel key={chapter.id}>
             <LauchFormLabelText>
               章節{chapterIndex + 1}：{chapter.title}
+              <RemoveIcon
+                src={Trash}
+                alt="remove"
+                onClick={() => {
+                  setChapters(chapters.filter((_, index) => index !== chapterIndex));
+                }}
+              />
             </LauchFormLabelText>
             <LauchFormLabelInput
               value={chapter.title}
@@ -635,20 +711,24 @@ function LaunchVideoCourse({ uid }: { uid: string }) {
                 );
               }}
             />
-            <RemoveIcon>
-              <Image
-                src={Trash}
-                alt="trash"
-                width={24}
-                onClick={() => {
-                  setChapters(chapters.filter((_, index) => index !== chapterIndex));
-                }}
-              />
-            </RemoveIcon>
             {chapter.units.map((unit, unitIndex) => (
               <div key={unit.id}>
                 <LauchFormLabelText>
                   單元{unitIndex + 1}：{unit.title}
+                  <RemoveIcon
+                    src={Trash}
+                    alt="remove"
+                    onClick={() => {
+                      setChapters(
+                        produce((draft) => {
+                          const newChapter = draft.find((_, index) => index === chapterIndex);
+                          if (!newChapter) return;
+                          const newUnits = newChapter.units.filter((_, index) => index !== unitIndex);
+                          newChapter.units = newUnits;
+                        })
+                      );
+                    }}
+                  />
                 </LauchFormLabelText>
                 <LauchFormLabelInput
                   value={unit.title}
@@ -663,45 +743,45 @@ function LaunchVideoCourse({ uid }: { uid: string }) {
                     );
                   }}
                 />
-                <LauchFormLabelInput
-                  type="file"
-                  accept="video/mp4,video/x-m4v,video/*"
-                  data-chapter={chapterIndex}
-                  data-unit={unitIndex}
-                />
-                <RemoveIcon>
-                  <Image
-                    src={Trash}
-                    alt="trash"
-                    width={24}
-                    onClick={() => {
+                <LauchFormLabelFile>
+                  <span>影片上傳</span>
+                  <Image src={Upload} alt="upload" width={20} height={20} style={{ margin: "0 5px" }} />
+                  <LauchFormLabelInputFile
+                    type="file"
+                    accept="video/mp4,video/x-m4v,video/*"
+                    data-chapter={chapterIndex}
+                    data-unit={unitIndex}
+                    onChange={(e) => {
+                      if (!e.target.files) return;
                       setChapters(
                         produce((draft) => {
                           const newChapter = draft.find((_, index) => index === chapterIndex);
-                          if (!newChapter) return;
-                          const newUnits = newChapter.units.filter((_, index) => index !== unitIndex);
-                          newChapter.units = newUnits;
+                          if (!newChapter || !e.target.files) return;
+                          newChapter.units[unitIndex].filname = e.target.files[0].name;
                         })
                       );
                     }}
                   />
-                </RemoveIcon>
+                  {chapter && (
+                    <p style={{ fontSize: "14px", textAlign: "center" }}>{chapter.units[unitIndex].filname}</p>
+                  )}
+                </LauchFormLabelFile>
               </div>
             ))}
-            <Button
+            <PlusButton
               type="button"
               onClick={() => {
                 setChapters(
                   produce((draft) => {
                     const newChapter = draft.find((_, index) => index === chapterIndex);
                     if (!newChapter) return;
-                    newChapter.units.push({ id: newChapter.units.length + 1, title: "", video: "" });
+                    newChapter.units.push({ id: newChapter.units.length + 1, title: "", filname: "", video: "" });
                   })
                 );
               }}
             >
               單元++
-            </Button>
+            </PlusButton>
           </LauchFormLabel>
         ))}
         <Button type="submit">確認送出</Button>
@@ -717,31 +797,31 @@ function MyCourses() {
 
   return (
     <Wrapper>
-      <SideBar>
-        <SideBarSection>
-          <SideBarTitle>學生專區</SideBarTitle>
-          <SideBarLink>
+      <Bar>
+        <BarSection>
+          <BarTitle>學生專區</BarTitle>
+          <BarLink>
             <Link href="/myCourses/videoCourses">我的影音課程</Link>
-          </SideBarLink>
-          <SideBarLink>
+          </BarLink>
+          <BarLink>
             <Link href="/myCourses/studentCalendar">我的課表</Link>
-          </SideBarLink>
-        </SideBarSection>
+          </BarLink>
+        </BarSection>
         {userData.identity === "teacher" && (
-          <SideBarSection>
-            <SideBarTitle>老師專區</SideBarTitle>
-            <SideBarLink>
+          <BarSection>
+            <BarTitle>老師專區</BarTitle>
+            <BarLink>
               <Link href="/myCourses/launchedVideoCourses">已上架影音課程</Link>
-            </SideBarLink>
-            <SideBarLink>
+            </BarLink>
+            <BarLink>
               <Link href="/myCourses/launchVideoCourse">影音課程上架</Link>
-            </SideBarLink>
-            <SideBarLink>
+            </BarLink>
+            <BarLink>
               <Link href="/myCourses/teacherCalendar">排課行事曆</Link>
-            </SideBarLink>
-          </SideBarSection>
+            </BarLink>
+          </BarSection>
         )}
-      </SideBar>
+      </Bar>
       <Main>
         {router.query.category === "videoCourses" && <VideoCourses uid={userData.uid} />}
         {router.query.category === "launchVideoCourse" && <LaunchVideoCourse uid={userData.uid} />}

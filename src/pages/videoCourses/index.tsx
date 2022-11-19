@@ -10,8 +10,7 @@ import HalfStar from "../../../public/star-half.png";
 const Wrapper = styled.div`
   background-color: ${(props) => props.theme.colors.color1};
   min-height: calc(100vh - 100px);
-  padding-top: 40px;
-  padding-bottom: 20px;
+  padding: 40px 0;
 `;
 const Container = styled.div`
   max-width: 1280px;
@@ -21,9 +20,10 @@ const Container = styled.div`
   flex-direction: column;
 `;
 const CoursesList = styled.ul`
-  display: flex;
-  justify-content: center;
-  flex-wrap: wrap;
+  display: grid;
+  grid-template-columns: repeat(auto-fill, 300px);
+  grid-column-gap: calc((1024px - 900px) / 2);
+  grid-row-gap: 20px;
   width: 80%;
 `;
 const Course = styled.li`
@@ -31,12 +31,7 @@ const Course = styled.li`
   background-color: ${(props) => props.theme.colors.color1};
   border: 1px solid lightgray;
   border-radius: 5px;
-  margin-right: 20px;
-  margin-bottom: 20px;
   box-shadow: 0 0 5px #00000050;
-  &:nth-child(3n) {
-    margin-right: 0;
-  }
 `;
 const CourseCover = styled.div`
   position: relative;
