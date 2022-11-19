@@ -47,6 +47,7 @@ const BarLink = styled.li`
   font-size: 16px;
   margin-right: 20px;
   a {
+    text-align: center;
     transition: 0.2s color linear;
     color: ${(props) => props.theme.colors.color2};
     &:hover {
@@ -60,7 +61,7 @@ const Main = styled.div`
   justify-content: center;
   align-items: center;
 `;
-const LauchForm = styled.form`
+const LaunchForm = styled.form`
   display: flex;
   flex-direction: column;
   justify-content: center;
@@ -75,28 +76,28 @@ const LauchForm = styled.form`
   padding-bottom: 10px;
   margin: 0 auto;
 `;
-const LauchFormLabel = styled.label`
+const LaunchFormLabel = styled.label`
   display: flex;
   flex-direction: column;
   justify-content: center;
   align-items: center;
   margin-bottom: 20px;
 `;
-const LauchFormLabelText = styled.div`
+const LaunchFormLabelText = styled.div`
   display: flex;
   justify-content: space-between;
   align-items: center;
   margin-bottom: 10px;
   width: 100%;
 `;
-const LauchFormLabelInput = styled.input`
+const LaunchFormLabelInput = styled.input`
   display: block;
   width: 500px;
   line-height: 24px;
   padding-left: 5px;
   margin-bottom: 20px;
 `;
-const LauchFormLabelFile = styled.label`
+const LaunchFormLabelFile = styled.label`
   display: flex;
   justify-content: center;
   align-items: center;
@@ -115,7 +116,7 @@ const LaunchFormLabelFileButton = styled.div`
   margin: 0 auto;
   margin-bottom: 10px;
 `;
-const LauchFormLabelInputFile = styled.input`
+const LaunchFormLabelInputFile = styled.input`
   display: none;
   width: 500px;
   line-height: 24px;
@@ -611,20 +612,20 @@ function LaunchVideoCourse({ uid }: { uid: string }) {
 
   return (
     <>
-      <LauchForm onSubmit={handleSubmit}>
-        <LauchFormLabel>
-          <LauchFormLabelText>課程標題</LauchFormLabelText>
-          <LauchFormLabelInput
+      <LaunchForm onSubmit={handleSubmit}>
+        <LaunchFormLabel>
+          <LaunchFormLabelText>課程標題</LaunchFormLabelText>
+          <LaunchFormLabelInput
             value={courseName}
             required
             onChange={(e) => {
               setCourseName(e.target.value);
             }}
           />
-        </LauchFormLabel>
-        <LauchFormLabel>
-          <LauchFormLabelText>課程價格</LauchFormLabelText>
-          <LauchFormLabelInput
+        </LaunchFormLabel>
+        <LaunchFormLabel>
+          <LaunchFormLabelText>課程價格</LaunchFormLabelText>
+          <LaunchFormLabelInput
             type="number"
             step="50"
             min="0"
@@ -635,19 +636,19 @@ function LaunchVideoCourse({ uid }: { uid: string }) {
               setPrice(e.target.value);
             }}
           />
-        </LauchFormLabel>
-        <LauchFormLabel>
-          <LauchFormLabelText>課程描述</LauchFormLabelText>
+        </LaunchFormLabel>
+        <LaunchFormLabel>
+          <LaunchFormLabelText>課程描述</LaunchFormLabelText>
           <Editor
             content={introduction}
             setContent={setIntroduction}
             style={{ color: "#000", width: "500px", height: "300px", border: "1px solid gray" }}
             placeholder="請輸入課程簡介"
           />
-        </LauchFormLabel>
-        <LauchFormLabelFile>
+        </LaunchFormLabel>
+        <LaunchFormLabelFile>
           <LaunchFormLabelFileButton>上傳課程封面</LaunchFormLabelFileButton>
-          <LauchFormLabelInputFile
+          <LaunchFormLabelInputFile
             type="file"
             accept="image/*"
             required
@@ -656,13 +657,13 @@ function LaunchVideoCourse({ uid }: { uid: string }) {
               setCoverPreview(URL.createObjectURL(e.target.files[0]));
             }}
           />
-        </LauchFormLabelFile>
+        </LaunchFormLabelFile>
         {coverPreview && (
           <Image src={coverPreview} alt="cover" width={500} height={300} style={{ marginBottom: "20px" }} />
         )}
-        <LauchFormLabelFile>
+        <LaunchFormLabelFile>
           <LaunchFormLabelFileButton>上傳課程介紹影片</LaunchFormLabelFileButton>
-          <LauchFormLabelInputFile
+          <LaunchFormLabelInputFile
             type="file"
             accept="video/mp4,video/x-m4v,video/*"
             required
@@ -674,7 +675,7 @@ function LaunchVideoCourse({ uid }: { uid: string }) {
           {coursePreview && (
             <span style={{ fontSize: "14px", textAlign: "right", marginLeft: "5px" }}>{coursePreview}</span>
           )}
-        </LauchFormLabelFile>
+        </LaunchFormLabelFile>
         <PlusButton
           type="button"
           onClick={() => {
@@ -687,8 +688,8 @@ function LaunchVideoCourse({ uid }: { uid: string }) {
           課程章節++
         </PlusButton>
         {chapters.map((chapter, chapterIndex) => (
-          <LauchFormLabel key={chapter.id}>
-            <LauchFormLabelText>
+          <LaunchFormLabel key={chapter.id}>
+            <LaunchFormLabelText>
               章節{chapterIndex + 1}：{chapter.title}
               <RemoveIcon
                 src={Trash}
@@ -697,8 +698,8 @@ function LaunchVideoCourse({ uid }: { uid: string }) {
                   setChapters(chapters.filter((_, index) => index !== chapterIndex));
                 }}
               />
-            </LauchFormLabelText>
-            <LauchFormLabelInput
+            </LaunchFormLabelText>
+            <LaunchFormLabelInput
               value={chapter.title}
               required
               onChange={(e) => {
@@ -713,7 +714,7 @@ function LaunchVideoCourse({ uid }: { uid: string }) {
             />
             {chapter.units.map((unit, unitIndex) => (
               <div key={unit.id}>
-                <LauchFormLabelText>
+                <LaunchFormLabelText>
                   單元{unitIndex + 1}：{unit.title}
                   <RemoveIcon
                     src={Trash}
@@ -729,8 +730,8 @@ function LaunchVideoCourse({ uid }: { uid: string }) {
                       );
                     }}
                   />
-                </LauchFormLabelText>
-                <LauchFormLabelInput
+                </LaunchFormLabelText>
+                <LaunchFormLabelInput
                   value={unit.title}
                   required
                   onChange={(e) => {
@@ -743,10 +744,10 @@ function LaunchVideoCourse({ uid }: { uid: string }) {
                     );
                   }}
                 />
-                <LauchFormLabelFile>
+                <LaunchFormLabelFile>
                   <span>影片上傳</span>
                   <Image src={Upload} alt="upload" width={20} height={20} style={{ margin: "0 5px" }} />
-                  <LauchFormLabelInputFile
+                  <LaunchFormLabelInputFile
                     type="file"
                     accept="video/mp4,video/x-m4v,video/*"
                     data-chapter={chapterIndex}
@@ -765,7 +766,7 @@ function LaunchVideoCourse({ uid }: { uid: string }) {
                   {chapter && (
                     <p style={{ fontSize: "14px", textAlign: "center" }}>{chapter.units[unitIndex].filname}</p>
                   )}
-                </LauchFormLabelFile>
+                </LaunchFormLabelFile>
               </div>
             ))}
             <PlusButton
@@ -782,18 +783,109 @@ function LaunchVideoCourse({ uid }: { uid: string }) {
             >
               單元++
             </PlusButton>
-          </LauchFormLabel>
+          </LaunchFormLabel>
         ))}
         <Button type="submit">確認送出</Button>
-      </LauchForm>
+      </LaunchForm>
       {showMemberModal && <UploadProgressModal progressBar={progressBar} />}
     </>
   );
 }
+function BeTeacher({
+  uid,
+  setUserData,
+}: {
+  uid: string;
+  setUserData: React.Dispatch<
+    React.SetStateAction<{
+      uid: string;
+      email: string;
+      identity: string;
+      username: string;
+      avatar: string;
+    }>
+  >;
+}) {
+  const router = useRouter();
+  const [teacherIntroduction, setTeacherIntroduction] = useState("");
+  const [teacherExprience, setTeacherExprience] = useState("");
+  const [certificate, setCertificate] = useState("");
 
+  const handleSubmit = (e: React.FormEvent<HTMLFormElement>) => {
+    e.preventDefault();
+    if (!teacherIntroduction.trim() || !teacherExprience.trim()) alert("請輸入自我介紹及教學經歷");
+    const target = e.target as HTMLInputElement;
+    const fileInput = target.querySelector("input[type=file]") as HTMLInputElement;
+    if (fileInput.files) {
+      const file = fileInput?.files[0];
+      if (!file) {
+        alert("請上傳證照唷");
+        return;
+      }
+      const storageRef = ref(storage, `certificate/${uid}-${file.name}`);
+      const uploadTask = uploadBytesResumable(storageRef, file);
+      uploadTask.on(
+        "state_changed",
+        () => {},
+        (error) => {
+          alert(error);
+        },
+        () => {
+          getDownloadURL(uploadTask.snapshot.ref).then(async (downloadURL) => {
+            const docRef = doc(db, "users", uid);
+            await updateDoc(docRef, {
+              identity: "teacher",
+              certificate: downloadURL,
+              teacher_introduction: teacherIntroduction,
+              teacher_exprience: teacherExprience,
+            });
+            setUserData((prev) => ({ ...prev, identity: "teacher" }));
+            alert("恭喜成為老師～可以開始排課囉！");
+            router.push("/myCourses/teacherCalendar");
+          });
+        }
+      );
+    }
+  };
+  return (
+    <LaunchForm onSubmit={handleSubmit}>
+      <LaunchFormLabel>
+        <LaunchFormLabelText>自我介紹：</LaunchFormLabelText>
+        <Editor
+          content={teacherIntroduction}
+          setContent={setTeacherIntroduction}
+          style={{ width: "500px", height: "300px", border: "1px solid gray", marginBottom: "10px" }}
+          placeholder="簡短介紹讓同學認識～"
+        />
+      </LaunchFormLabel>
+      <LaunchFormLabel>
+        <LaunchFormLabelText>師資班及教學經歷：</LaunchFormLabelText>
+        <Editor
+          content={teacherExprience}
+          setContent={setTeacherExprience}
+          style={{ width: "500px", height: "300px", border: "1px solid gray", marginBottom: "10px" }}
+          placeholder="簡短描述過往經歷～"
+        />
+      </LaunchFormLabel>
+      <LaunchFormLabelFile>
+        <LaunchFormLabelFileButton>證照上傳</LaunchFormLabelFileButton>
+        <LaunchFormLabelInputFile
+          type="file"
+          accept="image/*, application/pdf"
+          onChange={(e) => {
+            if (!e.target.files) return;
+            setCertificate(URL.createObjectURL(e.target.files[0]));
+          }}
+        />
+      </LaunchFormLabelFile>
+      {certificate && <Image src={certificate} alt="cover" width={500} height={300} style={{ marginBottom: "20px" }} />}
+      <Button type="submit">送出</Button>
+    </LaunchForm>
+  );
+}
 function MyCourses() {
   const router = useRouter();
-  const { userData } = useContext(AuthContext);
+  const { userData, setUserData } = useContext(AuthContext);
 
   return (
     <Wrapper>
@@ -804,17 +896,20 @@ function MyCourses() {
             <Link href="/myCourses/videoCourses">我的影音課程</Link>
           </BarLink>
           <BarLink>
-            <Link href="/myCourses/studentCalendar">我的課表</Link>
+            <Link href="/myCourses/studentCalendar">已預約的課表</Link>
+          </BarLink>
+          <BarLink>
+            <Link href="/myCourses/beTeacher">我要當老師</Link>
           </BarLink>
         </BarSection>
         {userData.identity === "teacher" && (
           <BarSection>
             <BarTitle>老師專區</BarTitle>
             <BarLink>
-              <Link href="/myCourses/launchedVideoCourses">已上架影音課程</Link>
+              <Link href="/myCourses/launchVideoCourse">影音課程上架</Link>
             </BarLink>
             <BarLink>
-              <Link href="/myCourses/launchVideoCourse">影音課程上架</Link>
+              <Link href="/myCourses/launchedVideoCourses">已上架影音課</Link>
             </BarLink>
             <BarLink>
               <Link href="/myCourses/teacherCalendar">排課行事曆</Link>
@@ -836,6 +931,7 @@ function MyCourses() {
             <StudentCalendar userData={userData} />
           </CalendarWrapper>
         )}
+        {router.query.category === "beTeacher" && <BeTeacher uid={userData.uid} setUserData={setUserData} />}
       </Main>
     </Wrapper>
   );
