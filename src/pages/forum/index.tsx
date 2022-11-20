@@ -1,13 +1,16 @@
 import Image from "next/image";
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useContext } from "react";
 import styled from "styled-components";
 import { useRouter } from "next/router";
+import { useRecoilState } from "recoil";
 import { collection, doc, getDoc, getDocs, query, orderBy } from "firebase/firestore";
 import BannerPic from "../../../public/yoga-beach.jpeg";
 import LikeIcon from "../../../public/like.png";
 import MessageIcon from "../../../public/message.png";
 import Avatar from "../../../public/member.png";
 import { db } from "../../../lib/firebase";
+import { AuthContext } from "../../contexts/authContext";
+import { showMemberModalState } from "../../../lib/recoil";
 
 const Wrapper = styled.div`
   background-color: ${(props) => props.theme.colors.color1};
@@ -160,6 +163,8 @@ interface PostInterface {
 function Forum() {
   const router = useRouter();
   const [posts, setPosts] = useState<PostInterface[]>([]);
+  const [showMemberModal, setShowMemberModal] = useRecoilState(showMemberModalState);
+  const { isLogin } = useContext(AuthContext);
 
   useEffect(() => {
     const getPosts = async () => {
@@ -255,6 +260,11 @@ function Forum() {
           </AsideContent>
           <Button
             onClick={() => {
+              if (!isLogin) {
+                alert("登入後才能發問唷！");
+                setShowMemberModal(true);
+                return;
+              }
               router.push("/forum/post");
             }}
           >

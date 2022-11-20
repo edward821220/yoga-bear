@@ -20,7 +20,7 @@ import { collection, getDocs, query, where, doc, updateDoc, arrayUnion } from "f
 import { useRecoilState } from "recoil";
 import { db } from "../../../lib/firebase";
 import { AuthContext } from "../../contexts/authContext";
-import { bearMoneyState } from "../../../lib/recoil";
+import { bearMoneyState, showMemberModalState } from "../../../lib/recoil";
 import resources from "./resources";
 import ReserveButton from "../../../public/reserve.png";
 
@@ -92,42 +92,47 @@ function BasicLayout({ onFieldChange, appointmentData, ...restProps }: Appointme
 function Header({ appointmentData, ...restProps }: AppointmentTooltip.HeaderProps) {
   const { userData, isLogin } = useContext(AuthContext);
   const { username, email } = userData;
+  const [showMemberModal, setShowMemberModal] = useRecoilState(showMemberModalState);
   const [bearMoney, setBearMoney] = useRecoilState(bearMoneyState);
+  const isEnded = Date.now() > Date.parse(appointmentData?.endDate as string);
 
   return (
     <AppointmentTooltip.Header {...restProps} appointmentData={appointmentData}>
-      <ReserveButtonWrapper>
-        <Image
-          src={ReserveButton}
-          alt="reserve-btn"
-          width={36}
-          onClick={() => {
-            if (!isLogin) {
-              alert("先登入才能預約課程唷！");
-              return;
-            }
-            if (!appointmentData) return;
-            const price = Number(appointmentData.price as string) || 0;
-            const confirm = window.confirm(`確定要預約嗎？將扣除 ${price} 元熊幣`);
-            if (!confirm) return;
-            const roomRef = doc(db, "rooms", appointmentData.id as string);
-            updateDoc(roomRef, {
-              students: arrayUnion({ username, email }),
-            });
-            if (price > bearMoney) {
-              alert("熊幣餘額不足唷！請加值～");
-              return;
-            }
-            setBearMoney((prev) => prev - price);
-            const docRef = doc(db, "users", userData.uid);
-            updateDoc(docRef, {
-              cartItems: [],
-              bearMoney: bearMoney - price,
-            });
-            alert("您已預約成功！");
-          }}
-        />
-      </ReserveButtonWrapper>
+      {isEnded || (
+        <ReserveButtonWrapper>
+          <Image
+            src={ReserveButton}
+            alt="reserve-btn"
+            width={36}
+            onClick={() => {
+              if (!isLogin) {
+                alert("先登入才能預約課程唷！");
+                setShowMemberModal(true);
+                return;
+              }
+              if (!appointmentData) return;
+              const price = Number(appointmentData.price as string) || 0;
+              const confirm = window.confirm(`確定要預約嗎？將扣除 ${price} 元熊幣`);
+              if (!confirm) return;
+              const roomRef = doc(db, "rooms", appointmentData.id as string);
+              updateDoc(roomRef, {
+                students: arrayUnion({ username, email }),
+              });
+              if (price > bearMoney) {
+                alert("熊幣餘額不足唷！請加值～");
+                return;
+              }
+              setBearMoney((prev) => prev - price);
+              const docRef = doc(db, "users", userData.uid);
+              updateDoc(docRef, {
+                cartItems: [],
+                bearMoney: bearMoney - price,
+              });
+              alert("您已預約成功！");
+            }}
+          />
+        </ReserveButtonWrapper>
+      )}
     </AppointmentTooltip.Header>
   );
 }

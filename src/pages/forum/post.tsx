@@ -138,16 +138,22 @@ const formats = [
 function Post() {
   const [title, setTitle] = useState("");
   const [content, setContent] = useState("");
-  const { userData } = useContext(AuthContext);
+  const { isLogin, userData } = useContext(AuthContext);
   const router = useRouter();
   const quillRef = useRef<ReactQuill>(null);
 
   const handlePost = async () => {
+    if (!isLogin) {
+      alert("登入後才能發問唷！");
+      return;
+    }
     if (!title.trim()) {
       alert("請輸入標題");
+      return;
     }
     if (!content.trim()) {
       alert("請輸入內容");
+      return;
     }
     const newPostRef = doc(collection(db, "posts"));
     await setDoc(newPostRef, {

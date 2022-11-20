@@ -9,7 +9,7 @@ import { ref, uploadBytesResumable, getDownloadURL } from "firebase/storage";
 import Modal from "./modal";
 import Editor from "./editor";
 import { AuthContext } from "../contexts/authContext";
-import { orderQtyState, bearMoneyState } from "../../lib/recoil";
+import { orderQtyState, bearMoneyState, showMemberModalState } from "../../lib/recoil";
 import { db, storage } from "../../lib/firebase";
 import BearLogo from "../../public/bear-logo2.png";
 import CartLogo from "../../public/cart.png";
@@ -619,8 +619,8 @@ function PaymentModal({ setShowPaymentModal, bearMoney, setBearMoney, userId }: 
 }
 
 function Header() {
-  const [showMemberModal, setShowMemberModal] = useState(false);
   const [showPaymentModal, setShowPaymentModal] = useState(false);
+  const [showMemberModal, setShowMemberModal] = useRecoilState(showMemberModalState);
   const [orderQty, setOrderQty] = useRecoilState(orderQtyState);
   const [bearMoney, setBearMoney] = useRecoilState(bearMoneyState);
   const { signup, isLogin, login, logout, userData, setUserData } = useContext(AuthContext);

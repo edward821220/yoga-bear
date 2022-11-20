@@ -2,10 +2,12 @@ import React, { useState, useEffect, useContext } from "react";
 import { useRouter } from "next/router";
 import Image from "next/image";
 import styled from "styled-components";
+import { useRecoilState } from "recoil";
 import { doc, getDoc, updateDoc, arrayUnion, arrayRemove } from "firebase/firestore";
 import produce from "immer";
 import { db } from "../../../../lib/firebase";
 import { AuthContext } from "../../../contexts/authContext";
+import { showMemberModalState } from "../../../../lib/recoil";
 import Avatar from "../../../../public/member.png";
 import LikeQtyIcon from "../../../../public/like.png";
 import MessageIcon from "../../../../public/message.png";
@@ -211,6 +213,7 @@ interface ArticleInterface {
 function Article() {
   const router = useRouter();
   const { id } = router.query;
+  const [showMemberModal, setShowMemberModal] = useRecoilState(showMemberModalState);
   const [article, setArticle] = useState<ArticleInterface>({
     time: "",
     title: "",
@@ -268,6 +271,7 @@ function Article() {
     if (typeof id !== "string") return;
     if (!isLogin) {
       alert("登入後才能按讚唷！");
+      setShowMemberModal(true);
       return;
     }
     setArticle(
@@ -294,6 +298,7 @@ function Article() {
     if (typeof id !== "string") return;
     if (!isLogin) {
       alert("登入後才能按讚唷！");
+      setShowMemberModal(true);
       return;
     }
     const updatedArticle = produce(article, (draft) => {
@@ -317,6 +322,7 @@ function Article() {
   const handleMessage = async () => {
     if (!isLogin) {
       alert("登入後才能留言唷！");
+      setShowMemberModal(true);
       return;
     }
     if (!inputMessage.trim()) {

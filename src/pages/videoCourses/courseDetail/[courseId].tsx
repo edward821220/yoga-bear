@@ -7,7 +7,7 @@ import { useRecoilState } from "recoil";
 import { FullScreen, useFullScreenHandle } from "react-full-screen";
 import { db } from "../../../../lib/firebase";
 import { AuthContext } from "../../../contexts/authContext";
-import { orderQtyState } from "../../../../lib/recoil";
+import { orderQtyState, showMemberModalState } from "../../../../lib/recoil";
 import Lock from "../../../../public/lock.png";
 import Play from "../../../../public/play.png";
 import Pause from "../../../../public/pause.png";
@@ -744,6 +744,7 @@ function CourseInfo() {
   const [reviewsUsersDatas, setReviewsUsersDatas] = useState<{ index: number; username: string; avatar: string }[]>([]);
   const { isLogin, userData } = useContext(AuthContext);
   const [orderQty, setOrderQty] = useRecoilState(orderQtyState);
+  const [showMemberModal, setShowMemberModal] = useRecoilState(showMemberModalState);
 
   useEffect(() => {
     const getBoughtCourses = async () => {
@@ -805,6 +806,7 @@ function CourseInfo() {
   const addToCart = async () => {
     if (!isLogin) {
       alert("請先登入唷！");
+      setShowMemberModal(true);
       return;
     }
     const userRef = doc(db, "users", userData.uid);
