@@ -1,6 +1,7 @@
 import React, { useState, useContext, useRef, useMemo, useCallback } from "react";
 import dynamic from "next/dynamic";
 import styled from "styled-components";
+import Swal from "sweetalert2";
 import Image from "next/image";
 import { collection, doc, setDoc } from "firebase/firestore";
 import { ref, uploadBytesResumable, getDownloadURL } from "firebase/storage";
@@ -144,15 +145,15 @@ function Post() {
 
   const handlePost = async () => {
     if (!isLogin) {
-      alert("登入後才能發問唷！");
+      Swal.fire({ title: "登入後才能發問唷！", confirmButtonColor: "#5d7262" });
       return;
     }
     if (!title.trim()) {
-      alert("請輸入標題");
+      Swal.fire({ title: "請輸入標題！", confirmButtonColor: "#5d7262" });
       return;
     }
     if (!content.trim()) {
-      alert("請輸入內容");
+      Swal.fire({ title: "請輸入內容！", confirmButtonColor: "#5d7262" });
       return;
     }
     const newPostRef = doc(collection(db, "posts"));
@@ -163,7 +164,7 @@ function Post() {
       content,
       time: Date.now(),
     });
-    alert("您已成功提問！");
+    Swal.fire({ title: "您已成功提問！", confirmButtonColor: "#5d7262" });
     router.push("/forum");
   };
 
@@ -181,8 +182,8 @@ function Post() {
       uploadTask.on(
         "state_changed",
         () => {},
-        (error) => {
-          alert(error);
+        () => {
+          Swal.fire({ text: "上傳失敗！請再試一次", confirmButtonColor: "#5d7262" });
         },
         async () => {
           const downloadUrl = await getDownloadURL(uploadTask.snapshot.ref);

@@ -1,4 +1,5 @@
 import React, { useEffect, useRef, useState } from "react";
+import Swal from "sweetalert2";
 import Pusher, { Members, PresenceChannel } from "pusher-js";
 import { useRouter } from "next/router";
 import styled from "styled-components";
@@ -102,7 +103,9 @@ function StudentRoom() {
 
       // We implement our onTrack method for when we receive tracks
       connection.ontrack = handleTrackEvent;
-      connection.onicecandidateerror = (e) => alert(e);
+      connection.onicecandidateerror = () => {
+        Swal.fire({ text: "發生錯誤，請再試一次！", confirmButtonColor: "#5d7262" });
+      };
       return connection;
     };
     const handleRoomJoined = () => {
@@ -124,9 +127,9 @@ function StudentRoom() {
             channelRef.current.trigger("client-ready", {});
           }
         })
-        .catch((err) => {
+        .catch(() => {
           /* handle the error */
-          alert(err);
+          Swal.fire({ text: "發生錯誤，請再試一次！", confirmButtonColor: "#5d7262" });
         });
     };
     const handlePeerLeaving = () => {
@@ -162,8 +165,8 @@ function StudentRoom() {
             // This options needs to be turned on in Pusher app settings
             channelRef.current?.trigger("client-offer", offer);
           })
-          .catch((error) => {
-            alert(error);
+          .catch(() => {
+            Swal.fire({ text: "發生錯誤，請再試一次！", confirmButtonColor: "#5d7262" });
           });
       }
     };
@@ -184,8 +187,8 @@ function StudentRoom() {
           rtcConnection.current.setLocalDescription(answer);
           channelRef.current?.trigger("client-answer", answer);
         })
-        .catch((error) => {
-          alert(error);
+        .catch(() => {
+          Swal.fire({ text: "發生錯誤，請再試一次！", confirmButtonColor: "#5d7262" });
         });
     };
     // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
@@ -202,7 +205,7 @@ function StudentRoom() {
     channelRef.current.bind("pusher:subscription_succeeded", (members: Members) => {
       if (members.count === 1) {
         // when subscribing, if you are the first member, you are the host
-        alert("老師還沒來唷！請稍候再進教室～");
+        Swal.fire({ text: "老師還沒來唷！請稍候再進教室～", confirmButtonColor: "#5d7262" });
         router.push("/myCourses/studentCalendar");
       }
       handleRoomJoined();

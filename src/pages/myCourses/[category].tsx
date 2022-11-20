@@ -1,5 +1,6 @@
 import React, { useContext, useEffect, useState } from "react";
 import styled from "styled-components";
+import Swal from "sweetalert2";
 import produce from "immer";
 import Link from "next/link";
 import Image from "next/image";
@@ -388,7 +389,7 @@ function VideoCourses({ uid }: { uid: string }) {
                   type="button"
                   onClick={async () => {
                     if (score === 0) {
-                      alert("請點選星星評分");
+                      Swal.fire({ title: "請點選星星評分", confirmButtonColor: "#5d7262" });
                       return;
                     }
                     const courseRef = doc(db, "video_courses", course.id);
@@ -399,7 +400,7 @@ function VideoCourses({ uid }: { uid: string }) {
                         comments,
                       }),
                     });
-                    alert("感謝您的評論～您的支持是我們最大的動力！");
+                    Swal.fire({ text: "感謝您的評論～您的支持是我們最大的動力！", confirmButtonColor: "#5d7262" });
                     setCourses(
                       produce((draft) => {
                         if (!draft) return;
@@ -496,7 +497,7 @@ function LaunchedVideoCourses({ uid }: { uid: string }) {
 }
 function UploadProgressModal({ progressBar }: { progressBar: { file: string; progress: number } }) {
   const handleClose = () => {
-    alert("課程上傳中，請勿關閉視窗！");
+    Swal.fire({ text: "課程上傳中，請勿關閉視窗！", confirmButtonColor: "#5d7262" });
   };
   return (
     <Modal handleClose={handleClose}>
@@ -608,7 +609,7 @@ function LaunchVideoCourse({ uid }: { uid: string }) {
       launchTime: Date.now(),
     });
     setShowMemberModal(false);
-    alert("課程上架完成！");
+    Swal.fire({ title: "課程上架完成！", confirmButtonColor: "#5d7262" });
     router.push("/myCourses/launchedVideoCourses");
   };
 
@@ -815,13 +816,16 @@ function BeTeacher({
 
   const handleSubmit = (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
-    if (!teacherIntroduction.trim() || !teacherExprience.trim()) alert("請輸入自我介紹及教學經歷");
+    if (!teacherIntroduction.trim() || !teacherExprience.trim())
+      Swal.fire({ text: "請輸入自我介紹及教學經歷", confirmButtonColor: "#5d7262" });
+
     const target = e.target as HTMLInputElement;
     const fileInput = target.querySelector("input[type=file]") as HTMLInputElement;
     if (fileInput.files) {
       const file = fileInput?.files[0];
       if (!file) {
-        alert("請上傳證照唷");
+        Swal.fire({ title: "請上傳證照唷！", confirmButtonColor: "#5d7262" });
+
         return;
       }
       const storageRef = ref(storage, `certificate/${uid}-${file.name}`);
@@ -829,8 +833,8 @@ function BeTeacher({
       uploadTask.on(
         "state_changed",
         () => {},
-        (error) => {
-          alert(error);
+        () => {
+          Swal.fire({ text: "上傳失敗，請再試一次！", confirmButtonColor: "#5d7262" });
         },
         () => {
           getDownloadURL(uploadTask.snapshot.ref).then(async (downloadURL) => {
@@ -843,7 +847,7 @@ function BeTeacher({
               beTeacherTime: Date.now(),
             });
             setUserData((prev) => ({ ...prev, identity: "teacher" }));
-            alert("恭喜成為老師～可以開始排課囉！");
+            Swal.fire({ text: "恭喜成為老師～可以開始排課囉！", confirmButtonColor: "#5d7262" });
             router.push("/myCourses/teacherCalendar");
           });
         }

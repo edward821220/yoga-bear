@@ -2,6 +2,7 @@ import React, { useState, useContext, useEffect, Dispatch, SetStateAction } from
 import Link from "next/link";
 import Image from "next/image";
 import styled from "styled-components";
+import Swal from "sweetalert2";
 import { useRouter } from "next/router";
 import { useRecoilState, SetterOrUpdater } from "recoil";
 import { getDoc, doc, updateDoc } from "firebase/firestore";
@@ -325,7 +326,7 @@ function MemberModal({
       return;
     }
     handleClose();
-    alert("恭喜您登入成功!");
+    Swal.fire({ title: "恭喜您登入成功!", confirmButtonColor: "#5d7262" });
   };
   const handleSignup = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
@@ -352,8 +353,8 @@ function MemberModal({
       uploadTask.on(
         "state_changed",
         () => {},
-        (error) => {
-          alert(error);
+        () => {
+          Swal.fire({ text: "上傳失敗！請再試一次", confirmButtonColor: "#5d7262" });
         },
         () => {
           getDownloadURL(uploadTask.snapshot.ref).then((downloadURL) => {
@@ -370,7 +371,7 @@ function MemberModal({
     }
     setNeedSignup(false);
     handleClose();
-    alert("恭喜您註冊成功!");
+    Swal.fire({ title: "恭喜您註冊成功！", confirmButtonColor: "#5d7262" });
   };
   const handleUploadAvatar = (e: React.FormEvent<HTMLLabelElement>): void => {
     const target = e.target as HTMLInputElement;
@@ -381,8 +382,8 @@ function MemberModal({
     uploadTask.on(
       "state_changed",
       () => {},
-      (error) => {
-        alert(error);
+      () => {
+        Swal.fire({ text: "上傳失敗！請再試一次", confirmButtonColor: "#5d7262" });
       },
       () => {
         getDownloadURL(uploadTask.snapshot.ref).then((downloadURL) => {
@@ -553,19 +554,19 @@ function PaymentModal({ setShowPaymentModal, bearMoney, setBearMoney, userId }: 
   const handleSubmit = (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
     if (!paymentData.cardNumber.match(isValidCardNumber)) {
-      alert("請輸入正確的信用卡格式");
+      Swal.fire({ title: "請輸入正確的信用卡格式", confirmButtonColor: "#5d7262" });
       return;
     }
     if (!paymentData.expiration.match(isValidExpiration)) {
-      alert("請輸入正確的信用卡期限");
+      Swal.fire({ title: "請輸入正確的信用卡期限", confirmButtonColor: "#5d7262" });
       return;
     }
     if (!paymentData.cvv.match(isValidCCV)) {
-      alert("請輸入正確的信用卡安全碼");
+      Swal.fire({ title: "請輸入正確的信用卡號碼", confirmButtonColor: "#5d7262" });
       return;
     }
     setBearMoney((prev) => prev + Number(paymentData.money));
-    alert("儲值成功！可以上課囉！");
+    Swal.fire({ title: "儲值成功！可以上課囉！", confirmButtonColor: "#5d7262" });
     setShowPaymentModal(false);
     const docRef = doc(db, "users", userId);
     updateDoc(docRef, {
@@ -663,7 +664,7 @@ function Header() {
           <MycoursesLink
             onClick={() => {
               if (!isLogin) {
-                alert("您還沒登入唷！");
+                Swal.fire({ title: "您還沒登入唷！", confirmButtonColor: "#5d7262" });
                 setShowMemberModal(true);
                 return;
               }
@@ -684,7 +685,7 @@ function Header() {
             onClick={() => {
               if (!isLogin) {
                 setShowPaymentModal(false);
-                alert("您還沒登入唷！");
+                Swal.fire({ title: "您還沒登入唷！", confirmButtonColor: "#5d7262" });
                 setShowMemberModal(true);
                 return;
               }
@@ -701,7 +702,7 @@ function Header() {
             alt="cart"
             onClick={() => {
               if (!isLogin) {
-                alert("您還沒登入唷！");
+                Swal.fire({ title: "您還沒登入唷！", confirmButtonColor: "#5d7262" });
                 setShowMemberModal(true);
                 return;
               }

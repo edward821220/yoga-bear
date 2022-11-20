@@ -3,6 +3,7 @@ import Image from "next/image";
 import { doc, getDoc } from "firebase/firestore";
 import { useRouter } from "next/router";
 import styled from "styled-components";
+import Swal from "sweetalert2";
 import { FullScreen, useFullScreenHandle } from "react-full-screen";
 import { db } from "../../../../../lib/firebase";
 import { AuthContext } from "../../../../contexts/authContext";
@@ -748,7 +749,7 @@ function VideoRoom() {
         const courses = docSnap.data().boughtCourses as string[];
         setBoughtCourses(courses);
         if (!courses.includes(courseId)) {
-          alert("您沒有購買此課程唷～");
+          Swal.fire({ text: "您沒有購買此課程唷！", confirmButtonColor: "#5d7262" });
           router.push("/");
         }
       }
@@ -813,7 +814,7 @@ function VideoRoom() {
       setSelectUnit(0);
       setSelectChpter((prev) => prev + 1);
     } else {
-      alert("恭喜您完課!");
+      Swal.fire({ text: "恭喜您完課！", confirmButtonColor: "#5d7262" });
     }
   };
 

@@ -1,6 +1,7 @@
 import React, { createContext, useState, useEffect, useMemo } from "react";
 import { createUserWithEmailAndPassword, signInWithEmailAndPassword, signOut, onAuthStateChanged } from "firebase/auth";
 import { doc, setDoc, getDoc } from "firebase/firestore";
+import Swal from "sweetalert2";
 import { auth, db } from "../../lib/firebase";
 
 interface AuthContextInterface {
@@ -90,7 +91,7 @@ export function AuthContextProvider({ children }: { children: React.ReactNode })
     signOut(auth);
     setIsLogin(false);
     setUserData({ uid: "", email: "", identity: "", username: "", avatar: "" });
-    alert("您已登出帳號！");
+    Swal.fire({ title: "您已登出帳號！", confirmButtonColor: "#5d7262" });
   };
 
   return (

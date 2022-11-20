@@ -2,6 +2,7 @@ import React, { useState, useEffect, useContext } from "react";
 import styled from "styled-components";
 import Paper from "@mui/material/Paper";
 import Image from "next/image";
+import Swal from "sweetalert2";
 import { ViewState, EditingState, IntegratedEditing, AppointmentModel } from "@devexpress/dx-react-scheduler";
 import {
   Scheduler,
@@ -106,29 +107,38 @@ function Header({ appointmentData, ...restProps }: AppointmentTooltip.HeaderProp
             width={36}
             onClick={() => {
               if (!isLogin) {
-                alert("先登入才能預約課程唷！");
+                Swal.fire({ title: "您還沒登入唷！", confirmButtonColor: "#5d7262" });
                 setShowMemberModal(true);
                 return;
               }
               if (!appointmentData) return;
               const price = Number(appointmentData.price as string) || 0;
-              const confirm = window.confirm(`確定要預約嗎？將扣除 ${price} 元熊幣`);
-              if (!confirm) return;
-              const roomRef = doc(db, "rooms", appointmentData.id as string);
-              updateDoc(roomRef, {
-                students: arrayUnion({ username, email }),
+              Swal.fire({
+                text: `確定要預約嗎？將扣除 ${price} 元熊幣`,
+                icon: "warning",
+                showCancelButton: true,
+                confirmButtonColor: "#3085d6",
+                cancelButtonColor: "#d33",
+                confirmButtonText: "Yes!",
+              }).then((result) => {
+                if (result.isConfirmed) {
+                  const roomRef = doc(db, "rooms", appointmentData.id as string);
+                  updateDoc(roomRef, {
+                    students: arrayUnion({ username, email }),
+                  });
+                  if (price > bearMoney) {
+                    Swal.fire({ title: "熊幣餘額不足唷！請加值～", confirmButtonColor: "#5d7262" });
+                    return;
+                  }
+                  setBearMoney((prev) => prev - price);
+                  const docRef = doc(db, "users", userData.uid);
+                  updateDoc(docRef, {
+                    cartItems: [],
+                    bearMoney: bearMoney - price,
+                  });
+                  Swal.fire("您已預約成功！", "請到我的課程查看課表", "success");
+                }
               });
-              if (price > bearMoney) {
-                alert("熊幣餘額不足唷！請加值～");
-                return;
-              }
-              setBearMoney((prev) => prev - price);
-              const docRef = doc(db, "users", userData.uid);
-              updateDoc(docRef, {
-                cartItems: [],
-                bearMoney: bearMoney - price,
-              });
-              alert("您已預約成功！");
             }}
           />
         </ReserveButtonWrapper>

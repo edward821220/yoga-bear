@@ -2,6 +2,7 @@ import React, { useState, useEffect, useContext } from "react";
 import { useRouter } from "next/router";
 import Image from "next/image";
 import styled from "styled-components";
+import Swal from "sweetalert2";
 import { useRecoilState } from "recoil";
 import { doc, getDoc, updateDoc, arrayUnion, arrayRemove } from "firebase/firestore";
 import produce from "immer";
@@ -270,7 +271,7 @@ function Article() {
   const handleLikeArticle = async () => {
     if (typeof id !== "string") return;
     if (!isLogin) {
-      alert("登入後才能按讚唷！");
+      Swal.fire({ title: "登入後才能按讚唷！", confirmButtonColor: "#5d7262" });
       setShowMemberModal(true);
       return;
     }
@@ -297,7 +298,7 @@ function Article() {
   const handleLikeMessage = (index: number) => {
     if (typeof id !== "string") return;
     if (!isLogin) {
-      alert("登入後才能按讚唷！");
+      Swal.fire({ title: "登入後才能按讚唷！", confirmButtonColor: "#5d7262" });
       setShowMemberModal(true);
       return;
     }
@@ -321,12 +322,12 @@ function Article() {
 
   const handleMessage = async () => {
     if (!isLogin) {
-      alert("登入後才能留言唷！");
+      Swal.fire({ title: "登入後才能留言唷！", confirmButtonColor: "#5d7262" });
       setShowMemberModal(true);
       return;
     }
     if (!inputMessage.trim()) {
-      alert("請輸入內容");
+      Swal.fire({ title: "請輸入內容！", confirmButtonColor: "#5d7262" });
       return;
     }
     if (typeof id !== "string") return;

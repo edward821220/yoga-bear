@@ -3,6 +3,7 @@ import Image from "next/image";
 import { doc, getDoc, updateDoc, arrayUnion } from "firebase/firestore";
 import { useRouter } from "next/router";
 import styled from "styled-components";
+import Swal from "sweetalert2";
 import { useRecoilState } from "recoil";
 import { FullScreen, useFullScreenHandle } from "react-full-screen";
 import { db } from "../../../../lib/firebase";
@@ -805,7 +806,7 @@ function CourseInfo() {
 
   const addToCart = async () => {
     if (!isLogin) {
-      alert("請先登入唷！");
+      Swal.fire({ title: "請先登入唷！", confirmButtonColor: "#5d7262" });
       setShowMemberModal(true);
       return;
     }
@@ -819,7 +820,7 @@ function CourseInfo() {
         price: courseData.price,
       }),
     });
-    alert("已加入購物車");
+    Swal.fire({ title: "已加入購物車！", confirmButtonColor: "#5d7262" });
     const docSnap = await getDoc(userRef);
     if (docSnap.exists()) {
       // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access

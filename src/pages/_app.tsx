@@ -28,6 +28,9 @@ a {
   text-decoration: none;
   color: #000000;
 }
+.swal2-container {
+    z-index: 10000 !important;    
+}
 `;
 const theme: DefaultTheme = {
   colors: {

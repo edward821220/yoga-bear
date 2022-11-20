@@ -1,6 +1,7 @@
 import React, { useState, useEffect, useContext } from "react";
 import { getDoc, doc, updateDoc, arrayRemove, arrayUnion } from "firebase/firestore";
 import styled from "styled-components";
+import Swal from "sweetalert2";
 import Image from "next/image";
 import { useRecoilState } from "recoil";
 import { useRouter } from "next/router";
@@ -132,30 +133,39 @@ function Cart() {
 
   const handleCheckout = () => {
     if (!subtotal) {
-      alert("購物車沒東東唷！");
+      Swal.fire({ title: "購物車沒東東唷！", confirmButtonColor: "#5d7262" });
       return;
     }
-    const confirm = window.confirm("確定要購買嗎？");
-    if (!confirm) return;
-    if (subtotal > bearMoney) {
-      alert("熊幣餘額不足唷！請加值～");
-    } else {
-      setBearMoney((prev) => prev - subtotal);
-      setCartItems([]);
-      const docRef = doc(db, "users", uid);
-      updateDoc(docRef, {
-        cartItems: [],
-        bearMoney: bearMoney - subtotal,
-      });
-      cartItems?.forEach((item) => {
-        updateDoc(docRef, {
-          boughtCourses: arrayUnion(item.id),
-        });
-      });
-      alert("購買成功！可以去上課囉～");
-      setOrderQty(0);
-      router.push("/myCourses/videoCourses");
-    }
+    Swal.fire({
+      text: "確定要購買嗎？",
+      icon: "warning",
+      showCancelButton: true,
+      confirmButtonColor: "#3085d6",
+      cancelButtonColor: "#d33",
+      confirmButtonText: "Yes!",
+    }).then((result) => {
+      if (result.isConfirmed) {
+        if (subtotal > bearMoney) {
+          Swal.fire({ text: "熊幣餘額不足唷！請加值～", confirmButtonColor: "#5d7262" });
+        } else {
+          setBearMoney((prev) => prev - subtotal);
+          setCartItems([]);
+          const docRef = doc(db, "users", uid);
+          updateDoc(docRef, {
+            cartItems: [],
+            bearMoney: bearMoney - subtotal,
+          });
+          cartItems?.forEach((item) => {
+            updateDoc(docRef, {
+              boughtCourses: arrayUnion(item.id),
+            });
+          });
+          Swal.fire({ text: "購買成功！可以去上課囉～", confirmButtonColor: "#5d7262" });
+          setOrderQty(0);
+          router.push("/myCourses/videoCourses");
+        }
+      }
+    });
   };
 
   return (

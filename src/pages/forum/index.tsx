@@ -1,6 +1,7 @@
 import Image from "next/image";
 import React, { useState, useEffect, useContext } from "react";
 import styled from "styled-components";
+import Swal from "sweetalert2";
 import { useRouter } from "next/router";
 import { useRecoilState } from "recoil";
 import { collection, doc, getDoc, getDocs, query, orderBy } from "firebase/firestore";
@@ -261,7 +262,7 @@ function Forum() {
           <Button
             onClick={() => {
               if (!isLogin) {
-                alert("登入後才能發問唷！");
+                Swal.fire({ title: "登入後才能發問唷！", confirmButtonColor: "#5d7262" });
                 setShowMemberModal(true);
                 return;
               }

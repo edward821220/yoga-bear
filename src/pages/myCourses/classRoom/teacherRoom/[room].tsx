@@ -2,6 +2,7 @@ import React, { useEffect, useRef, useState } from "react";
 import Pusher, { Members, PresenceChannel } from "pusher-js";
 import { useRouter } from "next/router";
 import styled from "styled-components";
+import Swal from "sweetalert2";
 
 const Wrapper = styled.div`
   min-height: calc(100vh - 100px);
@@ -77,7 +78,6 @@ function TeacherRoom() {
 
   const userVideo = useRef<HTMLVideoElement>(null);
   const partnerVideo = useRef<HTMLVideoElement>(null);
-  const secondPartnerVideo = useRef<HTMLVideoElement>(null);
 
   useEffect(() => {
     if (!room || typeof room !== "string") return undefined;
@@ -103,7 +103,9 @@ function TeacherRoom() {
 
       // We implement our onTrack method for when we receive tracks
       connection.ontrack = handleTrackEvent;
-      connection.onicecandidateerror = (e) => alert(e);
+      connection.onicecandidateerror = () => {
+        Swal.fire({ text: "發生錯誤，請再試一次！", confirmButtonColor: "#5d7262" });
+      };
       return connection;
     };
     const handleRoomJoined = () => {
@@ -125,9 +127,9 @@ function TeacherRoom() {
             channelRef.current.trigger("client-ready", {});
           }
         })
-        .catch((err) => {
+        .catch(() => {
           /* handle the error */
-          alert(err);
+          Swal.fire({ text: "發生錯誤，請再試一次！", confirmButtonColor: "#5d7262" });
         });
     };
     const handlePeerLeaving = () => {
@@ -161,21 +163,23 @@ function TeacherRoom() {
             // This options needs to be turned on in Pusher app settings
             channelRef.current?.trigger("client-offer", offer);
           })
-          .catch((error) => {
-            alert(error);
+          .catch(() => {
+            Swal.fire({ text: "發生錯誤，請再試一次！", confirmButtonColor: "#5d7262" });
           });
       }
     };
 
     const handleAnswerReceived = (answer: RTCSessionDescriptionInit) => {
-      rtcConnection.current?.setRemoteDescription(answer).catch((error) => alert(error));
+      rtcConnection.current?.setRemoteDescription(answer).catch(() => {
+        Swal.fire({ text: "發生錯誤，請再試一次！", confirmButtonColor: "#5d7262" });
+      });
     };
 
     const handlerNewIceCandidateMsg = (incoming: RTCIceCandidate) => {
       // We cast the incoming candidate to RTCIceCandidate
       const candidate = new RTCIceCandidate(incoming);
-      rtcConnection.current?.addIceCandidate(candidate).catch((error) => {
-        alert(error);
+      rtcConnection.current?.addIceCandidate(candidate).catch(() => {
+        Swal.fire({ text: "發生錯誤，請再試一次！", confirmButtonColor: "#5d7262" });
       });
     };
     // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
