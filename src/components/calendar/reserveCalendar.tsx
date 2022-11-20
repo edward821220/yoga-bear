@@ -7,6 +7,9 @@ import {
   Scheduler,
   Resources,
   WeekView,
+  Toolbar,
+  DateNavigator,
+  TodayButton,
   AllDayPanel,
   Appointments,
   AppointmentForm,
@@ -97,7 +100,7 @@ function Header({ appointmentData, ...restProps }: AppointmentTooltip.HeaderProp
         <Image
           src={ReserveButton}
           alt="reserve-btn"
-          width={30}
+          width={36}
           onClick={() => {
             if (!isLogin) {
               alert("先登入才能預約課程唷！");
@@ -129,10 +132,9 @@ function Header({ appointmentData, ...restProps }: AppointmentTooltip.HeaderProp
   );
 }
 
-const currentDate = new Date(Date.now()).toLocaleString().split(" ")[0].replaceAll("/", "-");
-
 function ReserveCalendar({ teacherId }: { teacherId: string }) {
   const [data, setData] = useState<AppointmentModel[]>([]);
+  const [currentDate, setCurrentDate] = useState(new Date(Date.now()));
 
   useEffect(() => {
     const getRooms = async () => {
@@ -156,10 +158,17 @@ function ReserveCalendar({ teacherId }: { teacherId: string }) {
   return (
     <Paper>
       <Scheduler data={data} height={600}>
-        <ViewState currentDate={currentDate} currentViewName="Week" />
+        <ViewState
+          currentDate={currentDate}
+          currentViewName="Week"
+          onCurrentDateChange={setCurrentDate as (currentDate: Date) => void}
+        />
         <EditingState onCommitChanges={() => {}} />
         <IntegratedEditing />
         <WeekView startDayHour={8} endDayHour={22} />
+        <Toolbar />
+        <DateNavigator />
+        <TodayButton />
         <Appointments />
         <AppointmentTooltip headerComponent={Header} showOpenButton />
         <ConfirmationDialog />

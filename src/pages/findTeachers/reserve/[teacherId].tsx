@@ -61,6 +61,8 @@ const IntroductionContents = styled.div`
 const CalendarWrapper = styled.div`
   flex-basis: 60%;
   margin-top: 86px;
+  border: 1px solid lightgray;
+  box-shadow: 0 0 5px #00000050;
 `;
 const Reviews = styled.ul`
   width: 100%;
@@ -209,7 +211,6 @@ export default function Reserve() {
         </TeacherDetail>
         <CalendarWrapper>{typeof teacherId === "string" && <ReserveCalendar teacherId={teacherId} />}</CalendarWrapper>
       </TeacherContainer>
-
       <Reviews>
         {teacherDatas?.reviews && (
           <ScoreContainer>
