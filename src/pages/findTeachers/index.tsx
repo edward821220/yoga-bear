@@ -91,7 +91,7 @@ const TeacherName = styled.p`
   margin-bottom: 10px;
   color: ${(props) => props.theme.colors.color2};
 `;
-const TeacherIntroduction = styled.p<{ showMore: string | number }>`
+const TeacherIntroduction = styled.p<{ showMore: boolean }>`
   margin-bottom: 10px;
   margin-right: 30px;
   height: ${(props) => (props.showMore ? "auto" : "97.8px")};
@@ -150,7 +150,7 @@ interface TeacherInterface {
 function FindTeachers() {
   const router = useRouter();
   const [teachersList, setTeachersList] = useState<TeacherInterface[]>([]);
-  const [showMore, setShowMore] = useState<number>();
+  const [showMore, setShowMore] = useState<string>();
   const [selectSort, setSelectSort] = useState("comment");
 
   useEffect(() => {
@@ -295,14 +295,14 @@ function FindTeachers() {
               <TeacherInfo>
                 <TeacherName>{teacher.name}</TeacherName>
                 <TeacherIntroduction
-                  showMore={showMore === index ? showMore : ""}
+                  showMore={showMore === teacher.uid}
                   dangerouslySetInnerHTML={{
                     __html: `${teacher.introduction}<p style='margin:10px 0; color:#654116'>老師經歷</p>${teacher.exprience}`,
                   }}
                 />
                 <ShowMoreButton
                   onClick={() => {
-                    setShowMore(index);
+                    setShowMore(teacher.uid);
                   }}
                 >
                   Show more

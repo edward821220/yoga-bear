@@ -605,6 +605,7 @@ function LaunchVideoCourse({ uid }: { uid: string }) {
       teacher_id: uid,
       chapters: newChapters,
       reviews: [],
+      launchTime: Date.now(),
     });
     setShowMemberModal(false);
     alert("課程上架完成！");

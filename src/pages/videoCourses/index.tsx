@@ -2,6 +2,7 @@ import React, { useEffect, useState } from "react";
 import styled from "styled-components";
 import Link from "next/link";
 import Image from "next/image";
+import produce from "immer";
 import { collection, getDocs } from "firebase/firestore";
 import { db } from "../../../lib/firebase";
 import StarIcon from "../../../public/star.png";
@@ -18,6 +19,33 @@ const Container = styled.div`
   display: flex;
   align-items: center;
   flex-direction: column;
+`;
+const Bar = styled.div`
+  width: 100%;
+  margin-bottom: 40px;
+`;
+
+const BarSection = styled.ul`
+  display: flex;
+  justify-content: center;
+  align-items: center;
+`;
+const BarTitle = styled.h3`
+  font-size: 18px;
+  font-weight: bold;
+  margin-right: 20px;
+  color: ${(props) => props.theme.colors.color2};
+`;
+const BarLink = styled.li<{ selectSort: boolean }>`
+  font-size: 16px;
+  text-align: center;
+  color: ${(props) => (props.selectSort ? props.theme.colors.color3 : props.theme.colors.color2)};
+  transition: 0.2s color linear;
+  margin-right: 20px;
+  cursor: pointer;
+  &:hover {
+    color: ${(props) => props.theme.colors.color3};
+  }
 `;
 const CoursesList = styled.ul`
   display: grid;
@@ -76,10 +104,13 @@ interface CourseInterface {
   price: string;
   cover: string;
   reviews: { score: number; comments: string }[];
+  launchTime: number;
 }
 
 function VideoCourses() {
   const [coursesList, setCoursesList] = useState<CourseInterface[]>([]);
+  const [selectSort, setSelectSort] = useState("comment");
+
   useEffect(() => {
     const getCoursesList = async () => {
       const videoCoursesRef = collection(db, "video_courses");
@@ -90,6 +121,7 @@ function VideoCourses() {
         price: string;
         cover: string;
         reviews: { score: number; comments: string }[];
+        launchTime: number;
       }[] = [];
       querySnapshot.forEach((data) => {
         results.push({
@@ -98,16 +130,140 @@ function VideoCourses() {
           price: data.data().price,
           cover: data.data().cover,
           reviews: data.data().reviews,
+          launchTime: data.data().launchTime,
         });
       });
-      setCoursesList(results);
+      setCoursesList(
+        results.sort((a, b) => {
+          const reviewsQtyA = a?.reviews?.length || 0;
+          const reviewsQtyB = b?.reviews?.length || 0;
+          if (reviewsQtyA < reviewsQtyB) {
+            return 1;
+          }
+          if (reviewsQtyA > reviewsQtyB) {
+            return -1;
+          }
+          return 0;
+        })
+      );
     };
     getCoursesList();
   }, []);
 
+  const handleSort = (sort: string) => {
+    if (sort === "comment") {
+      setCoursesList(
+        produce((draft) =>
+          draft.sort((a, b) => {
+            const reviewsQtyA = a?.reviews?.length || 0;
+            const reviewsQtyB = b?.reviews?.length || 0;
+            if (reviewsQtyA < reviewsQtyB) {
+              return 1;
+            }
+            if (reviewsQtyA > reviewsQtyB) {
+              return -1;
+            }
+            return 0;
+          })
+        )
+      );
+      setSelectSort(sort);
+    } else if (sort === "score") {
+      setCoursesList(
+        produce((draft) =>
+          draft.sort((a, b) => {
+            const scoreA =
+              a?.reviews?.length > 0 ? a.reviews.reduce((acc, cur) => acc + cur.score, 0) / a.reviews.length : 0;
+            const scoreB =
+              b?.reviews?.length > 0 ? b.reviews.reduce((acc, cur) => acc + cur.score, 0) / b.reviews.length : 0;
+            if (scoreA < scoreB) {
+              return 1;
+            }
+            if (scoreA > scoreB) {
+              return -1;
+            }
+            return 0;
+          })
+        )
+      );
+      setSelectSort(sort);
+    } else if (sort === "new") {
+      setCoursesList(
+        produce((draft) =>
+          draft.sort((a, b) => {
+            const beTeacherTimeA = a.launchTime || 0;
+            const beTeacherTimeB = b.launchTime || 0;
+            if (beTeacherTimeA < beTeacherTimeB) {
+              return 1;
+            }
+            if (beTeacherTimeA > beTeacherTimeB) {
+              return -1;
+            }
+            return 0;
+          })
+        )
+      );
+      setSelectSort(sort);
+    } else if (sort === "price") {
+      setCoursesList(
+        produce((draft) =>
+          draft.sort((a, b) => {
+            const beTeacherTimeA = Number(a.price) || 0;
+            const beTeacherTimeB = Number(b.price) || 0;
+            if (beTeacherTimeA < beTeacherTimeB) {
+              return -1;
+            }
+            if (beTeacherTimeA > beTeacherTimeB) {
+              return 1;
+            }
+            return 0;
+          })
+        )
+      );
+      setSelectSort(sort);
+    }
+  };
+
   return (
     <Wrapper>
       <Container>
+        <Bar>
+          <BarSection>
+            <BarTitle>目前排序</BarTitle>
+            <BarLink
+              selectSort={selectSort === "comment"}
+              onClick={() => {
+                handleSort("comment");
+              }}
+            >
+              評論多優先
+            </BarLink>
+            <BarLink
+              selectSort={selectSort === "score"}
+              onClick={() => {
+                handleSort("score");
+              }}
+            >
+              評價高優先
+            </BarLink>
+            <BarLink
+              selectSort={selectSort === "new"}
+              onClick={() => {
+                handleSort("new");
+              }}
+            >
+              新課程優先
+            </BarLink>
+            <BarLink
+              selectSort={selectSort === "price"}
+              onClick={() => {
+                handleSort("price");
+              }}
+            >
+              價格低優先
+            </BarLink>
+          </BarSection>
+        </Bar>
         <CoursesList>
           {coursesList.map((course) => (
             <Course key={course.id}>
