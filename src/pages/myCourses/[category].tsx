@@ -43,13 +43,13 @@ const BarTitle = styled.h3`
   margin-right: 20px;
   color: ${(props) => props.theme.colors.color2};
 `;
-const BarLink = styled.li`
+const BarLink = styled.li<{ active: boolean }>`
   font-size: 16px;
   margin-right: 20px;
   a {
     text-align: center;
     transition: 0.2s color linear;
-    color: ${(props) => props.theme.colors.color2};
+    color: ${(props) => (props.active ? props.theme.colors.color3 : props.theme.colors.color2)};
     &:hover {
       color: ${(props) => props.theme.colors.color3};
     }
@@ -885,6 +885,7 @@ function BeTeacher({
 }
 function MyCourses() {
   const router = useRouter();
+  const { category } = router.query;
   const { userData, setUserData } = useContext(AuthContext);
 
   return (
@@ -892,46 +893,46 @@ function MyCourses() {
       <Bar>
         <BarSection>
           <BarTitle>學生專區</BarTitle>
-          <BarLink>
+          <BarLink active={typeof category === "string" && category === "videoCourses"}>
             <Link href="/myCourses/videoCourses">我的影音課程</Link>
           </BarLink>
-          <BarLink>
+          <BarLink active={typeof category === "string" && category === "studentCalendar"}>
             <Link href="/myCourses/studentCalendar">已預約的課表</Link>
           </BarLink>
-          <BarLink>
+          <BarLink active={typeof category === "string" && category === "beTeacher"}>
             <Link href="/myCourses/beTeacher">我要當老師</Link>
           </BarLink>
         </BarSection>
         {userData.identity === "teacher" && (
           <BarSection>
             <BarTitle>老師專區</BarTitle>
-            <BarLink>
+            <BarLink active={typeof category === "string" && category === "launchVideoCourse"}>
               <Link href="/myCourses/launchVideoCourse">影音課程上架</Link>
             </BarLink>
-            <BarLink>
+            <BarLink active={typeof category === "string" && category === "launchedVideoCourses"}>
               <Link href="/myCourses/launchedVideoCourses">已上架影音課</Link>
             </BarLink>
-            <BarLink>
+            <BarLink active={typeof category === "string" && category === "teacherCalendar"}>
               <Link href="/myCourses/teacherCalendar">排課行事曆</Link>
             </BarLink>
           </BarSection>
         )}
       </Bar>
       <Main>
-        {router.query.category === "videoCourses" && <VideoCourses uid={userData.uid} />}
-        {router.query.category === "launchVideoCourse" && <LaunchVideoCourse uid={userData.uid} />}
-        {router.query.category === "launchedVideoCourses" && <LaunchedVideoCourses uid={userData.uid} />}
-        {router.query.category === "teacherCalendar" && (
+        {category === "videoCourses" && <VideoCourses uid={userData.uid} />}
+        {category === "launchVideoCourse" && <LaunchVideoCourse uid={userData.uid} />}
+        {category === "launchedVideoCourses" && <LaunchedVideoCourses uid={userData.uid} />}
+        {category === "teacherCalendar" && (
           <CalendarWrapper>
             <TeacherCalendar uid={userData.uid} />
           </CalendarWrapper>
         )}
-        {router.query.category === "studentCalendar" && (
+        {category === "studentCalendar" && (
           <CalendarWrapper>
             <StudentCalendar userData={userData} />
           </CalendarWrapper>
         )}
-        {router.query.category === "beTeacher" && <BeTeacher uid={userData.uid} setUserData={setUserData} />}
+        {category === "beTeacher" && <BeTeacher uid={userData.uid} setUserData={setUserData} />}
       </Main>
     </Wrapper>
   );

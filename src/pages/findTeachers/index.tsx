@@ -27,6 +27,33 @@ const Container = styled.div`
   justify-content: center;
   flex-direction: column;
 `;
+const Bar = styled.div`
+  width: 100%;
+  margin-bottom: 40px;
+`;
+
+const BarSection = styled.ul`
+  display: flex;
+  justify-content: center;
+  align-items: center;
+`;
+const BarTitle = styled.h3`
+  font-size: 18px;
+  font-weight: bold;
+  margin-right: 20px;
+  color: ${(props) => props.theme.colors.color2};
+`;
+const BarLink = styled.li`
+  font-size: 16px;
+  text-align: center;
+  color: ${(props) => props.theme.colors.color2};
+  transition: 0.2s color linear;
+  margin-right: 20px;
+  cursor: pointer;
+  &:hover {
+    color: ${(props) => props.theme.colors.color3};
+  }
+`;
 const TeachersList = styled.ul`
   display: flex;
   flex-wrap: wrap;
@@ -152,6 +179,14 @@ function FindTeachers() {
   return (
     <Wrapper>
       <Container>
+        <Bar>
+          <BarSection>
+            <BarTitle>目前排序</BarTitle>
+            <BarLink>好老師優先</BarLink>
+            <BarLink>新老師優先</BarLink>
+            <BarLink>人氣高優先</BarLink>
+          </BarSection>
+        </Bar>
         <TeachersList>
           {teachersList.map((teacher, index) => (
             <Teacher key={teacher.uid}>
