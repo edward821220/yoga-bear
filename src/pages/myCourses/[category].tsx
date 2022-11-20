@@ -307,7 +307,7 @@ function VideoCourses({ uid }: { uid: string }) {
       {courses?.map((course, courseIndex) => (
         <Course key={course.id}>
           <CourseCover>
-            <Link href={`/videoCourses/courseDetail/${course.id}`}>
+            <Link href={`/myCourses/classRoom/videoRoom/${course.id}`}>
               <Image src={course.cover} alt="cover" fill />
             </Link>
           </CourseCover>

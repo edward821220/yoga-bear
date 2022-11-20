@@ -730,6 +730,7 @@ function CourseDetail({ courseData, teacherData, reviewsUsersDatas }: CourseDeta
 function VideoRoom() {
   const router = useRouter();
   const { courseId } = router.query;
+  const [boughtCourses, setBoughtCourses] = useState<string[]>();
   const [selectChapter, setSelectChpter] = useState(0);
   const [selectUnit, setSelectUnit] = useState(0);
   const [courseData, setCourseData] = useState<CourseDataInteface>();
@@ -745,6 +746,7 @@ function VideoRoom() {
       const docSnap = await getDoc(userRef);
       if (docSnap.exists()) {
         const courses = docSnap.data().boughtCourses as string[];
+        setBoughtCourses(courses);
         if (!courses.includes(courseId)) {
           alert("您沒有購買此課程唷～");
           router.push("/");
@@ -815,47 +817,60 @@ function VideoRoom() {
     }
   };
 
+  if (!courseId || !boughtCourses)
+    return (
+      <Wrapper>
+        <LoadingWrapper>
+          <Image src={Loading} alt="loading" width={100} height={100} />
+        </LoadingWrapper>
+      </Wrapper>
+    );
+
   return (
     <Wrapper>
       <CourseContainer backgroundImage={courseData?.cover || ""}>
         <Title>{courseData?.name}</Title>
-        <CourseRoom>
-          <VideoPlayer
-            handleSwitch={handleSwitch}
-            chapters={courseData?.chapters}
-            selectChapter={selectChapter}
-            selectUnit={selectUnit}
-          />
-          <ChapterSelector>
-            <SubTitle>課程章節</SubTitle>
-            <Chapters>
-              {courseData?.chapters.map((chapter, chapterIndex) => (
-                <Chapter key={chapter.id}>
-                  <ChapterTitle>
-                    章節 {chapterIndex + 1}：{chapter.title}
-                  </ChapterTitle>
-                  {chapter.units.map((unit, unitIndex) => (
-                    <Units key={unit.id}>
-                      <Unit
-                        onClick={() => {
-                          handleSelect(chapterIndex, unitIndex);
-                        }}
-                        focus={selectChapter === chapterIndex && selectUnit === unitIndex}
-                      >
-                        <UnitTitle>
-                          <PlayIcon>
-                            <Image src={Play} alt="play" fill sizes="contain" />
-                          </PlayIcon>
-                          單元 {unitIndex + 1}：{unit.title}
-                        </UnitTitle>
-                      </Unit>
-                    </Units>
-                  ))}
-                </Chapter>
-              ))}
-            </Chapters>
-          </ChapterSelector>
-        </CourseRoom>
+        {typeof courseId === "string" && boughtCourses && boughtCourses.includes(courseId) ? (
+          <CourseRoom>
+            <VideoPlayer
+              handleSwitch={handleSwitch}
+              chapters={courseData?.chapters}
+              selectChapter={selectChapter}
+              selectUnit={selectUnit}
+            />
+            <ChapterSelector>
+              <SubTitle>課程章節</SubTitle>
+              <Chapters>
+                {courseData?.chapters.map((chapter, chapterIndex) => (
+                  <Chapter key={chapter.id}>
+                    <ChapterTitle>
+                      章節 {chapterIndex + 1}：{chapter.title}
+                    </ChapterTitle>
+                    {chapter.units.map((unit, unitIndex) => (
+                      <Units key={unit.id}>
+                        <Unit
+                          onClick={() => {
+                            handleSelect(chapterIndex, unitIndex);
+                          }}
+                          focus={selectChapter === chapterIndex && selectUnit === unitIndex}
+                        >
+                          <UnitTitle>
+                            <PlayIcon>
+                              <Image src={Play} alt="play" fill sizes="contain" />
+                            </PlayIcon>
+                            單元 {unitIndex + 1}：{unit.title}
+                          </UnitTitle>
+                        </Unit>
+                      </Units>
+                    ))}
+                  </Chapter>
+                ))}
+              </Chapters>
+            </ChapterSelector>
+          </CourseRoom>
+        ) : (
+          <p style={{ fontSize: "24px", zIndex: 8 }}>您沒有購買此課程唷！</p>
+        )}
       </CourseContainer>
       {courseData && teacherData && (
         <CourseDetail courseData={courseData} teacherData={teacherData} reviewsUsersDatas={reviewsUsersDatas} />
