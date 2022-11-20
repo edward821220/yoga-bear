@@ -4,6 +4,7 @@ import Link from "next/link";
 import Image from "next/image";
 import { useRouter } from "next/router";
 import { collection, getDocs, query, where } from "firebase/firestore";
+import produce from "immer";
 import { db } from "../../../lib/firebase";
 import BearAvatar from "../../../public/member.png";
 import StarIcon from "../../../public/star.png";
@@ -43,10 +44,10 @@ const BarTitle = styled.h3`
   margin-right: 20px;
   color: ${(props) => props.theme.colors.color2};
 `;
-const BarLink = styled.li`
+const BarLink = styled.li<{ selectSort: boolean }>`
   font-size: 16px;
   text-align: center;
-  color: ${(props) => props.theme.colors.color2};
+  color: ${(props) => (props.selectSort ? props.theme.colors.color3 : props.theme.colors.color2)};
   transition: 0.2s color linear;
   margin-right: 20px;
   cursor: pointer;
@@ -143,12 +144,15 @@ interface TeacherInterface {
   avatar: string;
   introduction: string;
   exprience: string;
+  beTeacherTime: number;
 }
 
 function FindTeachers() {
+  const router = useRouter();
   const [teachersList, setTeachersList] = useState<TeacherInterface[]>([]);
   const [showMore, setShowMore] = useState<number>();
-  const router = useRouter();
+  const [selectSort, setSelectSort] = useState("comment");
+
   useEffect(() => {
     const getTeachersList = async () => {
       const usersRef = collection(db, "users");
@@ -161,6 +165,7 @@ function FindTeachers() {
         avatar: string;
         introduction: string;
         exprience: string;
+        beTeacherTime: number;
       }[] = [];
       querySnapshot.forEach((data) => {
         results.push({
@@ -170,21 +175,113 @@ function FindTeachers() {
           avatar: data.data().photoURL,
           introduction: data.data().teacher_introduction,
           exprience: data.data().teacher_exprience,
+          beTeacherTime: data.data().beTeacherTime,
         });
       });
-      setTeachersList(results);
+      setTeachersList(
+        results.sort((a, b) => {
+          const reviewsQtyA = a?.reviews?.length || 0;
+          const reviewsQtyB = b?.reviews?.length || 0;
+          if (reviewsQtyA < reviewsQtyB) {
+            return 1;
+          }
+          if (reviewsQtyA > reviewsQtyB) {
+            return -1;
+          }
+          return 0;
+        })
+      );
     };
     getTeachersList();
   }, []);
+
+  const handleSort = (sort: string) => {
+    if (sort === "comment") {
+      setTeachersList(
+        produce((draft) =>
+          draft.sort((a, b) => {
+            const reviewsQtyA = a?.reviews?.length || 0;
+            const reviewsQtyB = b?.reviews?.length || 0;
+            if (reviewsQtyA < reviewsQtyB) {
+              return 1;
+            }
+            if (reviewsQtyA > reviewsQtyB) {
+              return -1;
+            }
+            return 0;
+          })
+        )
+      );
+      setSelectSort(sort);
+    } else if (sort === "score") {
+      setTeachersList(
+        produce((draft) =>
+          draft.sort((a, b) => {
+            const scoreA =
+              a?.reviews?.length > 0 ? a.reviews.reduce((acc, cur) => acc + cur.score, 0) / a.reviews.length : 0;
+            const scoreB =
+              b?.reviews?.length > 0 ? b.reviews.reduce((acc, cur) => acc + cur.score, 0) / b.reviews.length : 0;
+            if (scoreA < scoreB) {
+              return 1;
+            }
+            if (scoreA > scoreB) {
+              return -1;
+            }
+            return 0;
+          })
+        )
+      );
+      setSelectSort(sort);
+    } else if (sort === "new") {
+      setTeachersList(
+        produce((draft) =>
+          draft.sort((a, b) => {
+            const beTeacherTimeA = a.beTeacherTime || 0;
+            const beTeacherTimeB = b.beTeacherTime || 0;
+            if (beTeacherTimeA < beTeacherTimeB) {
+              return 1;
+            }
+            if (beTeacherTimeA > beTeacherTimeB) {
+              return -1;
+            }
+            return 0;
+          })
+        )
+      );
+      setSelectSort(sort);
+    }
+  };
+
   return (
     <Wrapper>
       <Container>
         <Bar>
           <BarSection>
             <BarTitle>目前排序</BarTitle>
-            <BarLink>好老師優先</BarLink>
-            <BarLink>新老師優先</BarLink>
-            <BarLink>人氣高優先</BarLink>
+            <BarLink
+              selectSort={selectSort === "comment"}
+              onClick={() => {
+                handleSort("comment");
+              }}
+            >
+              評論多優先
+            </BarLink>
+            <BarLink
+              selectSort={selectSort === "score"}
+              onClick={() => {
+                handleSort("score");
+              }}
+            >
+              評價高優先
+            </BarLink>
+            <BarLink
+              selectSort={selectSort === "new"}
+              onClick={() => {
+                handleSort("new");
+              }}
+            >
+              新老師優先
+            </BarLink>
           </BarSection>
         </Bar>
         <TeachersList>
@@ -213,11 +310,10 @@ function FindTeachers() {
                 {teacher?.reviews?.length > 0 ? (
                   <TeacherScore>
                     <StarIcons>
-                      {/* eslint-disable no-unsafe-optional-chaining */}
                       {Array.from(
                         {
                           length: Math.floor(
-                            teacher?.reviews?.reduce((acc, cur) => acc + cur.score, 0) / teacher?.reviews?.length
+                            teacher.reviews.reduce((acc, cur) => acc + cur.score, 0) / teacher.reviews.length
                           ),
                         },
                         (v, i) => i + 1
@@ -226,7 +322,7 @@ function FindTeachers() {
                           <Image src={StarIcon} alt="star" fill sizes="contain" />
                         </StarWrapper>
                       ))}
-                      {(teacher?.reviews?.reduce((acc, cur) => acc + cur.score, 0) / teacher?.reviews?.length) % 1 !==
+                      {(teacher.reviews.reduce((acc, cur) => acc + cur.score, 0) / teacher.reviews.length) % 1 !==
                         0 && (
                         <StarWrapper>
                           <Image src={HalfStar} alt="star" fill sizes="contain" />
@@ -234,9 +330,9 @@ function FindTeachers() {
                       )}
                     </StarIcons>
                     <TeacherReviewsInfo>
-                      {(
-                        teacher?.reviews?.reduce((acc, cur) => acc + cur.score, 0) / teacher?.reviews?.length || 0
-                      ).toFixed(1) || 0}
+                      {(teacher.reviews.reduce((acc, cur) => acc + cur.score, 0) / teacher.reviews.length || 0).toFixed(
+                        1
+                      ) || 0}
                       分 ，{teacher?.reviews?.length || 0}則評論
                     </TeacherReviewsInfo>
                   </TeacherScore>

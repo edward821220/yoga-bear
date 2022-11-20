@@ -109,6 +109,7 @@ const LaunchFormLabelFileButton = styled.div`
   text-align: center;
   color: gray;
   background-color: white;
+  min-width: 100px;
   max-width: 150px;
   border: 1px solid gray;
   border-radius: 5px;
@@ -838,6 +839,7 @@ function BeTeacher({
               certificate: downloadURL,
               teacher_introduction: teacherIntroduction,
               teacher_exprience: teacherExprience,
+              beTeacherTime: Date.now(),
             });
             setUserData((prev) => ({ ...prev, identity: "teacher" }));
             alert("恭喜成為老師～可以開始排課囉！");

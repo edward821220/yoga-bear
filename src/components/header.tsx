@@ -16,6 +16,7 @@ import CartLogo from "../../public/cart.png";
 import MemberLogo from "../../public/member.png";
 import MoneyIcon from "../../public/newMoney.png";
 import PlusMoneyIcon from "../../public/add.png";
+import MoneyBear from "../../public/money.png";
 
 const Wrapper = styled.header`
   display: flex;
@@ -260,6 +261,7 @@ const isValidCCV = /\d{3}$/;
 interface MemberModalProps {
   setOrderQty: SetterOrUpdater<number>;
   setShowMemberModal: Dispatch<SetStateAction<boolean>>;
+  setBearMoney: SetterOrUpdater<number>;
   isLogin: boolean;
   signup: (emil: string, password: string, identity: string, username: string) => Promise<string>;
   login(email: string, password: string): void;
@@ -291,6 +293,7 @@ function MemberModal({
   signup,
   userData,
   setUserData,
+  setBearMoney,
 }: MemberModalProps) {
   const router = useRouter();
   const [errorMessage, setErrorMessage] = useState("");
@@ -359,6 +362,7 @@ function MemberModal({
               certificate: downloadURL,
               teacher_introduction: teacherIntroduction,
               teacher_exprience: teacherExprience,
+              beTeacherTime: Date.now(),
             });
           });
         }
@@ -515,6 +519,7 @@ function MemberModal({
             onClick={() => {
               logout();
               setOrderQty(0);
+              setBearMoney(0);
               setNeedSignup(false);
               handleClose();
               router.push("/");
@@ -607,6 +612,7 @@ function PaymentModal({ setShowPaymentModal, bearMoney, setBearMoney, userId }: 
           );
         })}
         <Button type="submit">確定加值</Button>
+        <Image src={MoneyBear} alt="money-bear" width={100} height={100} />
       </Form>
     </Modal>
   );
@@ -722,6 +728,7 @@ function Header() {
           signup={signup}
           userData={userData}
           setUserData={setUserData}
+          setBearMoney={setBearMoney}
         />
       )}
       {showPaymentModal && (
