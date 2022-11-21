@@ -924,6 +924,13 @@ function MyCourses() {
   const { category } = router.query;
   const { userData, setUserData } = useContext(AuthContext);
   const [teacherAuthority, setTeacherAuthority] = useState(false);
+
+  useEffect(() => {
+    if (category === "launchedVideoCourses" || category === "launchVideoCourse" || category === "teacherCalendar") {
+      setTeacherAuthority(true);
+    }
+  }, [category]);
+
   return (
     <Wrapper>
       <Bar>
@@ -942,12 +949,12 @@ function MyCourses() {
                 }
               }}
             >
-              <ToggleButton />
+              <ToggleButton state={teacherAuthority} />
             </ToggleButtonLabel>
             <BarTitle>老師</BarTitle>
           </BarSection>
         )}
-        {teacherAuthority || (
+        {userData.identity && !teacherAuthority && (
           <BarSection>
             <BarLink active={typeof category === "string" && category === "videoCourses"}>
               <Link href="/myCourses/videoCourses">我的影音課程</Link>
