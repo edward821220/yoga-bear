@@ -307,7 +307,11 @@ function FindTeachers() {
                 />
                 <ShowMoreButton
                   onClick={() => {
-                    setShowMore(teacher.uid);
+                    if (showMore === teacher.uid) {
+                      setShowMore("");
+                    } else {
+                      setShowMore(teacher.uid);
+                    }
                   }}
                 >
                   Show more
