@@ -102,8 +102,6 @@ const TeacherIntroduction = styled.p<{ showMore: boolean }>`
   margin-right: 30px;
   height: ${(props) => (props.showMore ? "auto" : "97.8px")};
   overflow: hidden;
-  text-overflow: ellipsis;
-  box-direction: vertical;
   p {
     line-height: 24px;
   }
@@ -259,7 +257,6 @@ function FindTeachers() {
       setSelectSort(sort);
     }
   };
-  // console.log(teacherList.length);
   if (teachersList.length === 0)
     return (
       <Wrapper>

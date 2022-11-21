@@ -19,6 +19,7 @@ import MoneyIcon from "../../public/newMoney.png";
 import PlusMoneyIcon from "../../public/add.png";
 import MoneyBear from "../../public/money.png";
 import Loading from "../../public/loading.gif";
+import MenuIcon from "../../public/menu.svg";
 
 const Wrapper = styled.header`
   display: flex;
@@ -36,11 +37,39 @@ const LogoWrapper = styled.div`
   margin-right: 40px;
   margin-left: 20px;
   flex-basis: 200px;
+  @media screen and (max-width: 1024px) {
+    margin-right: 0;
+    flex-basis: 150px;
+  }
+`;
+const MenuLinksWrapper = styled.div`
+  position: relative;
+  @media screen and (max-width: 788px) {
+    margin-right: auto;
+  }
+`;
+const MenuIconWrapper = styled.div`
+  position: relative;
+  width: 26px;
+  height: auto;
+  display: none;
+  @media screen and (max-width: 788px) {
+    display: block;
+  }
 `;
 const HeaderLinks = styled.ul`
   display: flex;
   align-items: center;
   margin-right: auto;
+  @media screen and (max-width: 788px) {
+    display: block;
+    align-items: center;
+    flex-direction: column;
+    position: absolute;
+    transform: translatex(-28px);
+    background-color: ${(props) => props.theme.colors.color4};
+    padding: 5px 0;
+  }
 `;
 const HeaderLink = styled.li`
   margin-right: 20px;
@@ -51,10 +80,34 @@ const HeaderLink = styled.li`
   a {
     color: ${(props) => props.theme.colors.color2};
   }
+  @media screen and (max-width: 1024px) {
+    margin-right: 10px;
+  }
+  @media screen and (max-width: 788px) {
+    font-size: 16px;
+    margin: 0;
+    padding: 0 5px;
+    &:hover {
+      background-color: ${(props) => props.theme.colors.color3};
+      a {
+        color: ${(props) => props.theme.colors.color1};
+      }
+      span {
+        color: ${(props) => props.theme.colors.color1};
+      }
+    }
+  }
 `;
+
 const MycoursesLink = styled.span`
   color: ${(props) => props.theme.colors.color2};
   cursor: pointer;
+  @media screen and (max-width: 1024px) {
+    margin-right: 10px;
+  }
+  @media screen and (max-width: 788px) {
+    margin-right: 0;
+  }
 `;
 
 const Member = styled.ul`
@@ -74,6 +127,14 @@ const MoneyDisplay = styled.div`
   align-items: center;
   background-color: ${(props) => props.theme.colors.color1};
   border-radius: 5px;
+  @media screen and (max-width: 1024px) {
+    margin-right: 24px;
+    width: 120px;
+    height: 36px;
+  }
+  @media screen and (max-width: 468px) {
+    display: none;
+  }
 `;
 
 const MoneyIconWrapper = styled.div`
@@ -81,15 +142,26 @@ const MoneyIconWrapper = styled.div`
   width: 30px;
   height: 30px;
   margin-right: 5px;
+  @media screen and (max-width: 1024px) {
+    width: 24px;
+    height: 24px;
+  }
 `;
 const MoneyQty = styled.p`
   font-size: 18px;
+  @media screen and (max-width: 1024px) {
+    font-size: 16px;
+  }
 `;
 const MoneyPlusWrapper = styled.div`
   position: relative;
   width: 30px;
   height: 30px;
   cursor: pointer;
+  @media screen and (max-width: 1024px) {
+    width: 24px;
+    height: 24px;
+  }
 `;
 
 const CartIconWrapper = styled.li`
@@ -108,6 +180,14 @@ const CartIconWrapper = styled.li`
     border: 2px solid ${(props) => props.theme.colors.color3};
     border-radius: 50%;
     z-index: -1;
+    @media screen and (max-width: 1024px) {
+      width: 40px;
+      height: 40px;
+    }
+  }
+  @media screen and (max-width: 1024px) {
+    width: 32px;
+    margin-right: 24px;
   }
 `;
 const OrderQty = styled.div`
@@ -140,6 +220,15 @@ const MemberIconWrapper = styled.li`
     border-radius: 50%;
     border: 2px solid ${(props) => props.theme.colors.color3};
     z-index: -1;
+    @media screen and (max-width: 1024px) {
+      width: 40px;
+      height: 40px;
+    }
+  }
+  @media screen and (max-width: 1024px) {
+    width: 32px;
+    height: 31px;
+    margin-right: 24px;
   }
 `;
 const Form = styled.form`
@@ -662,31 +751,36 @@ function Header() {
           <Image src={BearLogo} alt="logo" />
         </Link>
       </LogoWrapper>
-      <HeaderLinks>
-        <HeaderLink>
-          <Link href="/videoCourses">影音課程</Link>
-        </HeaderLink>
-        <HeaderLink>
-          <Link href="/findTeachers">預約老師</Link>
-        </HeaderLink>
-        <HeaderLink>
-          <Link href="/forum">問答園地</Link>
-        </HeaderLink>
-        <HeaderLink>
-          <MycoursesLink
-            onClick={() => {
-              if (!isLogin) {
-                Swal.fire({ title: "您還沒登入唷！", confirmButtonColor: "#5d7262", icon: "warning" });
-                setShowMemberModal(true);
-                return;
-              }
-              router.push("/myCourses/videoCourses");
-            }}
-          >
-            我的課程
-          </MycoursesLink>
-        </HeaderLink>
-      </HeaderLinks>
+      <MenuLinksWrapper>
+        <MenuIconWrapper>
+          <Image src={MenuIcon} alt="menu" />
+        </MenuIconWrapper>
+        <HeaderLinks>
+          <HeaderLink>
+            <Link href="/videoCourses">影音課程</Link>
+          </HeaderLink>
+          <HeaderLink>
+            <Link href="/findTeachers">預約老師</Link>
+          </HeaderLink>
+          <HeaderLink>
+            <Link href="/forum">問答園地</Link>
+          </HeaderLink>
+          <HeaderLink>
+            <MycoursesLink
+              onClick={() => {
+                if (!isLogin) {
+                  Swal.fire({ title: "您還沒登入唷！", confirmButtonColor: "#5d7262", icon: "warning" });
+                  setShowMemberModal(true);
+                  return;
+                }
+                router.push("/myCourses/videoCourses");
+              }}
+            >
+              我的課程
+            </MycoursesLink>
+          </HeaderLink>
+        </HeaderLinks>
+      </MenuLinksWrapper>
       <Member>
         <MoneyDisplay>
           <MoneyIconWrapper>
