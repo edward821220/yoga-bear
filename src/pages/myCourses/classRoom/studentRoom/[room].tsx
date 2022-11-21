@@ -104,7 +104,7 @@ function StudentRoom() {
       // We implement our onTrack method for when we receive tracks
       connection.ontrack = handleTrackEvent;
       connection.onicecandidateerror = () => {
-        Swal.fire({ text: "發生錯誤，請再試一次！", confirmButtonColor: "#5d7262" });
+        Swal.fire({ text: "發生錯誤，請再試一次！", confirmButtonColor: "#5d7262", icon: "error" });
       };
       return connection;
     };
@@ -129,7 +129,7 @@ function StudentRoom() {
         })
         .catch(() => {
           /* handle the error */
-          Swal.fire({ text: "發生錯誤，請再試一次！", confirmButtonColor: "#5d7262" });
+          Swal.fire({ text: "發生錯誤，請再試一次！", confirmButtonColor: "#5d7262", icon: "error" });
         });
     };
     const handlePeerLeaving = () => {
@@ -166,7 +166,7 @@ function StudentRoom() {
             channelRef.current?.trigger("client-offer", offer);
           })
           .catch(() => {
-            Swal.fire({ text: "發生錯誤，請再試一次！", confirmButtonColor: "#5d7262" });
+            Swal.fire({ text: "發生錯誤，請再試一次！", confirmButtonColor: "#5d7262", icon: "error" });
           });
       }
     };
@@ -188,7 +188,7 @@ function StudentRoom() {
           channelRef.current?.trigger("client-answer", answer);
         })
         .catch(() => {
-          Swal.fire({ text: "發生錯誤，請再試一次！", confirmButtonColor: "#5d7262" });
+          Swal.fire({ text: "發生錯誤，請再試一次！", confirmButtonColor: "#5d7262", icon: "error" });
         });
     };
     // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
@@ -205,7 +205,7 @@ function StudentRoom() {
     channelRef.current.bind("pusher:subscription_succeeded", (members: Members) => {
       if (members.count === 1) {
         // when subscribing, if you are the first member, you are the host
-        Swal.fire({ text: "老師還沒來唷！請稍候再進教室～", confirmButtonColor: "#5d7262" });
+        Swal.fire({ text: "老師還沒來唷！請稍候再進教室～", confirmButtonColor: "#5d7262", icon: "warning" });
         router.push("/myCourses/studentCalendar");
       }
       handleRoomJoined();

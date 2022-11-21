@@ -145,15 +145,15 @@ function Post() {
 
   const handlePost = async () => {
     if (!isLogin) {
-      Swal.fire({ title: "登入後才能發問唷！", confirmButtonColor: "#5d7262" });
+      Swal.fire({ title: "登入後才能發問唷！", confirmButtonColor: "#5d7262", icon: "warning" });
       return;
     }
     if (!title.trim()) {
-      Swal.fire({ title: "請輸入標題！", confirmButtonColor: "#5d7262" });
+      Swal.fire({ title: "請輸入標題！", confirmButtonColor: "#5d7262", icon: "warning" });
       return;
     }
     if (!content.trim()) {
-      Swal.fire({ title: "請輸入內容！", confirmButtonColor: "#5d7262" });
+      Swal.fire({ title: "請輸入內容！", confirmButtonColor: "#5d7262", icon: "warning" });
       return;
     }
     const newPostRef = doc(collection(db, "posts"));
@@ -164,7 +164,7 @@ function Post() {
       content,
       time: Date.now(),
     });
-    Swal.fire({ title: "您已成功提問！", confirmButtonColor: "#5d7262" });
+    Swal.fire({ title: "您已成功提問！", confirmButtonColor: "#5d7262", icon: "success" });
     router.push("/forum");
   };
 
@@ -183,7 +183,7 @@ function Post() {
         "state_changed",
         () => {},
         () => {
-          Swal.fire({ text: "上傳失敗！請再試一次", confirmButtonColor: "#5d7262" });
+          Swal.fire({ text: "上傳失敗！請再試一次", confirmButtonColor: "#5d7262", icon: "error" });
         },
         async () => {
           const downloadUrl = await getDownloadURL(uploadTask.snapshot.ref);

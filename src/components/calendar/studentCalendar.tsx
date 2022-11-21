@@ -201,7 +201,7 @@ function Header({ appointmentData, ...restProps }: AppointmentTooltip.HeaderProp
               type="button"
               onClick={async () => {
                 if (score === 0) {
-                  Swal.fire({ title: "請點選星星評分", confirmButtonColor: "#5d7262" });
+                  Swal.fire({ title: "請點選星星評分", confirmButtonColor: "#5d7262", icon: "warning" });
                   return;
                 }
                 if (!appointmentData || typeof appointmentData.teacherId !== "string") return;
@@ -219,7 +219,11 @@ function Header({ appointmentData, ...restProps }: AppointmentTooltip.HeaderProp
                 await updateDoc(roomRef, {
                   reviewedStudents: arrayUnion(userData.uid),
                 });
-                Swal.fire({ text: "感謝您的評論～您的支持是我們最大的動力！", confirmButtonColor: "#5d7262" });
+                Swal.fire({
+                  text: "感謝您的評論～您的支持是我們最大的動力！",
+                  confirmButtonColor: "#5d7262",
+                  icon: "success",
+                });
                 setComments("");
                 setScore(0);
                 setShowReviewModal(false);

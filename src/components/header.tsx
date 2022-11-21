@@ -326,7 +326,7 @@ function MemberModal({
       return;
     }
     handleClose();
-    Swal.fire({ title: "恭喜您登入成功!", confirmButtonColor: "#5d7262" });
+    Swal.fire({ title: "登入成功！", confirmButtonColor: "#5d7262", icon: "success" });
   };
   const handleSignup = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
@@ -354,7 +354,7 @@ function MemberModal({
         "state_changed",
         () => {},
         () => {
-          Swal.fire({ text: "上傳失敗！請再試一次", confirmButtonColor: "#5d7262" });
+          Swal.fire({ text: "上傳失敗！請再試一次", confirmButtonColor: "#5d7262", icon: "error" });
         },
         () => {
           getDownloadURL(uploadTask.snapshot.ref).then((downloadURL) => {
@@ -371,7 +371,7 @@ function MemberModal({
     }
     setNeedSignup(false);
     handleClose();
-    Swal.fire({ title: "恭喜您註冊成功！", confirmButtonColor: "#5d7262" });
+    Swal.fire({ title: "恭喜您註冊成功！", confirmButtonColor: "#5d7262", icon: "success" });
   };
   const handleUploadAvatar = (e: React.FormEvent<HTMLLabelElement>): void => {
     const target = e.target as HTMLInputElement;
@@ -383,7 +383,7 @@ function MemberModal({
       "state_changed",
       () => {},
       () => {
-        Swal.fire({ text: "上傳失敗！請再試一次", confirmButtonColor: "#5d7262" });
+        Swal.fire({ text: "上傳失敗！請再試一次", confirmButtonColor: "#5d7262", icon: "error" });
       },
       () => {
         getDownloadURL(uploadTask.snapshot.ref).then((downloadURL) => {
@@ -566,7 +566,7 @@ function PaymentModal({ setShowPaymentModal, bearMoney, setBearMoney, userId }: 
       return;
     }
     setBearMoney((prev) => prev + Number(paymentData.money));
-    Swal.fire({ title: "儲值成功！可以上課囉！", confirmButtonColor: "#5d7262" });
+    Swal.fire({ title: "儲值成功！可以上課囉！", confirmButtonColor: "#5d7262", icon: "success" });
     setShowPaymentModal(false);
     const docRef = doc(db, "users", userId);
     updateDoc(docRef, {
@@ -664,7 +664,7 @@ function Header() {
           <MycoursesLink
             onClick={() => {
               if (!isLogin) {
-                Swal.fire({ title: "您還沒登入唷！", confirmButtonColor: "#5d7262" });
+                Swal.fire({ title: "您還沒登入唷！", confirmButtonColor: "#5d7262", icon: "warning" });
                 setShowMemberModal(true);
                 return;
               }
@@ -685,7 +685,7 @@ function Header() {
             onClick={() => {
               if (!isLogin) {
                 setShowPaymentModal(false);
-                Swal.fire({ title: "您還沒登入唷！", confirmButtonColor: "#5d7262" });
+                Swal.fire({ title: "您還沒登入唷！", confirmButtonColor: "#5d7262", icon: "warning" });
                 setShowMemberModal(true);
                 return;
               }
@@ -702,7 +702,7 @@ function Header() {
             alt="cart"
             onClick={() => {
               if (!isLogin) {
-                Swal.fire({ title: "您還沒登入唷！", confirmButtonColor: "#5d7262" });
+                Swal.fire({ title: "您還沒登入唷！", confirmButtonColor: "#5d7262", icon: "warning" });
                 setShowMemberModal(true);
                 return;
               }

@@ -749,7 +749,7 @@ function VideoRoom() {
         const courses = docSnap.data().boughtCourses as string[];
         setBoughtCourses(courses);
         if (!courses.includes(courseId)) {
-          Swal.fire({ text: "您沒有購買此課程唷！", confirmButtonColor: "#5d7262" });
+          Swal.fire({ text: "您沒有購買此課程唷！", confirmButtonColor: "#5d7262", icon: "warning" });
           router.push("/");
         }
       }
@@ -814,7 +814,7 @@ function VideoRoom() {
       setSelectUnit(0);
       setSelectChpter((prev) => prev + 1);
     } else {
-      Swal.fire({ text: "恭喜您完課！", confirmButtonColor: "#5d7262" });
+      Swal.fire({ text: "恭喜您完課！", confirmButtonColor: "#5d7262", icon: "success" });
     }
   };
 

@@ -271,7 +271,7 @@ function Article() {
   const handleLikeArticle = async () => {
     if (typeof id !== "string") return;
     if (!isLogin) {
-      Swal.fire({ title: "登入後才能按讚唷！", confirmButtonColor: "#5d7262" });
+      Swal.fire({ title: "登入後才能按讚唷！", confirmButtonColor: "#5d7262", icon: "warning" });
       setShowMemberModal(true);
       return;
     }
@@ -298,7 +298,7 @@ function Article() {
   const handleLikeMessage = (index: number) => {
     if (typeof id !== "string") return;
     if (!isLogin) {
-      Swal.fire({ title: "登入後才能按讚唷！", confirmButtonColor: "#5d7262" });
+      Swal.fire({ title: "登入後才能按讚唷！", confirmButtonColor: "#5d7262", icon: "warning" });
       setShowMemberModal(true);
       return;
     }
@@ -322,12 +322,12 @@ function Article() {
 
   const handleMessage = async () => {
     if (!isLogin) {
-      Swal.fire({ title: "登入後才能留言唷！", confirmButtonColor: "#5d7262" });
+      Swal.fire({ title: "登入後才能留言唷！", confirmButtonColor: "#5d7262", icon: "warning" });
       setShowMemberModal(true);
       return;
     }
     if (!inputMessage.trim()) {
-      Swal.fire({ title: "請輸入內容！", confirmButtonColor: "#5d7262" });
+      Swal.fire({ title: "請輸入內容！", confirmButtonColor: "#5d7262", icon: "warning" });
       return;
     }
     if (typeof id !== "string") return;

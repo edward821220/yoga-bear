@@ -806,7 +806,7 @@ function CourseInfo() {
 
   const addToCart = async () => {
     if (!isLogin) {
-      Swal.fire({ title: "請先登入唷！", confirmButtonColor: "#5d7262" });
+      Swal.fire({ title: "請先登入唷！", confirmButtonColor: "#5d7262", icon: "warning" });
       setShowMemberModal(true);
       return;
     }
@@ -820,7 +820,7 @@ function CourseInfo() {
         price: courseData.price,
       }),
     });
-    Swal.fire({ title: "已加入購物車！", confirmButtonColor: "#5d7262" });
+    Swal.fire({ title: "已加入購物車！", confirmButtonColor: "#5d7262", icon: "success" });
     const docSnap = await getDoc(userRef);
     if (docSnap.exists()) {
       // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access

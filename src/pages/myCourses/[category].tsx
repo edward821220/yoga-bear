@@ -389,7 +389,7 @@ function VideoCourses({ uid }: { uid: string }) {
                   type="button"
                   onClick={async () => {
                     if (score === 0) {
-                      Swal.fire({ title: "請點選星星評分", confirmButtonColor: "#5d7262" });
+                      Swal.fire({ title: "請點選星星評分", confirmButtonColor: "#5d7262", icon: "warning" });
                       return;
                     }
                     const courseRef = doc(db, "video_courses", course.id);
@@ -400,7 +400,11 @@ function VideoCourses({ uid }: { uid: string }) {
                         comments,
                       }),
                     });
-                    Swal.fire({ text: "感謝您的評論～您的支持是我們最大的動力！", confirmButtonColor: "#5d7262" });
+                    Swal.fire({
+                      text: "感謝您的評論～您的支持是我們最大的動力！",
+                      confirmButtonColor: "#5d7262",
+                      icon: "success",
+                    });
                     setCourses(
                       produce((draft) => {
                         if (!draft) return;
@@ -497,7 +501,7 @@ function LaunchedVideoCourses({ uid }: { uid: string }) {
 }
 function UploadProgressModal({ progressBar }: { progressBar: { file: string; progress: number } }) {
   const handleClose = () => {
-    Swal.fire({ text: "課程上傳中，請勿關閉視窗！", confirmButtonColor: "#5d7262" });
+    Swal.fire({ text: "課程上傳中，請勿關閉視窗！", confirmButtonColor: "#5d7262", icon: "warning" });
   };
   return (
     <Modal handleClose={handleClose}>
@@ -609,7 +613,7 @@ function LaunchVideoCourse({ uid }: { uid: string }) {
       launchTime: Date.now(),
     });
     setShowMemberModal(false);
-    Swal.fire({ title: "課程上架完成！", confirmButtonColor: "#5d7262" });
+    Swal.fire({ title: "課程上架完成！", confirmButtonColor: "#5d7262", icon: "success" });
     router.push("/myCourses/launchedVideoCourses");
   };
 
@@ -698,7 +702,18 @@ function LaunchVideoCourse({ uid }: { uid: string }) {
                 src={Trash}
                 alt="remove"
                 onClick={() => {
-                  setChapters(chapters.filter((_, index) => index !== chapterIndex));
+                  Swal.fire({
+                    text: `確定要刪除嗎？`,
+                    icon: "warning",
+                    showCancelButton: true,
+                    confirmButtonColor: "#d33",
+                    cancelButtonColor: "#3085d6",
+                    confirmButtonText: "Yes!",
+                  }).then((result) => {
+                    if (result.isConfirmed) {
+                      setChapters(chapters.filter((_, index) => index !== chapterIndex));
+                    }
+                  });
                 }}
               />
             </LaunchFormLabelText>
@@ -723,14 +738,25 @@ function LaunchVideoCourse({ uid }: { uid: string }) {
                     src={Trash}
                     alt="remove"
                     onClick={() => {
-                      setChapters(
-                        produce((draft) => {
-                          const newChapter = draft.find((_, index) => index === chapterIndex);
-                          if (!newChapter) return;
-                          const newUnits = newChapter.units.filter((_, index) => index !== unitIndex);
-                          newChapter.units = newUnits;
-                        })
-                      );
+                      Swal.fire({
+                        text: `確定要刪除嗎？`,
+                        icon: "warning",
+                        showCancelButton: true,
+                        confirmButtonColor: "#d33",
+                        cancelButtonColor: "#3085d6",
+                        confirmButtonText: "Yes!",
+                      }).then((result) => {
+                        if (result.isConfirmed) {
+                          setChapters(
+                            produce((draft) => {
+                              const newChapter = draft.find((_, index) => index === chapterIndex);
+                              if (!newChapter) return;
+                              const newUnits = newChapter.units.filter((_, index) => index !== unitIndex);
+                              newChapter.units = newUnits;
+                            })
+                          );
+                        }
+                      });
                     }}
                   />
                 </LaunchFormLabelText>
@@ -817,14 +843,14 @@ function BeTeacher({
   const handleSubmit = (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
     if (!teacherIntroduction.trim() || !teacherExprience.trim())
-      Swal.fire({ text: "請輸入自我介紹及教學經歷", confirmButtonColor: "#5d7262" });
+      Swal.fire({ text: "請輸入自我介紹及教學經歷", confirmButtonColor: "#5d7262", icon: "warning" });
 
     const target = e.target as HTMLInputElement;
     const fileInput = target.querySelector("input[type=file]") as HTMLInputElement;
     if (fileInput.files) {
       const file = fileInput?.files[0];
       if (!file) {
-        Swal.fire({ title: "請上傳證照唷！", confirmButtonColor: "#5d7262" });
+        Swal.fire({ title: "請上傳證照唷！", confirmButtonColor: "#5d7262", icon: "warning" });
 
         return;
       }
@@ -834,7 +860,7 @@ function BeTeacher({
         "state_changed",
         () => {},
         () => {
-          Swal.fire({ text: "上傳失敗，請再試一次！", confirmButtonColor: "#5d7262" });
+          Swal.fire({ text: "上傳失敗，請再試一次！", confirmButtonColor: "#5d7262", icon: "error" });
         },
         () => {
           getDownloadURL(uploadTask.snapshot.ref).then(async (downloadURL) => {
@@ -847,7 +873,7 @@ function BeTeacher({
               beTeacherTime: Date.now(),
             });
             setUserData((prev) => ({ ...prev, identity: "teacher" }));
-            Swal.fire({ text: "恭喜成為老師～可以開始排課囉！", confirmButtonColor: "#5d7262" });
+            Swal.fire({ text: "恭喜成為老師～可以開始排課囉！", confirmButtonColor: "#5d7262", icon: "success" });
             router.push("/myCourses/teacherCalendar");
           });
         }

@@ -133,7 +133,7 @@ function Cart() {
 
   const handleCheckout = () => {
     if (!subtotal) {
-      Swal.fire({ title: "購物車沒東東唷！", confirmButtonColor: "#5d7262" });
+      Swal.fire({ title: "購物車沒東東唷！", confirmButtonColor: "#5d7262", icon: "warning" });
       return;
     }
     Swal.fire({
@@ -146,7 +146,7 @@ function Cart() {
     }).then((result) => {
       if (result.isConfirmed) {
         if (subtotal > bearMoney) {
-          Swal.fire({ text: "熊幣餘額不足唷！請加值～", confirmButtonColor: "#5d7262" });
+          Swal.fire({ text: "熊幣餘額不足唷！請加值～", confirmButtonColor: "#5d7262", icon: "warning" });
         } else {
           setBearMoney((prev) => prev - subtotal);
           setCartItems([]);
@@ -160,7 +160,7 @@ function Cart() {
               boughtCourses: arrayUnion(item.id),
             });
           });
-          Swal.fire({ text: "購買成功！可以去上課囉～", confirmButtonColor: "#5d7262" });
+          Swal.fire({ text: "購買成功！可以去上課囉～", confirmButtonColor: "#5d7262", icon: "success" });
           setOrderQty(0);
           router.push("/myCourses/videoCourses");
         }
@@ -178,7 +178,7 @@ function Cart() {
               <ItemPrice>價格</ItemPrice>
               <ItemRemove>刪除</ItemRemove>
             </CartItem>
-            {cartItems?.map((item, index) => (
+            {cartItems?.map((item) => (
               <CartItem key={item.id}>
                 <ItemInfo>
                   <CoverWrapper>
@@ -190,11 +190,27 @@ function Cart() {
                 <ItemRemove>
                   <RemoveIconWrapper
                     onClick={() => {
-                      setCartItems(cartItems?.filter((_, removeIndex) => index !== removeIndex));
-                      setOrderQty(orderQty - 1);
-                      const docRef = doc(db, "users", uid);
-                      updateDoc(docRef, {
-                        cartItems: arrayRemove({ cover: item.cover, name: item.name, price: item.price, id: item.id }),
+                      Swal.fire({
+                        text: `確定要刪除嗎？`,
+                        icon: "warning",
+                        showCancelButton: true,
+                        confirmButtonColor: "#d33",
+                        cancelButtonColor: "#3085d6",
+                        confirmButtonText: "Yes!",
+                      }).then((result) => {
+                        if (result.isConfirmed) {
+                          setCartItems(cartItems?.filter((removeItem) => item.id !== removeItem.id));
+                          setOrderQty(orderQty - 1);
+                          const docRef = doc(db, "users", uid);
+                          updateDoc(docRef, {
+                            cartItems: arrayRemove({
+                              cover: item.cover,
+                              name: item.name,
+                              price: item.price,
+                              id: item.id,
+                            }),
+                          });
+                        }
                       });
                     }}
                   >

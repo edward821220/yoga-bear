@@ -107,7 +107,7 @@ function Header({ appointmentData, ...restProps }: AppointmentTooltip.HeaderProp
             width={36}
             onClick={() => {
               if (!isLogin) {
-                Swal.fire({ title: "您還沒登入唷！", confirmButtonColor: "#5d7262" });
+                Swal.fire({ title: "您還沒登入唷！", confirmButtonColor: "#5d7262", icon: "warning" });
                 setShowMemberModal(true);
                 return;
               }
@@ -127,7 +127,7 @@ function Header({ appointmentData, ...restProps }: AppointmentTooltip.HeaderProp
                     students: arrayUnion({ username, email }),
                   });
                   if (price > bearMoney) {
-                    Swal.fire({ title: "熊幣餘額不足唷！請加值～", confirmButtonColor: "#5d7262" });
+                    Swal.fire({ title: "熊幣餘額不足唷！請加值～", confirmButtonColor: "#5d7262", icon: "warning" });
                     return;
                   }
                   setBearMoney((prev) => prev - price);

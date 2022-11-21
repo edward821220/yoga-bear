@@ -262,7 +262,7 @@ function Forum() {
           <Button
             onClick={() => {
               if (!isLogin) {
-                Swal.fire({ title: "登入後才能發問唷！", confirmButtonColor: "#5d7262" });
+                Swal.fire({ title: "登入後才能發問唷！", confirmButtonColor: "#5d7262", icon: "warning" });
                 setShowMemberModal(true);
                 return;
               }
