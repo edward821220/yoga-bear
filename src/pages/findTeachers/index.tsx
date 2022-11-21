@@ -285,7 +285,7 @@ function FindTeachers() {
           </BarSection>
         </Bar>
         <TeachersList>
-          {teachersList.map((teacher, index) => (
+          {teachersList.map((teacher) => (
             <Teacher key={teacher.uid}>
               <TeacherAvatar>
                 <Link href={`/findTeachers/reserve/${teacher.uid}`}>

@@ -5,7 +5,7 @@ import Swal from "sweetalert2";
 import { useRouter } from "next/router";
 import { useRecoilState } from "recoil";
 import { collection, doc, getDoc, getDocs, query, orderBy } from "firebase/firestore";
-import BannerPic from "../../../public/yoga-beach.jpeg";
+import BannerPic from "../../../public/banner0.jpeg";
 import LikeIcon from "../../../public/like.png";
 import MessageIcon from "../../../public/message.png";
 import Avatar from "../../../public/member.png";

@@ -63,6 +63,7 @@ const CalendarWrapper = styled.div`
   margin-top: 86px;
   border: 1px solid lightgray;
   box-shadow: 0 0 5px #00000050;
+  height: 602px;
 `;
 const Reviews = styled.ul`
   width: 100%;
