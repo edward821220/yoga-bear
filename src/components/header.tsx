@@ -18,6 +18,7 @@ import MemberLogo from "../../public/member.png";
 import MoneyIcon from "../../public/newMoney.png";
 import PlusMoneyIcon from "../../public/add.png";
 import MoneyBear from "../../public/money.png";
+import Loading from "../../public/loading.gif";
 
 const Wrapper = styled.header`
   display: flex;
@@ -156,7 +157,9 @@ const Avatar = styled.div`
   position: relative;
   width: 200px;
   height: 200px;
+  border-radius: 50%;
   margin-bottom: 20px;
+  overflow: hidden;
 `;
 const Label = styled.label``;
 const LabelText = styled.p`
@@ -297,6 +300,7 @@ function MemberModal({
   setBearMoney,
 }: MemberModalProps) {
   const router = useRouter();
+  const [isUploading, setIsUploading] = useState(false);
   const [errorMessage, setErrorMessage] = useState("");
   const [loginData, setloginData] = useState<Record<string, string>>({
     email: "",
@@ -374,6 +378,7 @@ function MemberModal({
     Swal.fire({ title: "恭喜您註冊成功！", confirmButtonColor: "#5d7262", icon: "success" });
   };
   const handleUploadAvatar = (e: React.FormEvent<HTMLLabelElement>): void => {
+    setIsUploading(true);
     const target = e.target as HTMLInputElement;
     if (!target.files) return;
     const file = target?.files[0];
@@ -386,16 +391,23 @@ function MemberModal({
         Swal.fire({ text: "上傳失敗！請再試一次", confirmButtonColor: "#5d7262", icon: "error" });
       },
       () => {
-        getDownloadURL(uploadTask.snapshot.ref).then((downloadURL) => {
+        getDownloadURL(uploadTask.snapshot.ref).then(async (downloadURL) => {
           const docRef = doc(db, "users", userData.uid);
-          updateDoc(docRef, {
+          await updateDoc(docRef, {
             photoURL: downloadURL,
           });
           setUserData({ ...userData, avatar: downloadURL });
+          setIsUploading(false);
         });
       }
     );
   };
+  if (isUploading)
+    return (
+      <Modal handleClose={handleClose}>
+        <Image src={Loading} alt="loading" style={{ margin: "0 auto" }} width={100} height={100} />
+      </Modal>
+    );
 
   return (
     <Modal handleClose={handleClose}>

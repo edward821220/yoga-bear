@@ -90,11 +90,16 @@ const ArticleUser = styled.div`
 `;
 const UserAvatarWrapper = styled.div`
   position: relative;
-  width: 20px;
-  height: 20px;
+  width: 36px;
+  height: 36px;
+  border-radius: 50%;
+  overflow: hidden;
   margin-right: 5px;
 `;
-const UserName = styled.span``;
+const UserName = styled.span`
+  font-size: 20px;
+  line-height: 36px;
+`;
 const ArticleInfo = styled.div`
   display: flex;
 `;

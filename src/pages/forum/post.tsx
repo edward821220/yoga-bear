@@ -51,6 +51,8 @@ const UserAvatarWrapper = styled.div`
   position: relative;
   width: 66px;
   height: 66px;
+  border-radius: 50%;
+  overflow: hidden;
   margin-right: 20px;
 `;
 const UserName = styled.span`

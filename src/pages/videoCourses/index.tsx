@@ -7,6 +7,7 @@ import { collection, getDocs } from "firebase/firestore";
 import { db } from "../../../lib/firebase";
 import StarIcon from "../../../public/star.png";
 import HalfStar from "../../../public/star-half.png";
+import Loading from "../../../public/loading.gif";
 
 const Wrapper = styled.div`
   background-color: ${(props) => props.theme.colors.color1};
@@ -223,7 +224,14 @@ function VideoCourses() {
       setSelectSort(sort);
     }
   };
-
+  if (coursesList.length === 0)
+    return (
+      <Wrapper>
+        <Container style={{ justifyContent: "center", height: "calc(100vh - 100px)" }}>
+          <Image src={Loading} alt="loading" width={100} height={100} />
+        </Container>
+      </Wrapper>
+    );
   return (
     <Wrapper>
       <Container>
