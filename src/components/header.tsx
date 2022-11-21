@@ -57,12 +57,12 @@ const MenuIconWrapper = styled.div`
     display: block;
   }
 `;
-const HeaderLinks = styled.ul`
+const HeaderLinks = styled.ul<{ showMenu: boolean }>`
   display: flex;
   align-items: center;
   margin-right: auto;
   @media screen and (max-width: 788px) {
-    display: block;
+    display: ${(props) => (props.showMenu ? "block" : "none")};
     align-items: center;
     flex-direction: column;
     position: absolute;
@@ -113,6 +113,10 @@ const MycoursesLink = styled.span`
 const Member = styled.ul`
   display: flex;
   align-items: center;
+  position: relative;
+  @media screen and (max-width: 468px) {
+    margin-bottom: 36px;
+  }
 `;
 
 const MoneyDisplay = styled.div`
@@ -133,7 +137,11 @@ const MoneyDisplay = styled.div`
     height: 36px;
   }
   @media screen and (max-width: 468px) {
-    display: none;
+    position: absolute;
+    transform: translate(-8px, 42px);
+    width: 100px;
+    height: 24px;
+    margin-right: 0;
   }
 `;
 
@@ -145,6 +153,10 @@ const MoneyIconWrapper = styled.div`
   @media screen and (max-width: 1024px) {
     width: 24px;
     height: 24px;
+  }
+  @media screen and (max-width: 468px) {
+    width: 17px;
+    height: 17px;
   }
 `;
 const MoneyQty = styled.p`
@@ -161,6 +173,10 @@ const MoneyPlusWrapper = styled.div`
   @media screen and (max-width: 1024px) {
     width: 24px;
     height: 24px;
+  }
+  @media screen and (max-width: 468px) {
+    width: 22px;
+    height: 22px;
   }
 `;
 
@@ -721,6 +737,7 @@ function PaymentModal({ setShowPaymentModal, bearMoney, setBearMoney, userId }: 
 }
 
 function Header() {
+  const [showMenu, setShowMenu] = useState(false);
   const [showPaymentModal, setShowPaymentModal] = useState(false);
   const [showMemberModal, setShowMemberModal] = useRecoilState(showMemberModalState);
   const [orderQty, setOrderQty] = useRecoilState(orderQtyState);
@@ -751,11 +768,18 @@ function Header() {
           <Image src={BearLogo} alt="logo" />
         </Link>
       </LogoWrapper>
-      <MenuLinksWrapper>
+      <MenuLinksWrapper
+        onMouseOver={() => {
+          setShowMenu(true);
+        }}
+        onMouseOut={() => {
+          setShowMenu(false);
+        }}
+      >
         <MenuIconWrapper>
           <Image src={MenuIcon} alt="menu" />
         </MenuIconWrapper>
-        <HeaderLinks>
+        <HeaderLinks showMenu={showMenu}>
           <HeaderLink>
             <Link href="/videoCourses">影音課程</Link>
           </HeaderLink>
