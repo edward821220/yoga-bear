@@ -6,7 +6,6 @@ import { useRouter } from "next/router";
 import { collection, getDocs, query, where } from "firebase/firestore";
 import produce from "immer";
 import { db } from "../../../lib/firebase";
-import BearAvatar from "../../../public/member.png";
 import StarIcon from "../../../public/star.png";
 import HalfStar from "../../../public/star-half.png";
 
@@ -58,7 +57,7 @@ const BarLink = styled.li<{ selectSort: boolean }>`
 const TeachersList = styled.ul`
   display: flex;
   flex-wrap: wrap;
-  width: 60%;
+  width: 66%;
 `;
 const Teacher = styled.li`
   flex-basis: 100%;
@@ -73,13 +72,19 @@ const Teacher = styled.li`
     margin-bottom: 0;
   }
 `;
-const TeacherAvatar = styled.div`
-  margin-right: 30px;
-  flex-basis: 15%;
+const TeacherAvatar = styled.div<{ avatar: string }>`
+  margin-right: 20px;
+  background: url(${(props) => props.avatar});
+  background-position: center;
+  background-repeat: no-repeat;
+  background-size: cover;
+  width: 80px;
+  height: 80px;
+  border-radius: 50%;
 `;
 const TeacherInfo = styled.div`
   font-size: 16px;
-  flex-basis: 85%;
+  flex-basis: 80%;
   display: flex;
   flex-direction: column;
   justify-content: center;
@@ -96,6 +101,8 @@ const TeacherIntroduction = styled.p<{ showMore: boolean }>`
   margin-right: 30px;
   height: ${(props) => (props.showMore ? "auto" : "97.8px")};
   overflow: hidden;
+  text-overflow: ellipsis;
+  box-direction: vertical;
   p {
     line-height: 24px;
   }
@@ -287,11 +294,9 @@ function FindTeachers() {
         <TeachersList>
           {teachersList.map((teacher) => (
             <Teacher key={teacher.uid}>
-              <TeacherAvatar>
-                <Link href={`/findTeachers/reserve/${teacher.uid}`}>
-                  <Image src={teacher.avatar || BearAvatar} alt="avatar" width={100} height={100} />
-                </Link>
-              </TeacherAvatar>
+              <Link href={`/findTeachers/reserve/${teacher.uid}`}>
+                <TeacherAvatar avatar={teacher.avatar} />
+              </Link>
               <TeacherInfo>
                 <TeacherName>{teacher.name}</TeacherName>
                 <TeacherIntroduction

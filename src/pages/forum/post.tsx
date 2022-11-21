@@ -7,7 +7,6 @@ import { collection, doc, setDoc } from "firebase/firestore";
 import { ref, uploadBytesResumable, getDownloadURL } from "firebase/storage";
 import { useRouter } from "next/router";
 import ReactQuill, { ReactQuillProps } from "react-quill";
-import Avatar from "../../../public/member.png";
 import { db, storage } from "../../../lib/firebase";
 import { AuthContext } from "../../contexts/authContext";
 import Bear from "../../../public/Yoga-Bear.png";
@@ -223,7 +222,7 @@ function Post() {
       <Container>
         <ArticleUser>
           <UserAvatarWrapper>
-            <Image src={userData.avatar || Avatar} alt="avatar" fill sizes="contain" />
+            <Image src={userData.avatar} alt="avatar" fill sizes="contain" />
           </UserAvatarWrapper>
           <UserName>{userData.username}</UserName>
         </ArticleUser>

@@ -54,9 +54,18 @@ export function AuthContextProvider({ children }: { children: React.ReactNode })
         email: res.user.email,
         identity,
         username,
+        photoURL:
+          "https://firebasestorage.googleapis.com/v0/b/yoga-bear-5faab.appspot.com/o/profile.png?alt=media&token=2fb4f433-e1b6-4f86-9b5d-b33d367e99b7",
       });
       if (typeof user.email === "string") {
-        setUserData({ uid: user.uid, email: user.email, identity, username, avatar: "" });
+        setUserData({
+          uid: user.uid,
+          email: user.email,
+          identity,
+          username,
+          avatar:
+            "https://firebasestorage.googleapis.com/v0/b/yoga-bear-5faab.appspot.com/o/profile.png?alt=media&token=2fb4f433-e1b6-4f86-9b5d-b33d367e99b7",
+        });
       }
       return user.uid;
     } catch (error) {

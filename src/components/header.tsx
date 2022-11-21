@@ -507,7 +507,7 @@ function MemberModal({
         <Form>
           <FormTitle>會員資訊</FormTitle>
           <Avatar>
-            <Image src={userData.avatar || MemberLogo} alt="avatar" fill sizes="contain" />
+            <Image src={userData.avatar} alt="avatar" fill sizes="contain" />
           </Avatar>
           <MemberInfo>用戶名稱：{userData.username}</MemberInfo>
           <MemberInfo>用戶身份：{userData.identity === "teacher" ? "老師" : "學生"}</MemberInfo>

@@ -7,7 +7,6 @@ import { Swiper, SwiperSlide } from "swiper/react";
 import { Pagination, Navigation } from "swiper";
 import { collection, query, where, limit, getDocs } from "firebase/firestore";
 import { db } from "../../lib/firebase";
-import Avatar from "../../public/member.png";
 import Bear from "../../public/bear-logo1.png";
 import BannerPic from "../../public/banner6.jpg";
 import "swiper/css";
@@ -392,7 +391,7 @@ export default function Home() {
                   }}
                 >
                   <AvatarWrapper>
-                    <Image src={teacher.avatar || Avatar} alt="avatar" fill sizes="contain" />
+                    <Image src={teacher.avatar} alt="avatar" fill sizes="contain" />
                   </AvatarWrapper>
                   <Info>{teacher.name}</Info>
                 </Course>
