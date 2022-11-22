@@ -953,7 +953,7 @@ function BeTeacher({
         <Editor
           content={teacherIntroduction}
           setContent={setTeacherIntroduction}
-          style={{ width: "500px", height: "300px", border: "1px solid gray", marginBottom: "10px" }}
+          style={{}}
           placeholder="簡短介紹讓同學認識～"
         />
       </LaunchFormLabel>
@@ -962,7 +962,7 @@ function BeTeacher({
         <Editor
           content={teacherExprience}
           setContent={setTeacherExprience}
-          style={{ width: "500px", height: "300px", border: "1px solid gray", marginBottom: "10px" }}
+          style={{}}
           placeholder="簡短描述過往經歷～"
         />
       </LaunchFormLabel>
