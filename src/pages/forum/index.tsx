@@ -29,16 +29,31 @@ const BannerImage = styled(Image)`
   height: auto;
   width: 100%;
   transform: translate(0, -30%);
+  @media screen and (max-width: 788px) {
+    transform: translate(0, -20%);
+  }
+  @media screen and (max-width: 666px) {
+    transform: translate(0, -10%);
+  }
 `;
 const Container = styled.div`
   max-width: 1096px;
   margin: 0 auto;
   display: flex;
   padding: 0 10px;
+  @media screen and (max-width: 1066px) {
+    flex-wrap: wrap;
+    flex-direction: column-reverse;
+    justify-content: center;
+    align-items: center;
+  }
 `;
 const Main = styled.main`
   flex-basis: 70%;
   margin-right: 10px;
+  @media screen and (max-width: 1066px) {
+    width: 80%;
+  }
 `;
 const Aside = styled.div`
   flex-basis: 30%;
@@ -52,6 +67,13 @@ const Aside = styled.div`
   border: 1px solid ${(props) => props.theme.colors.color2};
   border-radius: 5px;
   padding: 0 10px;
+  @media screen and (max-width: 1066px) {
+    flex-basis: 0;
+    width: 40%;
+    min-width: 320px;
+    padding: 20px 10px;
+    margin-bottom: 20px;
+  }
 `;
 const AsideTitle = styled.h3`
   font-size: 20px;
@@ -83,6 +105,9 @@ const Article = styled.li`
   padding: 35px 20px;
   height: 180px;
   cursor: pointer;
+  @media screen and (max-width: 444px) {
+    height: auto;
+  }
 `;
 const ArticleUser = styled.div`
   display: flex;
@@ -106,6 +131,7 @@ const ArticleInfo = styled.div`
 const ArticleText = styled.div`
   flex-basis: 75%;
   margin-right: 10px;
+  overflow: hidden;
 `;
 const PicPreview = styled.div`
   position: relative;
@@ -134,10 +160,16 @@ const ArticlePreview = styled.div`
 const OtherInfos = styled.div`
   display: flex;
   justify-content: space-between;
+  @media screen and (max-width: 444px) {
+    flex-wrap: wrap;
+  }
 `;
 const ArticleTime = styled.p``;
 const ArticleActivity = styled.div`
   display: flex;
+  @media screen and (max-width: 444px) {
+    margin-bottom: 10px;
+  }
 `;
 const IconWrapper = styled.div`
   position: relative;
