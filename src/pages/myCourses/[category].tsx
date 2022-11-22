@@ -962,9 +962,11 @@ function MyCourses() {
             <BarLink active={typeof category === "string" && category === "studentCalendar"}>
               <Link href="/myCourses/studentCalendar">已預約課表</Link>
             </BarLink>
-            <BarLink active={typeof category === "string" && category === "beTeacher"}>
-              <Link href="/myCourses/beTeacher">我要當老師</Link>
-            </BarLink>
+            {userData.identity === "student" && (
+              <BarLink active={typeof category === "string" && category === "beTeacher"}>
+                <Link href="/myCourses/beTeacher">我要當老師</Link>
+              </BarLink>
+            )}
           </BarSection>
         )}
         {userData.identity === "teacher" && teacherAuthority && (

@@ -95,6 +95,11 @@ const HeaderLink = styled.li`
     }
   }
 `;
+const HeaderLinkTeacher = styled(HeaderLink)`
+  @media screen and (max-width: 1140px) {
+    display: none;
+  }
+`;
 
 const MycoursesLink = styled.span`
   color: ${(props) => props.theme.colors.color2};
@@ -826,6 +831,11 @@ function Header() {
               我的課程
             </MycoursesLink>
           </HeaderLink>
+          {userData.identity === "teacher" && (
+            <HeaderLinkTeacher>
+              <Link href="/myCourses/launchVideoCourse">老師開課</Link>
+            </HeaderLinkTeacher>
+          )}
         </HeaderLinks>
       </MenuLinksWrapper>
       <Member>
