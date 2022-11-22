@@ -20,6 +20,9 @@ const Container = styled.div`
   display: flex;
   align-items: center;
   flex-direction: column;
+  @media screen and (max-width: 1280px) {
+    width: 96%;
+  }
 `;
 const Bar = styled.div`
   width: 100%;
@@ -36,6 +39,9 @@ const BarTitle = styled.h3`
   font-weight: bold;
   margin-right: 20px;
   color: ${(props) => props.theme.colors.color2};
+  @media screen and (max-width: 540px) {
+    display: none;
+  }
 `;
 const BarLink = styled.li<{ selectSort: boolean }>`
   font-size: 16px;
@@ -47,6 +53,13 @@ const BarLink = styled.li<{ selectSort: boolean }>`
   &:hover {
     color: ${(props) => props.theme.colors.color3};
   }
+  @media screen and (max-width: 540px) {
+    font-size: 15px;
+    margin-right: 10px;
+    &:last-child {
+      margin-right: 0;
+    }
+  }
 `;
 const CoursesList = styled.ul`
   display: grid;
@@ -54,6 +67,15 @@ const CoursesList = styled.ul`
   grid-column-gap: calc((1024px - 900px) / 2);
   grid-row-gap: 20px;
   width: 80%;
+  @media screen and (max-width: 1280px) {
+    display: flex;
+    justify-content: space-between;
+    flex-wrap: wrap;
+    margin: 0 auto;
+  }
+  @media screen and (max-width: 888px) {
+    justify-content: center;
+  }
 `;
 const Course = styled.li`
   color: ${(props) => props.theme.colors.color2};
@@ -61,12 +83,31 @@ const Course = styled.li`
   border: 1px solid lightgray;
   border-radius: 5px;
   box-shadow: 0 0 5px #00000050;
+  @media screen and (max-width: 1280px) {
+    flex-basis: 45%;
+  }
+  @media screen and (max-width: 888px) {
+    flex-basis: 80%;
+  }
 `;
 const CourseCover = styled.div`
   position: relative;
   width: 300px;
   height: 180px;
   margin-bottom: 10px;
+  @media screen and (max-width: 1280px) {
+    width: 100%;
+    height: 210px;
+  }
+  @media screen and (max-width: 888px) {
+    height: 240px;
+  }
+  @media screen and (max-width: 540px) {
+    height: 200px;
+  }
+  @media screen and (max-width: 450px) {
+    height: 150px;
+  }
 `;
 const CourseInfos = styled.div`
   width: 100%;
@@ -97,6 +138,10 @@ const StarWrapper = styled.div`
   position: relative;
   width: 20px;
   height: 20px;
+  @media screen and (max-width: 450px) {
+    width: 16px;
+    height: 16px;
+  }
 `;
 
 interface CourseInterface {
@@ -277,7 +322,7 @@ function VideoCourses() {
             <Course key={course.id}>
               <CourseCover>
                 <Link href={`/videoCourses/courseDetail/${course.id}`}>
-                  <Image src={course.cover} alt="cover" fill />
+                  <Image src={course.cover} alt="cover" fill sizes="contain" />
                 </Link>
               </CourseCover>
               <CourseInfos>
