@@ -20,11 +20,19 @@ const TeacherContainer = styled.div`
   border-bottom: 2px solid #654116;
   padding-bottom: 30px;
   margin-bottom: 30px;
+  @media screen and (max-width: 1280px) {
+    flex-wrap: wrap;
+    justify-content: center;
+  }
 `;
 
 const TeacherDetail = styled.div`
   flex-basis: 40%;
   margin-right: 20px;
+  @media screen and (max-width: 1280px) {
+    flex-basis: 70%;
+    margin-right: 0;
+  }
 `;
 const TeacherInfo = styled.div`
   display: flex;
@@ -64,6 +72,10 @@ const CalendarWrapper = styled.div`
   border: 1px solid lightgray;
   box-shadow: 0 0 5px #00000050;
   height: 602px;
+  @media screen and (max-width: 1280px) {
+    max-width: 98%;
+    margin-top: 10px;
+  }
 `;
 const Reviews = styled.ul`
   width: 100%;
@@ -100,6 +112,13 @@ const Review = styled.li`
   height: 150px;
   padding: 24px;
   margin-bottom: 20px;
+  @media screen and (max-width: 1280px) {
+    min-width: 770px;
+  }
+  @media screen and (max-width: 780px) {
+    min-width: 0;
+    width: 95%;
+  }
 `;
 const User = styled.div`
   display: flex;
@@ -116,6 +135,10 @@ const AvatarWrapper = styled.div`
   border-radius: 50%;
   overflow: hidden;
   margin-bottom: 10px;
+  @media screen and (max-width: 780px) {
+    width: 46px;
+    height: 46px;
+  }
 `;
 const UserName = styled.p`
   text-align: center;
@@ -130,9 +153,16 @@ const StarWrapper = styled.div`
   position: relative;
   width: 24px;
   height: 24px;
+  @media screen and (max-width: 780px) {
+    width: 20px;
+    height: 20px;
+  }
 `;
 const Comments = styled.p`
   font-size: 18px;
+  @media screen and (max-width: 780px) {
+    font-size: 16px;
+  }
 `;
 
 const Class = styled.p`
