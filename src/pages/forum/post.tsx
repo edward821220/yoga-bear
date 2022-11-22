@@ -116,11 +116,17 @@ const SpeechBubble = styled.div`
     width: 0;
     height: 0;
   }
+  @media screen and (max-width: 1280px) {
+    display: none;
+  }
 `;
 const BearWrapper = styled.div`
   position: fixed;
   bottom: 20px;
   right: 60px;
+  @media screen and (max-width: 1280px) {
+    display: none;
+  }
 `;
 
 const formats = [

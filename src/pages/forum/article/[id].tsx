@@ -20,6 +20,9 @@ const Wrapper = styled.div`
   background-color: ${(props) => props.theme.colors.color1};
   min-height: calc(100vh - 100px);
   padding: 20px 0;
+  @media screen and (max-width: 888px) {
+    padding: 10px 5px;
+  }
 `;
 
 const Container = styled.div`
@@ -40,6 +43,8 @@ const UserAvatarWrapper = styled.div`
   width: 30px;
   height: 30px;
   margin-right: 10px;
+  border-radius: 50%;
+  overflow: hidden;
 `;
 const UserName = styled.p`
   font-size: 20px;
@@ -180,6 +185,9 @@ const MessageTextArea = styled.textarea`
   &:focus {
     outline: none;
   }
+  @media screen and (max-width: 555px) {
+    flex-basis: 80%;
+  }
 `;
 const Button = styled.button`
   flex-basis: 8%;
@@ -189,6 +197,9 @@ const Button = styled.button`
   height: 40px;
   padding: 5px;
   cursor: pointer;
+  @media screen and (max-width: 555px) {
+    flex-basis: 15%;
+  }
 `;
 
 interface MessageInterface {
