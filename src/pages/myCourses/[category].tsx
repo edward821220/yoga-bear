@@ -53,7 +53,9 @@ const BarLink = styled.li<{ active: boolean }>`
   a {
     text-align: center;
     transition: 0.2s color linear;
-    color: ${(props) => (props.active ? props.theme.colors.color3 : props.theme.colors.color2)};
+    color: ${(props) => (props.active ? props.theme.colors.color3 : props.theme.colors.color6)};
+    border: ${(props) => (props.active ? "1px solid gray" : "none")};
+    padding: 2px 5px;
     &:hover {
       color: ${(props) => props.theme.colors.color3};
     }
@@ -79,6 +81,18 @@ const LaunchForm = styled.form`
   padding-top: 20px;
   padding-bottom: 10px;
   margin: 0 auto;
+  @media screen and (max-width: 950px) {
+    min-width: 600px;
+  }
+  @media screen and (max-width: 628px) {
+    min-width: 550px;
+  }
+  @media screen and (max-width: 566px) {
+    min-width: 430px;
+  }
+  @media screen and (max-width: 422px) {
+    min-width: 380px;
+  }
 `;
 const LaunchFormLabel = styled.label`
   display: flex;
@@ -86,6 +100,18 @@ const LaunchFormLabel = styled.label`
   justify-content: center;
   align-items: center;
   margin-bottom: 20px;
+  .ql-editor {
+    color: #000;
+    width: 500px;
+    height: 300px;
+    border: 1px solid gray;
+    @media screen and (max-width: 566px) {
+      width: 400px;
+    }
+    @media screen and (max-width: 422px) {
+      width: 350px;
+    }
+  }
 `;
 const LaunchFormLabelText = styled.div`
   display: flex;
@@ -100,7 +126,14 @@ const LaunchFormLabelInput = styled.input`
   line-height: 24px;
   padding-left: 5px;
   margin-bottom: 20px;
+  @media screen and (max-width: 566px) {
+    width: 400px;
+  }
+  @media screen and (max-width: 422px) {
+    width: 350px;
+  }
 `;
+
 const LaunchFormLabelFile = styled.label`
   display: flex;
   justify-content: center;
@@ -161,6 +194,15 @@ const CoursesList = styled.ul`
   grid-column-gap: calc((1024px - 900px) / 2);
   grid-row-gap: 20px;
   width: 80%;
+  @media screen and (max-width: 1280px) {
+    display: flex;
+    justify-content: space-between;
+    flex-wrap: wrap;
+    margin: 0 auto;
+  }
+  @media screen and (max-width: 888px) {
+    justify-content: center;
+  }
 `;
 const Course = styled.li`
   color: ${(props) => props.theme.colors.color2};
@@ -168,12 +210,31 @@ const Course = styled.li`
   border: 1px solid lightgrey;
   box-shadow: 0 0 5px #00000050;
   border-radius: 5px;
+  @media screen and (max-width: 1280px) {
+    flex-basis: 45%;
+  }
+  @media screen and (max-width: 888px) {
+    flex-basis: 80%;
+  }
 `;
 const CourseCover = styled.div`
   position: relative;
   width: 300px;
   height: 180px;
   margin-bottom: 10px;
+  @media screen and (max-width: 1280px) {
+    width: 100%;
+    height: 210px;
+  }
+  @media screen and (max-width: 888px) {
+    height: 240px;
+  }
+  @media screen and (max-width: 540px) {
+    height: 200px;
+  }
+  @media screen and (max-width: 450px) {
+    height: 150px;
+  }
 `;
 const CourseInfos = styled.div`
   position: relative;
@@ -220,6 +281,9 @@ const CalendarWrapper = styled.div`
   margin: 0 auto;
   border: 1px solid lightgray;
   box-shadow: 0 0 5px #00000050;
+  @media screen and (max-width: 1280px) {
+    width: 98%;
+  }
 `;
 const ReviewForm = styled.form`
   display: flex;
@@ -244,6 +308,10 @@ const StarWrapper = styled.div`
   width: 24px;
   height: 24px;
   cursor: pointer;
+  @media screen and (max-width: 450px) {
+    width: 16px;
+    height: 16px;
+  }
 `;
 
 interface Review {
@@ -649,12 +717,7 @@ function LaunchVideoCourse({ uid }: { uid: string }) {
         </LaunchFormLabel>
         <LaunchFormLabel>
           <LaunchFormLabelText>課程描述</LaunchFormLabelText>
-          <Editor
-            content={introduction}
-            setContent={setIntroduction}
-            style={{ color: "#000", width: "500px", height: "300px", border: "1px solid gray" }}
-            placeholder="請輸入課程簡介"
-          />
+          <Editor content={introduction} setContent={setIntroduction} style={{}} placeholder="請輸入課程簡介" />
         </LaunchFormLabel>
         <LaunchFormLabelFile>
           <LaunchFormLabelFileButton>上傳課程封面</LaunchFormLabelFileButton>
