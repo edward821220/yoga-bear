@@ -316,7 +316,33 @@ const Button = styled.button`
 const ErrorMessage = styled.p`
   color: red;
 `;
-
+const LabelFile = styled.label`
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  margin-bottom: 10px;
+  cursor: pointer;
+`;
+const LabelButtonFile = styled.div`
+  font-size: 16px;
+  text-align: center;
+  color: gray;
+  background-color: white;
+  min-width: 100px;
+  max-width: 150px;
+  border: 1px solid gray;
+  border-radius: 5px;
+  padding: 10px;
+  margin: 0 auto;
+  margin-bottom: 10px;
+`;
+const LabelInputFile = styled.input`
+  display: none;
+  width: 500px;
+  line-height: 24px;
+  padding-left: 5px;
+  margin-bottom: 20px;
+`;
 const loginForm = [
   { key: "email", title: "Email", type: "email", placeholder: "請輸入電子信箱" },
   {
@@ -607,10 +633,10 @@ function MemberModal({
                   placeholder="簡短描述過往經歷～"
                 />
               </Label>
-              <Label>
-                <LabelText>證照上傳</LabelText>
-                <FormInput type="file" accept="image/*, application/pdf" required />
-              </Label>
+              <LabelFile>
+                <LabelButtonFile>證照上傳</LabelButtonFile>
+                <LabelInputFile type="file" accept="image/*, application/pdf" required />
+              </LabelFile>
             </>
           )}
           <Button type="submit">送出</Button>

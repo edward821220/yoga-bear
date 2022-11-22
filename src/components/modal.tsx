@@ -11,17 +11,26 @@ const ModalBackdrop = styled.div`
   width: 100%;
   height: 100%;
   background-color: rgba(0, 0, 0, 0.5);
-  z-index: 8888;
+  z-index: 6666;
 `;
 const ModalContent = styled.div`
   position: relative;
   width: 24%;
-  height: 60%;
+  min-width: 300px;
+  height: 60vh;
   overflow-y: auto;
   margin: 150px auto;
   background-color: ${(props) => props.theme.colors.color4};
   color: ${(props) => props.theme.colors.color2};
   padding: 20px;
+  @media screen and (max-width: 1280px) {
+    height: 50vh;
+  }
+  @media screen and (max-width: 888px) {
+  }
+  @media screen and (max-width: 666px) {
+    min-width: 300px;
+  }
 `;
 const CloseButton = styled.div`
   width: 24px;
