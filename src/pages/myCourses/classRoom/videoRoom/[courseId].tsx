@@ -117,6 +117,12 @@ const Video = styled.video<{ isFullScreen: boolean; showToolBar: boolean; isFull
   @media screen and (max-width: 760px) {
     width: ${(props) => (props.isFullScreen || props.isFullWindow ? "100vw" : "98vw")};
   }
+  @media screen and (max-width: 600px) {
+    height: ${(props) => (props.isFullScreen || props.isFullWindow ? "100vh" : "300px")};
+  }
+  @media screen and (max-width: 500px) {
+    height: ${(props) => (props.isFullScreen || props.isFullWindow ? "100vh" : "240px")};
+  }
 `;
 const ChapterSelector = styled.div`
   display: flex;
