@@ -44,9 +44,7 @@ const LogoWrapper = styled.div`
 `;
 const MenuLinksWrapper = styled.div`
   position: relative;
-  @media screen and (max-width: 788px) {
-    margin-right: auto;
-  }
+  margin-right: auto;
 `;
 const MenuIconWrapper = styled.div`
   position: relative;
@@ -60,7 +58,6 @@ const MenuIconWrapper = styled.div`
 const HeaderLinks = styled.ul<{ showMenu: boolean }>`
   display: flex;
   align-items: center;
-  margin-right: auto;
   @media screen and (max-width: 788px) {
     display: ${(props) => (props.showMenu ? "block" : "none")};
     align-items: center;

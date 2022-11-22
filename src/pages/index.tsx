@@ -72,10 +72,19 @@ const BannerImage = styled(Image)`
   height: auto;
   width: 100%;
   transform: translate(0, -32%);
+  @media screen and (max-width: 888px) {
+    transform: translate(0, -10%);
+  }
+  @media screen and (max-width: 388px) {
+    transform: translate(0, 0);
+  }
 `;
 const Container = styled.div`
   max-width: 1280px;
   margin: 0 auto;
+  @media screen and (max-width: 1280px) {
+    max-width: 92%;
+  }
 `;
 const Title = styled.h2`
   font-size: 28px;
@@ -83,6 +92,12 @@ const Title = styled.h2`
   text-align: center;
   color: ${(props) => props.theme.colors.color2};
   margin-top: 60px;
+  @media screen and (max-width: 888px) {
+    font-size: 26px;
+  }
+  @media screen and (max-width: 388px) {
+    font-size: 24px;
+  }
 `;
 const Reasons = styled.ul`
   display: flex;
@@ -91,12 +106,21 @@ const Reasons = styled.ul`
   align-items: center;
   margin-top: 60px;
   gap: 60px 0;
+  @media screen and (max-width: 1280px) {
+    gap: 40px 10px;
+  }
 `;
 const Reason = styled.li`
   flex-basis: 48%;
   display: flex;
   justify-content: center;
   align-items: center;
+  @media screen and (max-width: 1280px) {
+    flex-basis: 36%;
+  }
+  @media screen and (max-width: 888px) {
+    flex-basis: 100%;
+  }
 `;
 const ReasonIcon = styled(Image)`
   width: 50px;
@@ -107,6 +131,9 @@ const ReasonContent = styled.div`
   border-left: 1px solid ${(props) => props.theme.colors.color2};
   padding-left: 10px;
   width: 240px;
+  @media screen and (max-width: 1280px) {
+    width: 240px;
+  }
 `;
 const ReasonTitle = styled.h4`
   font-size: 20px;
@@ -255,9 +282,9 @@ export default function Home() {
           </Reasons>
           <Title>推薦課程</Title>
           <Swiper
-            slidesPerView={3}
-            spaceBetween={200}
-            slidesPerGroup={3}
+            slidesPerView={1}
+            spaceBetween={0}
+            slidesPerGroup={1}
             loop
             loopFillGroupWithBlank
             pagination={{
@@ -266,6 +293,20 @@ export default function Home() {
             navigation
             modules={[Pagination, Navigation]}
             className="mySwiper"
+            breakpoints={{
+              888: {
+                width: 888,
+                slidesPerView: 2,
+                slidesPerGroup: 2,
+                spaceBetween: 50,
+              },
+              1280: {
+                width: 1280,
+                slidesPerView: 3,
+                slidesPerGroup: 3,
+                spaceBetween: 200,
+              },
+            }}
           >
             {coursesList?.map((course) => (
               <SwiperSlide key={course.id}>
@@ -371,9 +412,9 @@ export default function Home() {
           </Reasons>
           <Title>推薦老師</Title>
           <Swiper
-            slidesPerView={5}
-            spaceBetween={80}
-            slidesPerGroup={5}
+            slidesPerView={1}
+            slidesPerGroup={1}
+            spaceBetween={0}
             loop
             loopFillGroupWithBlank
             pagination={{
@@ -382,6 +423,38 @@ export default function Home() {
             navigation
             modules={[Pagination, Navigation]}
             className="mySwiper"
+            breakpoints={{
+              600: {
+                width: 600,
+                slidesPerView: 2,
+                slidesPerGroup: 2,
+                spaceBetween: 80,
+              },
+              700: {
+                width: 700,
+                slidesPerView: 3,
+                slidesPerGroup: 3,
+                spaceBetween: 80,
+              },
+              850: {
+                width: 850,
+                slidesPerView: 4,
+                slidesPerGroup: 4,
+                spaceBetween: 80,
+              },
+              1000: {
+                width: 1000,
+                slidesPerView: 5,
+                slidesPerGroup: 5,
+                spaceBetween: 80,
+              },
+              1280: {
+                width: 1280,
+                slidesPerView: 5,
+                slidesPerGroup: 5,
+                spaceBetween: 180,
+              },
+            }}
           >
             {teachersList?.map((teacher) => (
               <SwiperSlide key={teacher.id}>
