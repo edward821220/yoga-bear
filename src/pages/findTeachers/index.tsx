@@ -43,6 +43,9 @@ const BarTitle = styled.h3`
   font-weight: bold;
   margin-right: 20px;
   color: ${(props) => props.theme.colors.color2};
+  @media screen and (max-width: 488px) {
+    display: none;
+  }
 `;
 const BarLink = styled.li<{ selectSort: boolean }>`
   font-size: 16px;
@@ -59,6 +62,13 @@ const TeachersList = styled.ul`
   display: flex;
   flex-wrap: wrap;
   width: 66%;
+  @media screen and (max-width: 1280px) {
+    min-width: 800px;
+  }
+  @media screen and (max-width: 888px) {
+    min-width: 0%;
+    width: 99%;
+  }
 `;
 const Teacher = styled.li`
   flex-basis: 100%;
@@ -82,6 +92,11 @@ const TeacherAvatar = styled.div<{ avatar: string }>`
   width: 80px;
   height: 80px;
   border-radius: 50%;
+  @media screen and (max-width: 588px) {
+    width: 66px;
+    height: 66px;
+    margin-right: 10px;
+  }
 `;
 const TeacherInfo = styled.div`
   font-size: 16px;
@@ -90,6 +105,9 @@ const TeacherInfo = styled.div`
   flex-direction: column;
   justify-content: center;
   color: ${(props) => props.theme.colors.color7};
+  @media screen and (max-width: 588px) {
+    font-size: 14px;
+  }
 `;
 const TeacherName = styled.p`
   font-size: 18px;
@@ -104,16 +122,25 @@ const TeacherIntroduction = styled.p<{ showMore: boolean }>`
   overflow: hidden;
   p {
     line-height: 24px;
+    @media screen and (max-width: 588px) {
+      line-height: 20px;
+    }
   }
 `;
 
 const TeacherScore = styled.div`
   display: flex;
+  @media screen and (max-width: 588px) {
+    flex-wrap: wrap;
+  }
 `;
 const TeacherReviewsInfo = styled.p``;
 const StarIcons = styled.div`
   display: flex;
   margin-right: 10px;
+  @media screen and (max-width: 588px) {
+    margin-bottom: 10px;
+  }
 `;
 const Button = styled.button`
   display: block;
@@ -125,6 +152,12 @@ const Button = styled.button`
   padding: 5px 10px;
   margin-bottom: 10px;
   cursor: pointer;
+  @media screen and (max-width: 588px) {
+    min-width: 0;
+    max-width: 50px;
+    height: 60px;
+    padding: 5px 5px;
+  }
 `;
 const ShowMoreButton = styled.div`
   font-weight: bold;
@@ -141,6 +174,10 @@ const StarWrapper = styled.div`
   position: relative;
   width: 20px;
   height: 20px;
+  @media screen and (max-width: 588px) {
+    width: 16px;
+    height: 16px;
+  }
 `;
 
 interface TeacherInterface {
