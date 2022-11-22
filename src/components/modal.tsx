@@ -24,11 +24,6 @@ const ModalContent = styled.div`
   color: ${(props) => props.theme.colors.color2};
   padding: 20px;
   @media screen and (max-width: 1280px) {
-    height: 50vh;
-  }
-  @media screen and (max-width: 888px) {
-  }
-  @media screen and (max-width: 666px) {
     min-width: 300px;
   }
 `;
