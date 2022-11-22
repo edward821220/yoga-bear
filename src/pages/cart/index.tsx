@@ -23,6 +23,12 @@ const Container = styled.div`
 const CartContainer = styled.div`
   display: flex;
   color: ${(props) => props.theme.colors.color2};
+  @media screen and (max-width: 1280px) {
+    flex-direction: column;
+    align-items: center;
+    width: 90%;
+    margin: 0 auto;
+  }
 `;
 
 const CartItems = styled.ul`
@@ -32,6 +38,11 @@ const CartItems = styled.ul`
   border-radius: 5px;
   padding: 20px 10px 0px 10px;
   margin-right: 20px;
+  @media screen and (max-width: 1280px) {
+    width: 100%;
+    margin-right: 0;
+    margin-bottom: 20px;
+  }
 `;
 const CartItem = styled.li`
   display: flex;
@@ -42,26 +53,69 @@ const CartItem = styled.li`
   &:last-child {
     border-bottom: none;
   }
+  @media screen and (max-width: 810px) {
+    text-align: center;
+  }
+  @media screen and (max-width: 450px) {
+    text-align: left;
+  }
 `;
 const ItemInfo = styled.div`
   flex-basis: 70%;
   display: flex;
+  @media screen and (max-width: 810px) {
+    flex-direction: column;
+  }
+  @media screen and (max-width: 566px) {
+    flex-basis: 60%;
+  }
+  @media screen and (max-width: 512px) {
+    flex-basis: 50%;
+  }
 `;
 const CoverWrapper = styled.div`
   width: 300px;
   height: 180px;
   position: relative;
   margin-right: 20px;
+  @media screen and (max-width: 810px) {
+    margin-bottom: 10px;
+  }
+  @media screen and (max-width: 566px) {
+    width: 225px;
+    height: 135px;
+  }
+  @media screen and (max-width: 512px) {
+    width: 150px;
+    height: 90px;
+  }
+  @media screen and (max-width: 450px) {
+    width: 120px;
+    height: 72px;
+  }
 `;
-const ItemName = styled.p``;
+const ItemName = styled.p`
+  @media screen and (max-width: 810px) {
+    text-align: center;
+  }
+  @media screen and (max-width: 450px) {
+    text-align: left;
+  }
+`;
 
 const ItemPrice = styled.p`
   flex-basis: 15%;
+  @media screen and (max-width: 512px) {
+    flex-basis: 25%;
+  }
 `;
 const ItemRemove = styled.div`
   flex-basis: 10%;
   display: flex;
   justify-content: center;
+  @media screen and (max-width: 512px) {
+    flex-basis: 15%;
+  }
 `;
 const RemoveIconWrapper = styled.div`
   position: relative;
@@ -78,6 +132,14 @@ const OrderDetails = styled.div`
   border: 2px solid ${(props) => props.theme.colors.color2};
   border-radius: 5px;
   padding: 20px 10px;
+  @media screen and (max-width: 1280px) {
+    min-width: 350px;
+    align-self: flex-end;
+  }
+  @media screen and (max-width: 566px) {
+    min-width: 250px;
+    height: 135px;
+  }
 `;
 const DetailsTitle = styled.h3`
   font-size: 18px;
@@ -107,6 +169,10 @@ const Button = styled.button`
   width: 30%;
   margin: 0 auto;
   cursor: pointer;
+  @media screen and (max-width: 566px) {
+    font-size: 14px;
+    padding: 5px;
+  }
 `;
 
 function Cart() {
