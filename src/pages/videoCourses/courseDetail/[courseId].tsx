@@ -58,6 +58,12 @@ const CourseContainer = styled.div<{ backgroundImage: string }>`
     background-color: #e9dfc799;
     backdrop-filter: blur(12px);
   }
+  @media screen and (max-width: 1188px) {
+    height: auto;
+    &::before {
+      height: auto;
+    }
+  }
 `;
 const Title = styled.h2`
   font-size: 40px;
@@ -65,9 +71,16 @@ const Title = styled.h2`
   color: ${(props) => props.theme.colors.color2};
   margin-bottom: 20px;
   z-index: 8;
+  @media screen and (max-width: 800px) {
+    font-size: 32px;
+  }
 `;
 const CourseRoom = styled.div`
   display: flex;
+  @media screen and (max-width: 1188px) {
+    flex-wrap: wrap;
+    justify-content: center;
+  }
 `;
 const VideoContainer = styled.div<{ isFullScreen: boolean; isFullWindow: boolean }>`
   position: ${(props) => (props.isFullWindow ? "fixed" : "relative")};
@@ -77,6 +90,18 @@ const VideoContainer = styled.div<{ isFullScreen: boolean; isFullWindow: boolean
   width: ${(props) => (props.isFullScreen || props.isFullWindow ? "100vw" : "754px")};
   height: ${(props) => (props.isFullScreen || props.isFullWindow ? "100vh" : "417px")};
   background-color: ${(props) => props.theme.colors.color6};
+  @media screen and (max-width: 1188px) {
+    margin-bottom: 20px;
+  }
+  @media screen and (max-width: 760px) {
+    width: ${(props) => (props.isFullScreen || props.isFullWindow ? "100vw" : "98vw")};
+  }
+  @media screen and (max-width: 600px) {
+    height: ${(props) => (props.isFullScreen || props.isFullWindow ? "100vh" : "300px")};
+  }
+  @media screen and (max-width: 500px) {
+    height: ${(props) => (props.isFullScreen || props.isFullWindow ? "100vh" : "240px")};
+  }
 `;
 const LoadingWrapper = styled.div`
   display: flex;
@@ -92,6 +117,9 @@ const Video = styled.video<{ isFullScreen: boolean; showToolBar: boolean; isFull
   height: ${(props) => (props.isFullScreen || props.isFullWindow ? "100vh" : "417px")};
   margin-bottom: 20px;
   cursor: ${(props) => props.showToolBar === false && "none"};
+  @media screen and (max-width: 760px) {
+    width: ${(props) => (props.isFullScreen || props.isFullWindow ? "100vw" : "98vw")};
+  }
 `;
 const Button = styled.button`
   background-color: ${(props) => props.theme.colors.color3};
@@ -114,12 +142,18 @@ const ChapterSelector = styled.div`
   padding-top: 20px;
   overflow-y: auto;
   z-index: 8;
+  @media screen and (max-width: 555px) {
+    width: 98%;
+  }
 `;
 const SubTitle = styled.h3`
   font-size: 24px;
   font-weight: bold;
   margin-bottom: 20px;
   text-align: center;
+  @media screen and (max-width: 555px) {
+    font-size: 20px;
+  }
 `;
 const CourseTitle = styled.div`
   color: ${(props) => props.theme.colors.color5};
@@ -130,6 +164,9 @@ const CourseTitle = styled.div`
   padding: 10px 0 10px 10px;
   margin-bottom: 10px;
   width: 100%;
+  @media screen and (max-width: 555px) {
+    font-size: 18px;
+  }
 `;
 const PlayIconWrapper = styled.div`
   display: flex;
@@ -148,6 +185,9 @@ const ChapterTitle = styled.h4`
   padding-bottom: 10px;
   margin-bottom: 10px;
   margin-top: 20px;
+  @media screen and (max-width: 555px) {
+    font-size: 18px;
+  }
 `;
 const Units = styled.ul`
   padding: 0 10px;
@@ -162,6 +202,9 @@ const UnitTitle = styled.h5`
   align-items: center;
   font-size: 18px;
   line-height: 20px;
+  @media screen and (max-width: 555px) {
+    font-size: 16px;
+  }
 `;
 const PlayIcon = styled.div`
   position: relative;
@@ -181,6 +224,12 @@ const ToolBar = styled.div`
   height: 60px;
   background-color: #00000050;
   padding: 10px 20px;
+  @media screen and (max-width: 760px) {
+    width: 98vw;
+  }
+  @media screen and (max-width: 555px) {
+    padding: 10px 10px;
+  }
 `;
 const PlayControls = styled.div`
   display: flex;
@@ -199,6 +248,21 @@ const TimeProgressBarContainer = styled.div`
   position: relative;
   margin: 0 20px;
   cursor: pointer;
+  @media screen and (max-width: 724px) {
+    width: 300px;
+  }
+  @media screen and (max-width: 655px) {
+    width: 250px;
+  }
+  @media screen and (max-width: 588px) {
+    width: 180px;
+  }
+  @media screen and (max-width: 488px) {
+    width: 120px;
+  }
+  @media screen and (max-width: 412px) {
+    width: 80px;
+  }
 `;
 const TimeProgressBar = styled.div`
   border-radius: 15px;
@@ -233,6 +297,10 @@ const SpeedMenu = styled.ul`
   flex-direction: column;
   width: 88px;
   background-color: #484848;
+  @media screen and (max-width: 488px) {
+    width: 66px;
+    transform: translate(-24px, 10px);
+  }
 `;
 const SpeedOption = styled.li`
   display: flex;
@@ -247,6 +315,10 @@ const SpeedOption = styled.li`
   &:hover {
     background-color: ${(props) => props.theme.colors.color3};
   }
+  @media screen and (max-width: 488px) {
+    font-size: 15px;
+    line-height: 20px;
+  }
 `;
 const OtherControls = styled.div`
   display: flex;
@@ -257,17 +329,35 @@ const ControlIcon = styled.div`
   height: 20px;
   margin-right: 10px;
   cursor: pointer;
+  @media screen and (max-width: 555px) {
+    width: 16px;
+    height: 16px;
+    &:last-child {
+      margin-right: 0;
+    }
+  }
+`;
+const ControlIconFullWindow = styled(ControlIcon)`
+  @media screen and (max-width: 760px) {
+    display: none;
+  }
 `;
 const CourseDetailContainer = styled.div`
   color: ${(props) => props.theme.colors.color2};
   max-width: 800px;
   margin: 0 auto;
+  @media screen and (max-width: 866px) {
+    max-width: 96%;
+  }
 `;
 const Introduction = styled.div`
   color: ${(props) => props.theme.colors.color7};
   font-size: 18px;
   line-height: 36px;
   margin-bottom: 50px;
+  @media screen and (max-width: 866px) {
+    font-size: 16px;
+  }
 `;
 const About = styled.div`
   display: flex;
@@ -286,6 +376,10 @@ const TeacherWrapper = styled.div`
   border-radius: 50%;
   margin-bottom: 10px;
   overflow: hidden;
+  @media screen and (max-width: 866px) {
+    width: 40px;
+    height: 40px;
+  }
 `;
 const TeacherName = styled.p`
   text-align: center;
@@ -330,6 +424,9 @@ const User = styled.div`
   flex-direction: column;
   justify-content: center;
   margin-right: 80px;
+  @media screen and (max-width: 866px) {
+    margin-right: 50px;
+  }
 `;
 const AvatarWrapper = styled.div`
   display: flex;
@@ -357,6 +454,9 @@ const StarWrapper = styled.div`
 `;
 const Comments = styled.p`
   font-size: 18px;
+  @media screen and (max-width: 866px) {
+    font-size: 16px;
+  }
 `;
 
 interface CourseDataInteface {
@@ -607,7 +707,7 @@ function VideoPlayer({ introductionVideo }: { introductionVideo: string | undefi
                 )}
                 <Image src={Speed} alt="speed" fill sizes="contain" />
               </ControlIcon>
-              <ControlIcon
+              <ControlIconFullWindow
                 onClick={() => {
                   if (isFullScreen) return;
                   if (!isFullWindow) {
@@ -617,8 +717,8 @@ function VideoPlayer({ introductionVideo }: { introductionVideo: string | undefi
                   }
                 }}
               >
-                <Image src={FullWindow} alt="full-screen" fill sizes="contain" />
-              </ControlIcon>
+                <Image src={FullWindow} alt="full-window" fill sizes="contain" />
+              </ControlIconFullWindow>
               <ControlIcon
                 onClick={() => {
                   if (!isFullScreen) {
