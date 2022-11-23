@@ -1,4 +1,3 @@
-import { useState, useEffect } from "react";
 import Head from "next/head";
 import styled from "styled-components";
 import Image from "next/image";
@@ -185,40 +184,15 @@ interface TeachersListInterface {
   avatar: string;
   name: string;
 }
-export default function Home() {
+export default function Home({
+  coursesList,
+  teachersList,
+}: {
+  coursesList: CoursesListInterface[];
+  teachersList: TeachersListInterface[];
+}) {
   const router = useRouter();
-  const [coursesList, setCoursesList] = useState<CoursesListInterface[]>();
-  const [teachersList, setTeachersList] = useState<TeachersListInterface[]>();
 
-  useEffect(() => {
-    const getCourses = async () => {
-      const coursesRef = collection(db, "video_courses");
-      const q = query(coursesRef, where("price", "<", 2000), limit(9));
-      const querySnapshot = await getDocs(q);
-      const results: CoursesListInterface[] = [];
-      querySnapshot.forEach((data) => {
-        const { id, cover, name, price } = data.data();
-        results.push({ id, cover, name, price });
-      });
-      setCoursesList(results);
-    };
-    getCourses();
-  }, []);
-
-  useEffect(() => {
-    const getTeachers = async () => {
-      const coursesRef = collection(db, "users");
-      const q = query(coursesRef, where("identity", "==", "teacher"), limit(15));
-      const querySnapshot = await getDocs(q);
-      const results: TeachersListInterface[] = [];
-      querySnapshot.forEach((data) => {
-        const { uid: id, photoURL: avatar, username: name } = data.data();
-        results.push({ id, avatar, name });
-      });
-      setTeachersList(results);
-    };
-    getTeachers();
-  }, []);
   return (
     <>
       <Head>
@@ -282,7 +256,7 @@ export default function Home() {
           </Reasons>
           <Title>推薦課程</Title>
           <Swiper
-            slidesPerView={1}
+            slidesPerView="auto"
             spaceBetween={0}
             slidesPerGroup={1}
             loop
@@ -413,7 +387,7 @@ export default function Home() {
           </Reasons>
           <Title>推薦老師</Title>
           <Swiper
-            slidesPerView={1}
+            slidesPerView="auto"
             slidesPerGroup={1}
             spaceBetween={0}
             loop
@@ -481,3 +455,28 @@ export default function Home() {
     </>
   );
 }
+
+export const getStaticProps = async () => {
+  const coursesRef = collection(db, "video_courses");
+  const queryCourses = await getDocs(query(coursesRef, where("price", "<", 2000), limit(9)));
+  const coursesList: CoursesListInterface[] = [];
+  queryCourses.forEach((data) => {
+    const { id, cover, name, price } = data.data();
+    coursesList.push({ id, cover, name, price });
+  });
+
+  const usersRef = collection(db, "users");
+  const queryTeachers = await getDocs(query(usersRef, where("identity", "==", "teacher"), limit(15)));
+  const teachersList: TeachersListInterface[] = [];
+  queryTeachers.forEach((data) => {
+    const { uid: id, photoURL: avatar, username: name } = data.data();
+    teachersList.push({ id, avatar, name });
+  });
+
+  return {
+    props: {
+      coursesList,
+      teachersList,
+    },
+  };
+};
