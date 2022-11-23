@@ -319,6 +319,7 @@ export default function Home() {
                     <Image src={course.cover} alt="cover" fill sizes="contain" />
                   </CoverWrapper>
                   <Info>{course.name}</Info>
+                  <Info>NT${course.price}</Info>
                 </Course>
               </SwiperSlide>
             ))}
