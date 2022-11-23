@@ -1,7 +1,8 @@
 import { useState, useEffect } from "react";
 import styled from "styled-components";
 import Image from "next/image";
-import { doc, getDoc } from "firebase/firestore";
+import Link from "next/link";
+import { doc, getDoc, getDocs, collection, query, where } from "firebase/firestore";
 import { useRouter } from "next/router";
 import { db } from "../../../../lib/firebase";
 import ReserveCalendar from "../../../components/calendar/reserveCalendar";
@@ -68,7 +69,7 @@ const IntroductionContents = styled.div`
 `;
 const CalendarWrapper = styled.div`
   flex-basis: 60%;
-  margin-top: 86px;
+  margin-top: 132px;
   border: 1px solid lightgray;
   box-shadow: 0 0 5px #00000050;
   height: 602px;
@@ -76,6 +77,89 @@ const CalendarWrapper = styled.div`
     max-width: 98%;
     margin-top: 10px;
   }
+`;
+const CoursesList = styled.ul`
+  display: grid;
+  grid-template-columns: repeat(auto-fill, 300px);
+  grid-column-gap: calc((1024px - 900px) / 2);
+  grid-row-gap: 20px;
+  width: 80%;
+  @media screen and (max-width: 1280px) {
+    display: flex;
+    justify-content: space-between;
+    flex-wrap: wrap;
+    margin: 0 auto;
+  }
+  @media screen and (max-width: 888px) {
+    justify-content: center;
+  }
+`;
+const Course = styled.li`
+  color: ${(props) => props.theme.colors.color2};
+  background-color: ${(props) => props.theme.colors.color1};
+  border: 1px solid lightgrey;
+  box-shadow: 0 0 5px #00000050;
+  border-radius: 5px;
+  @media screen and (max-width: 1280px) {
+    flex-basis: 45%;
+  }
+  @media screen and (max-width: 888px) {
+    flex-basis: 80%;
+  }
+`;
+const CourseCover = styled.div`
+  position: relative;
+  width: 300px;
+  height: 180px;
+  margin-bottom: 10px;
+  @media screen and (max-width: 1280px) {
+    width: 100%;
+    height: 210px;
+  }
+  @media screen and (max-width: 888px) {
+    height: 240px;
+  }
+  @media screen and (max-width: 540px) {
+    height: 200px;
+  }
+  @media screen and (max-width: 450px) {
+    height: 150px;
+  }
+`;
+const CourseInfos = styled.div`
+  position: relative;
+  width: 100%;
+  margin-left: 10px;
+`;
+const CourseTitle = styled.p`
+  font-size: 18px;
+  font-weight: bold;
+  margin-bottom: 10px;
+`;
+const CourseScore = styled.div`
+  display: flex;
+`;
+const CourseReviewsInfo = styled.p`
+  height: 26px;
+  margin-bottom: 10px;
+`;
+
+const StarIcons = styled.div`
+  display: flex;
+  margin-right: 10px;
+`;
+const CourseStarWrapper = styled.div`
+  position: relative;
+  width: 20px;
+  height: 20px;
+`;
+const CoursesWrapper = styled.div`
+  max-width: 1280px;
+  margin: 20px auto;
+`;
+const CourseContainer = styled.div`
+  display: flex;
+  justify-content: center;
 `;
 const Reviews = styled.ul`
   width: 100%;
@@ -97,10 +181,7 @@ const Average = styled.h5`
 const ReviewsInfo = styled.div`
   padding: 10px;
 `;
-const StarIcons = styled.div`
-  display: flex;
-  margin-bottom: 10px;
-`;
+
 const ReviewQty = styled.p`
   font-size: 20px;
 `;
@@ -169,6 +250,82 @@ const Class = styled.p`
   margin-bottom: 10px;
 `;
 
+interface CourseInterface {
+  name: string;
+  id: string;
+  cover: string;
+  reviews: { userId: string; score: number; comments: string }[];
+}
+
+function LaunchedVideoCourses({ uid }: { uid: string }) {
+  const [courses, setCourses] = useState<CourseInterface[]>();
+
+  useEffect(() => {
+    const getLaunchedVideoCourses = async () => {
+      if (!uid) return;
+      const usersRef = collection(db, "video_courses");
+      const teachersQuery = query(usersRef, where("teacher_id", "==", uid));
+      const querySnapshot = await getDocs(teachersQuery);
+      const launchedVideoCourses = querySnapshot.docs.map((course) => {
+        const { name, cover, id, reviews } = course.data();
+        return { name, cover, id, reviews };
+      });
+      setCourses(launchedVideoCourses);
+    };
+    getLaunchedVideoCourses();
+  }, [uid]);
+
+  if (courses?.length === 0) {
+    return <p>目前沒有課程唷！</p>;
+  }
+  return (
+    <CoursesList>
+      {courses?.map((course) => (
+        <Course key={course.name}>
+          <CourseCover>
+            <Link href={`/myCourses/classRoom/videoRoom/${course.id}`}>
+              <Image src={course.cover} alt="cover" fill sizes="cover" />
+            </Link>
+          </CourseCover>
+          <CourseInfos>
+            <CourseTitle>{course.name}</CourseTitle>
+            {course?.reviews?.length > 0 ? (
+              <CourseScore>
+                <StarIcons>
+                  {Array.from(
+                    {
+                      length: Math.floor(
+                        course.reviews.reduce((acc, cur) => acc + cur.score, 0) / course.reviews.length
+                      ),
+                    },
+                    (v, i) => i + 1
+                  ).map((starIndex) => (
+                    <CourseStarWrapper key={starIndex}>
+                      <Image src={Star} alt="star" fill sizes="contain" />
+                    </CourseStarWrapper>
+                  ))}
+                  {(course.reviews.reduce((acc, cur) => acc + cur.score, 0) / course.reviews.length) % 1 !== 0 && (
+                    <CourseStarWrapper>
+                      <Image src={HalfStar} alt="star" fill sizes="contain" />
+                    </CourseStarWrapper>
+                  )}
+                </StarIcons>
+                <CourseReviewsInfo>
+                  {(course.reviews.reduce((acc, cur) => acc + cur.score, 0) / course.reviews.length || 0).toFixed(1) ||
+                    0}
+                  分 ，{course?.reviews?.length || 0}則評論
+                </CourseReviewsInfo>
+              </CourseScore>
+            ) : (
+              <CourseReviewsInfo>目前無評價</CourseReviewsInfo>
+            )}
+          </CourseInfos>
+        </Course>
+      ))}
+    </CoursesList>
+  );
+}
+
 interface ReviewInterface {
   class: string;
   score: number;
@@ -178,14 +335,14 @@ interface ReviewInterface {
 export default function Reserve() {
   const router = useRouter();
   const { teacherId } = router.query;
-  const [teacherDatas, setTeacherDatas] = useState<{
+  const [teacherData, setTeacherData] = useState<{
     username: string;
     introduction: string;
-    exprience: string;
+    experience: string;
     reviews?: ReviewInterface[];
     avatar?: string;
   }>();
-  const [reviewsUsersDatas, setReviewsUsersDatas] = useState<{ index: number; username: string; avatar: string }[]>([]);
+  const [reviewsUsersData, setReviewsUsersData] = useState<{ index: number; username: string; avatar: string }[]>([]);
 
   useEffect(() => {
     const getTeacherData = async () => {
@@ -195,10 +352,10 @@ export default function Reserve() {
       if (!userSnap.exists()) return;
       const username = userSnap.data().username as string;
       const introduction = userSnap.data().teacher_introduction as string;
-      const exprience = userSnap.data().teacher_exprience as string;
+      const experience = userSnap.data().teacher_experience as string;
       const avatar = userSnap.data().photoURL as string;
       const reviews = userSnap.data().reviews as ReviewInterface[];
-      setTeacherDatas({ username, introduction, exprience, reviews, avatar });
+      setTeacherData({ username, introduction, experience, reviews, avatar });
 
       if (!Array.isArray(reviews)) return;
       reviews.forEach(async (review: { comments: string; score: number; userId: string }, index) => {
@@ -207,7 +364,7 @@ export default function Reserve() {
         if (!reviewUserSnap.exists()) return;
         const reviewUsername = reviewUserSnap.data().username;
         const reviewUserAvatar = reviewUserSnap.data().photoURL;
-        setReviewsUsersDatas((prev) => [...prev, { index, username: reviewUsername, avatar: reviewUserAvatar }]);
+        setReviewsUsersData((prev) => [...prev, { index, username: reviewUsername, avatar: reviewUserAvatar }]);
       });
     };
     getTeacherData();
@@ -219,43 +376,53 @@ export default function Reserve() {
         <TeacherDetail>
           <TeacherInfo>
             <TeacherAvatar>
-              <Image src={teacherDatas?.avatar || Avatar} alt="avatar" width={120} height={120} />
+              <Image src={teacherData?.avatar || Avatar} alt="avatar" width={120} height={120} />
             </TeacherAvatar>
-            <TeacherName>{teacherDatas?.username} 老師</TeacherName>
+            <TeacherName>{teacherData?.username} 老師</TeacherName>
           </TeacherInfo>
           <Introduction>
             <IntroductionTitle>自我介紹</IntroductionTitle>
-            {teacherDatas && (
+            {teacherData && (
               <IntroductionContents
                 className="ql-editor"
-                dangerouslySetInnerHTML={{ __html: teacherDatas.introduction }}
+                dangerouslySetInnerHTML={{ __html: teacherData.introduction }}
               />
             )}
             <IntroductionTitle>老師經歷</IntroductionTitle>
-            {teacherDatas && (
+            {teacherData && (
               <IntroductionContents
                 className="ql-editor"
-                dangerouslySetInnerHTML={{ __html: teacherDatas.exprience }}
+                dangerouslySetInnerHTML={{ __html: teacherData.experience }}
               />
             )}
           </Introduction>
         </TeacherDetail>
         <CalendarWrapper>{typeof teacherId === "string" && <ReserveCalendar teacherId={teacherId} />}</CalendarWrapper>
       </TeacherContainer>
+      {typeof teacherId === "string" && (
+        <>
+          <IntroductionTitle style={{ paddingLeft: "10px", marginBottom: "42px" }}>老師的影音課程</IntroductionTitle>
+          <CoursesWrapper>
+            <CourseContainer>
+              <LaunchedVideoCourses uid={teacherId} />
+            </CourseContainer>
+          </CoursesWrapper>
+        </>
+      )}
       <Reviews>
-        {teacherDatas?.reviews && (
+        {teacherData?.reviews && (
           <ScoreContainer>
             <Average>
-              {(
-                teacherDatas.reviews.reduce((acc, cur) => acc + cur.score, 0) / teacherDatas.reviews.length || 0
-              ).toFixed(1) || 0}
+              {(teacherData.reviews.reduce((acc, cur) => acc + cur.score, 0) / teacherData.reviews.length || 0).toFixed(
+                1
+              ) || 0}
             </Average>
             <ReviewsInfo>
               <StarIcons>
                 {Array.from(
                   {
                     length: Math.floor(
-                      teacherDatas.reviews.reduce((acc, cur) => acc + cur.score, 0) / teacherDatas.reviews.length
+                      teacherData.reviews.reduce((acc, cur) => acc + cur.score, 0) / teacherData.reviews.length
                     ),
                   },
                   (v, i) => i + 1
@@ -264,25 +431,25 @@ export default function Reserve() {
                     <Image src={Star} alt="star" fill sizes="contain" />
                   </StarWrapper>
                 ))}
-                {(teacherDatas.reviews.reduce((acc, cur) => acc + cur.score, 0) / teacherDatas.reviews.length) % 1 !==
+                {(teacherData.reviews.reduce((acc, cur) => acc + cur.score, 0) / teacherData.reviews.length) % 1 !==
                   0 && (
                   <StarWrapper>
                     <Image src={HalfStar} alt="star" fill sizes="contain" />
                   </StarWrapper>
                 )}
               </StarIcons>
-              <ReviewQty>{teacherDatas.reviews.length} 則評價</ReviewQty>
+              <ReviewQty>{teacherData.reviews.length} 則評價</ReviewQty>
             </ReviewsInfo>
           </ScoreContainer>
         )}
-        {teacherDatas &&
-          teacherDatas?.reviews?.map((review, reviewIndex) => (
+        {teacherData &&
+          teacherData?.reviews?.map((review, reviewIndex) => (
             <Review key={review.userId}>
               <User>
                 <AvatarWrapper>
                   <Image
                     src={
-                      reviewsUsersDatas.find((reviewUserData) => reviewUserData.index === reviewIndex)?.avatar || Avatar
+                      reviewsUsersData.find((reviewUserInfo) => reviewUserInfo.index === reviewIndex)?.avatar || Avatar
                     }
                     alt="avatar"
                     width={120}
@@ -290,7 +457,7 @@ export default function Reserve() {
                   />
                 </AvatarWrapper>
                 <UserName>
-                  {reviewsUsersDatas.find((reviewUserData) => reviewUserData.index === reviewIndex)?.username}
+                  {reviewsUsersData.find((reviewUserInfo) => reviewUserInfo.index === reviewIndex)?.username}
                 </UserName>
               </User>
               <CommentWrapper>

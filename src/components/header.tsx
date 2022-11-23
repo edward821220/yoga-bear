@@ -447,7 +447,8 @@ function MemberModal({
     identity: "student",
   });
   const [teacherIntroduction, setTeacherIntroduction] = useState("");
-  const [teacherExprience, setTeacherExprience] = useState("");
+  const [teacherExperience, setTeacherExperience] = useState("");
+  const [certificatePreview, setCertificatePreview] = useState("");
   const [needSignup, setNeedSignup] = useState(false);
 
   const handleClose = () => {
@@ -499,7 +500,7 @@ function MemberModal({
             updateDoc(docRef, {
               certificate: downloadURL,
               teacher_introduction: teacherIntroduction,
-              teacher_exprience: teacherExprience,
+              teacher_experience: teacherExperience,
               beTeacherTime: Date.now(),
             });
           });
@@ -632,15 +633,26 @@ function MemberModal({
               <Label>
                 <LabelText>師資班及教學經歷：</LabelText>
                 <Editor
-                  content={teacherExprience}
-                  setContent={setTeacherExprience}
+                  content={teacherExperience}
+                  setContent={setTeacherExperience}
                   style={{ width: "200px", height: "100px", border: "1px solid gray", marginBottom: "10px" }}
                   placeholder="簡短描述過往經歷～"
                 />
               </Label>
               <LabelFile>
                 <LabelButtonFile>證照上傳</LabelButtonFile>
-                <LabelInputFile type="file" accept="image/*, application/pdf" required />
+                <LabelInputFile
+                  type="file"
+                  accept="image/*, application/pdf"
+                  required
+                  onChange={(e) => {
+                    if (!e.target.files) return;
+                    setCertificatePreview(e.target.files[0].name);
+                  }}
+                />
+                {certificatePreview && (
+                  <span style={{ fontSize: "14px", textAlign: "right", marginLeft: "5px" }}>{certificatePreview}</span>
+                )}
               </LabelFile>
             </>
           )}

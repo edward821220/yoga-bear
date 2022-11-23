@@ -904,7 +904,7 @@ function BeTeacher({
   const router = useRouter();
   const [teacherIntroduction, setTeacherIntroduction] = useState("");
   const [teacherExperience, setTeacherExperience] = useState("");
-  const [certificate, setCertificate] = useState("");
+  const [certificatePreview, setCertificatePreview] = useState("");
 
   const handleSubmit = (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
@@ -917,7 +917,6 @@ function BeTeacher({
       const file = fileInput?.files[0];
       if (!file) {
         Swal.fire({ title: "請上傳證照唷！", confirmButtonColor: "#5d7262", icon: "warning" });
-
         return;
       }
       const storageRef = ref(storage, `certificate/${uid}-${file.name}`);
@@ -973,11 +972,13 @@ function BeTeacher({
           accept="image/*, application/pdf"
           onChange={(e) => {
             if (!e.target.files) return;
-            setCertificate(URL.createObjectURL(e.target.files[0]));
+            setCertificatePreview(e.target.files[0].name);
           }}
         />
+        {certificatePreview && (
+          <span style={{ fontSize: "14px", textAlign: "right", marginLeft: "5px" }}>{certificatePreview}</span>
+        )}
       </LaunchFormLabelFile>
-      {certificate && <Image src={certificate} alt="cover" width={500} height={300} style={{ marginBottom: "20px" }} />}
       <Button type="submit">送出</Button>
     </LaunchForm>
   );

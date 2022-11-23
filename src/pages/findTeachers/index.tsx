@@ -186,7 +186,7 @@ interface TeacherInterface {
   reviews: { score: number }[];
   avatar: string;
   introduction: string;
-  exprience: string;
+  experience: string;
   beTeacherTime: number;
 }
 
@@ -207,7 +207,7 @@ function FindTeachers() {
         reviews: { score: number }[];
         avatar: string;
         introduction: string;
-        exprience: string;
+        experience: string;
         beTeacherTime: number;
       }[] = [];
       querySnapshot.forEach((data) => {
@@ -217,7 +217,7 @@ function FindTeachers() {
           reviews: data.data().reviews,
           avatar: data.data().photoURL,
           introduction: data.data().teacher_introduction,
-          exprience: data.data().teacher_exprience,
+          experience: data.data().teacher_experience,
           beTeacherTime: data.data().beTeacherTime,
         });
       });
@@ -343,7 +343,7 @@ function FindTeachers() {
                 <TeacherIntroduction
                   showMore={showMore === teacher.uid}
                   dangerouslySetInnerHTML={{
-                    __html: `${teacher.introduction}<p style='margin:10px 0; color:#654116'>老師經歷</p>${teacher.exprience}`,
+                    __html: `${teacher.introduction}<p style='margin:10px 0; color:#654116'>老師經歷</p>${teacher.experience}`,
                   }}
                 />
                 <ShowMoreButton

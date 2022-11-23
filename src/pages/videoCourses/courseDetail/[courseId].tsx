@@ -770,7 +770,7 @@ function CourseDetail({ courseData, teacherData, reviewsUsersDatas }: CourseDeta
           </TeacherWrapper>
           <TeacherName>{teacherData.teacherName}</TeacherName>
         </TeacherInfo>
-        <Introduction className="ql-editor" dangerouslySetInnerHTML={{ __html: teacherData.teacherExprience }} />
+        <Introduction className="ql-editor" dangerouslySetInnerHTML={{ __html: teacherData.teacherExperience }} />
       </About>
       <SubTitle>課程評價</SubTitle>
       <ScoreContainer>
@@ -892,8 +892,8 @@ function CourseInfo() {
           const teacherName = teacherSnap.data().username as string;
           const teacherAvatar = teacherSnap.data().photoURL as string;
           const teacherIntroduction = teacherSnap.data().teacher_introduction as string;
-          const teacherExprience = teacherSnap.data().teacher_exprience as string;
-          setTeacherData({ teacherName, teacherAvatar, teacherIntroduction, teacherExprience });
+          const teacherExperience = teacherSnap.data().teacher_experience as string;
+          setTeacherData({ teacherName, teacherAvatar, teacherIntroduction, teacherExperience });
         }
 
         if (!Array.isArray(reviews)) return;
