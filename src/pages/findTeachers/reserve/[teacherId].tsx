@@ -475,7 +475,7 @@ export async function getStaticPaths() {
     paths.push({ params: { teacherId } });
   });
 
-  return { paths, fallback: "blocking" };
+  return { paths, fallback: false };
 }
 
 export async function getStaticProps({ params }: { params: { teacherId: string } }) {

@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useRef, useContext } from "react";
 import Image from "next/image";
-import { doc, getDoc, updateDoc, arrayUnion } from "firebase/firestore";
+import { doc, query, getDoc, getDocs, collection, updateDoc, arrayUnion } from "firebase/firestore";
 import { useRouter } from "next/router";
 import styled from "styled-components";
 import Swal from "sweetalert2";
@@ -22,7 +22,6 @@ import FullWindow from "../../../../public/full-window.png";
 import Avatar from "../../../../public/member.png";
 import Star from "../../../../public/star.png";
 import HalfStar from "../../../../public/star-half.png";
-import Loading from "../../../../public/loading.gif";
 import "react-quill/dist/quill.snow.css";
 
 const Wrapper = styled.div`
@@ -102,14 +101,6 @@ const VideoContainer = styled.div<{ isFullScreen: boolean; isFullWindow: boolean
   @media screen and (max-width: 500px) {
     height: ${(props) => (props.isFullScreen || props.isFullWindow ? "100vh" : "240px")};
   }
-`;
-const LoadingWrapper = styled.div`
-  display: flex;
-  justify-content: center;
-  align-items: center;
-  width: 754px;
-  height: 417px;
-  background-color: transparent;
 `;
 
 const Video = styled.video<{ isFullScreen: boolean; showToolBar: boolean; isFullWindow: boolean }>`
@@ -465,18 +456,6 @@ const Comments = styled.p`
   }
 `;
 
-interface CourseDataInteface {
-  id: string;
-  name: string;
-  chapters: { id: number; title: string; units: { id: number; title: string; video: string }[] }[];
-  introduction: string;
-  introductionVideo: string;
-  teacherId: string;
-  cover: string;
-  price: string;
-  reviews: { comments: string; score: number; userId: string }[];
-}
-
 function VideoPlayer({ introductionVideo }: { introductionVideo: string | undefined }) {
   const handle = useFullScreenHandle();
   const videoRef = useRef<HTMLVideoElement>(null);
@@ -493,13 +472,6 @@ function VideoPlayer({ introductionVideo }: { introductionVideo: string | undefi
   const [progress, setProgress] = useState(0);
   const [voice, setVoice] = useState(0);
   const [speed, setSpeed] = useState(1.0);
-
-  if (!introductionVideo)
-    return (
-      <LoadingWrapper>
-        <Image src={Loading} alt="loading" width={100} height={100} />
-      </LoadingWrapper>
-    );
 
   const videoHandler = (control: string) => {
     if (!videoRef.current) return;
@@ -745,13 +717,26 @@ function VideoPlayer({ introductionVideo }: { introductionVideo: string | undefi
     </FullScreen>
   );
 }
-interface CourseDetailProps {
-  courseData: CourseDataInteface;
-  teacherData: Record<string, string>;
-  reviewsUsersDatas: { index: number; username: string; avatar: string }[];
+
+interface CourseDataInterface {
+  id: string;
+  name: string;
+  chapters: { id: number; title: string; units: { id: number; title: string; video: string }[] }[];
+  introduction: string;
+  introductionVideo: string;
+  teacherId: string;
+  cover: string;
+  price: string;
+  reviews: { comments: string; score: number; userId: string }[];
 }
 
-function CourseDetail({ courseData, teacherData, reviewsUsersDatas }: CourseDetailProps) {
+interface CourseDetailProps {
+  courseData: CourseDataInterface;
+  teacherData: Record<string, string>;
+  reviewsUsersData: { index: number; username: string; avatar: string }[];
+}
+
+function CourseDetail({ courseData, teacherData, reviewsUsersData }: CourseDetailProps) {
   const router = useRouter();
 
   return (
@@ -809,7 +794,7 @@ function CourseDetail({ courseData, teacherData, reviewsUsersDatas }: CourseDeta
                 <AvatarWrapper>
                   <Image
                     src={
-                      reviewsUsersDatas.find((reviewUserData) => reviewUserData.index === reviewIndex)?.avatar || Avatar
+                      reviewsUsersData.find((reviewUserData) => reviewUserData.index === reviewIndex)?.avatar || Avatar
                     }
                     alt="avatar"
                     width={120}
@@ -817,7 +802,7 @@ function CourseDetail({ courseData, teacherData, reviewsUsersDatas }: CourseDeta
                   />
                 </AvatarWrapper>
                 <UserName>
-                  {reviewsUsersDatas.find((reviewUserData) => reviewUserData.index === reviewIndex)?.username}
+                  {reviewsUsersData.find((reviewUserData) => reviewUserData.index === reviewIndex)?.username}
                 </UserName>
               </User>
               <CommentWrapper>
@@ -842,13 +827,11 @@ function CourseDetail({ courseData, teacherData, reviewsUsersDatas }: CourseDeta
   );
 }
 
-function CourseInfo() {
+function CourseInfo({ courseId, courseData }: { courseId: string; courseData: CourseDataInterface }) {
   const router = useRouter();
-  const { courseId } = router.query;
-  const [courseData, setCourseData] = useState<CourseDataInteface>();
   const [boughtCourses, setBoughtCourses] = useState<string[]>();
   const [teacherData, setTeacherData] = useState<Record<string, string>>();
-  const [reviewsUsersDatas, setReviewsUsersDatas] = useState<{ index: number; username: string; avatar: string }[]>([]);
+  const [reviewsUsersData, setReviewsUsersData] = useState<{ index: number; username: string; avatar: string }[]>([]);
   const { isLogin, userData } = useContext(AuthContext);
   const [orderQty, setOrderQty] = useRecoilState(orderQtyState);
   const [showMemberModal, setShowMemberModal] = useRecoilState(showMemberModalState);
@@ -867,48 +850,29 @@ function CourseInfo() {
   }, [userData.uid]);
 
   useEffect(() => {
-    const getCourse = async () => {
-      if (typeof courseId !== "string") return;
-      const docRef = doc(db, "video_courses", courseId);
-      const docSnap = await getDoc(docRef);
-      if (docSnap.exists()) {
-        const {
-          id,
-          name,
-          chapters,
-          introduction,
-          introductionVideo,
-          teacher_id: teacherId,
-          cover,
-          price,
-          reviews,
-        } = docSnap.data();
-        setCourseData({ id, name, chapters, introduction, introductionVideo, teacherId, cover, price, reviews });
-
-        if (typeof teacherId !== "string") return;
-        const teacherRef = doc(db, "users", teacherId);
-        const teacherSnap = await getDoc(teacherRef);
-        if (teacherSnap.exists()) {
-          const teacherName = teacherSnap.data().username as string;
-          const teacherAvatar = teacherSnap.data().photoURL as string;
-          const teacherIntroduction = teacherSnap.data().teacher_introduction as string;
-          const teacherExperience = teacherSnap.data().teacher_experience as string;
-          setTeacherData({ teacherName, teacherAvatar, teacherIntroduction, teacherExperience });
-        }
-
-        if (!Array.isArray(reviews)) return;
-        reviews.forEach(async (review: { comments: string; score: number; userId: string }, index) => {
-          const userRef = doc(db, "users", review.userId);
-          const userSnap = await getDoc(userRef);
-          if (!userSnap.exists()) return;
-          const { username } = userSnap.data();
-          const avatar = userSnap.data().photoURL;
-          setReviewsUsersDatas((prev) => [...prev, { index, username, avatar }]);
-        });
+    const getCourseInfo = async () => {
+      const teacherRef = doc(db, "users", courseData.teacherId);
+      const teacherSnap = await getDoc(teacherRef);
+      if (teacherSnap.exists()) {
+        const teacherName = teacherSnap.data().username as string;
+        const teacherAvatar = teacherSnap.data().photoURL as string;
+        const teacherIntroduction = teacherSnap.data().teacher_introduction as string;
+        const teacherExperience = teacherSnap.data().teacher_experience as string;
+        setTeacherData({ teacherName, teacherAvatar, teacherIntroduction, teacherExperience });
       }
+
+      if (!Array.isArray(courseData.reviews)) return;
+      courseData.reviews.forEach(async (review: { comments: string; score: number; userId: string }, index) => {
+        const userRef = doc(db, "users", review.userId);
+        const userSnap = await getDoc(userRef);
+        if (!userSnap.exists()) return;
+        const { username } = userSnap.data();
+        const avatar = userSnap.data().photoURL;
+        setReviewsUsersData((prev) => [...prev, { index, username, avatar }]);
+      });
     };
-    getCourse();
-  }, [courseId]);
+    getCourseInfo();
+  }, [courseData.teacherId, courseData.reviews]);
 
   const addToCart = async () => {
     if (!isLogin) {
@@ -991,10 +955,42 @@ function CourseInfo() {
         )}
       </CourseContainer>
       {courseData && teacherData && (
-        <CourseDetail courseData={courseData} teacherData={teacherData} reviewsUsersDatas={reviewsUsersDatas} />
+        <CourseDetail courseData={courseData} teacherData={teacherData} reviewsUsersData={reviewsUsersData} />
       )}
     </Wrapper>
   );
 }
 
 export default CourseInfo;
+
+export async function getStaticPaths() {
+  const coursesRef = collection(db, "video_courses");
+  const queryCourses = await getDocs(query(coursesRef));
+  const paths: { params: { courseId: string } }[] = [];
+  queryCourses.forEach((data) => {
+    const { id: courseId } = data.data();
+    paths.push({ params: { courseId } });
+  });
+
+  return { paths, fallback: false };
+}
+
+export async function getStaticProps({ params }: { params: { courseId: string } }) {
+  const docRef = doc(db, "video_courses", params.courseId);
+  const docSnap = await getDoc(docRef);
+  if (!docSnap.exists()) return;
+  const {
+    id,
+    name,
+    chapters,
+    introduction,
+    introductionVideo,
+    teacher_id: teacherId,
+    cover,
+    price,
+    reviews,
+  } = docSnap.data();
+  const courseData = { id, name, chapters, introduction, introductionVideo, teacherId, cover, price, reviews };
+
+  return { props: { courseId: params.courseId, courseData }, revalidate: 1800 };
+}
