@@ -3,8 +3,7 @@ import styled from "styled-components";
 import Image from "next/image";
 import Link from "next/link";
 import { doc, getDoc, getDocs, collection, query, where } from "firebase/firestore";
-import { useRouter } from "next/router";
-import { arrayBuffer } from "stream/consumers";
+import parse from "html-react-parser";
 import { db } from "../../../../lib/firebase";
 import ReserveCalendar from "../../../components/calendar/reserveCalendar";
 import Avatar from "../../../../public/member.png";
@@ -336,7 +335,6 @@ interface ReviewInterface {
 export default function Reserve({
   teacherId,
   teacherData,
-  reviewUsersData,
 }: {
   teacherId: string;
   teacherData: {
@@ -346,8 +344,21 @@ export default function Reserve({
     reviews?: ReviewInterface[];
     avatar?: string;
   };
-  reviewUsersData: { index: number; username: string; avatar: string }[];
 }) {
+  const [reviewUsersData, setReviewsUsersData] = useState<{ index: number; username: string; avatar: string }[]>([]);
+
+  useEffect(() => {
+    if (!Array.isArray(teacherData.reviews)) return;
+    teacherData.reviews.forEach(async (review: { comments: string; score: number; userId: string }, index) => {
+      const reviewUserRef = doc(db, "users", review.userId);
+      const reviewUserSnap = await getDoc(reviewUserRef);
+      if (!reviewUserSnap.exists()) return;
+      const reviewUsername = reviewUserSnap.data().username;
+      const reviewUserAvatar = reviewUserSnap.data().photoURL;
+      setReviewsUsersData((prev) => [...prev, { index, username: reviewUsername, avatar: reviewUserAvatar }]);
+    });
+  }, [teacherData.reviews]);
+
   return (
     <Wrapper>
       <TeacherContainer>
@@ -361,17 +372,11 @@ export default function Reserve({
           <Introduction>
             <IntroductionTitle>自我介紹</IntroductionTitle>
             {teacherData && (
-              <IntroductionContents
-                className="ql-editor"
-                dangerouslySetInnerHTML={{ __html: teacherData.introduction }}
-              />
+              <IntroductionContents className="ql-editor">{parse(teacherData.introduction)}</IntroductionContents>
             )}
             <IntroductionTitle>老師經歷</IntroductionTitle>
             {teacherData && (
-              <IntroductionContents
-                className="ql-editor"
-                dangerouslySetInnerHTML={{ __html: teacherData.experience }}
-              />
+              <IntroductionContents className="ql-editor">{parse(teacherData.experience)}</IntroductionContents>
             )}
           </Introduction>
         </TeacherDetail>
@@ -483,16 +488,6 @@ export async function getStaticProps({ params }: { params: { teacherId: string }
   const avatar = userSnap.data().photoURL as string;
   const reviews = (userSnap.data().reviews as ReviewInterface[]) || null;
   const teacherData = { username, introduction, experience, reviews, avatar };
-  const reviewUsersData: { index: number; username: string; avatar: string }[] = [];
-  if (Array.isArray(reviews)) {
-    reviews.forEach(async (review: { comments: string; score: number; userId: string }, index) => {
-      const reviewUserRef = doc(db, "users", review.userId);
-      const reviewUserSnap = await getDoc(reviewUserRef);
-      if (!reviewUserSnap.exists()) return;
-      const reviewUsername = reviewUserSnap.data().username;
-      const reviewUserAvatar = reviewUserSnap.data().photoURL;
-      reviewUsersData.push({ index, username: reviewUsername, avatar: reviewUserAvatar });
-    });
-  }
-  return { props: { teacherId: params.teacherId, teacherData, reviewUsersData } };
+
+  return { props: { teacherId: params.teacherId, teacherData } };
 }
