@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from "react";
+import React, { useState } from "react";
 import styled from "styled-components";
 import Link from "next/link";
 import Image from "next/image";
@@ -155,24 +155,6 @@ interface CourseInterface {
 function VideoCourses({ results }: { results: CourseInterface[] }) {
   const [coursesList, setCoursesList] = useState(results);
   const [selectSort, setSelectSort] = useState("comment");
-
-  useEffect(() => {
-    setCoursesList(
-      produce((draft) =>
-        draft.sort((a, b) => {
-          const reviewsQtyA = a?.reviews?.length || 0;
-          const reviewsQtyB = b?.reviews?.length || 0;
-          if (reviewsQtyA < reviewsQtyB) {
-            return 1;
-          }
-          if (reviewsQtyA > reviewsQtyB) {
-            return -1;
-          }
-          return 0;
-        })
-      )
-    );
-  }, []);
 
   const handleSort = (sort: string) => {
     if (sort === "comment") {
@@ -363,6 +345,19 @@ export const getStaticProps = async () => {
       launchTime: data.data().launchTime,
     });
   });
+
+  results.sort((a, b) => {
+    const reviewsQtyA = a?.reviews?.length || 0;
+    const reviewsQtyB = b?.reviews?.length || 0;
+    if (reviewsQtyA < reviewsQtyB) {
+      return 1;
+    }
+    if (reviewsQtyA > reviewsQtyB) {
+      return -1;
+    }
+    return 0;
+  });
+
   return {
     props: {
       results,

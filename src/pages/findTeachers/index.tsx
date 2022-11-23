@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from "react";
+import React, { useState } from "react";
 import styled from "styled-components";
 import parse from "html-react-parser";
 import Link from "next/link";
@@ -196,11 +196,6 @@ function FindTeachers({ results }: { results: TeacherInterface[] }) {
   const [showMore, setShowMore] = useState<string>();
   const [selectSort, setSelectSort] = useState("comment");
 
-  // useEffect(() => {
-
-  //     setTeachersList();
-  // }, []);
-
   const handleSort = (sort: string) => {
     if (sort === "comment") {
       setTeachersList(
@@ -388,6 +383,19 @@ export const getStaticProps = async () => {
       beTeacherTime: data.data().beTeacherTime,
     });
   });
+
+  results.sort((a, b) => {
+    const reviewsQtyA = a?.reviews?.length || 0;
+    const reviewsQtyB = b?.reviews?.length || 0;
+    if (reviewsQtyA < reviewsQtyB) {
+      return 1;
+    }
+    if (reviewsQtyA > reviewsQtyB) {
+      return -1;
+    }
+    return 0;
+  });
+
   return {
     props: {
       results,
