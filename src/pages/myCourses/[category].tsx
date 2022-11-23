@@ -993,6 +993,9 @@ function MyCourses() {
     if (category === "launchedVideoCourses" || category === "launchVideoCourse" || category === "teacherCalendar") {
       setTeacherAuthority(true);
     }
+    if (category === "videoCourses" || category === "studentCalendar" || category === "beTeacher") {
+      setTeacherAuthority(false);
+    }
   }, [category]);
 
   return (

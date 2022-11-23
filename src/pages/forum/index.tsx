@@ -40,7 +40,7 @@ const Container = styled.div`
   max-width: 1096px;
   margin: 0 auto;
   display: flex;
-  padding: 0 10px;
+  padding: 0 10px 20px 10px;
   @media screen and (max-width: 1066px) {
     flex-wrap: wrap;
     flex-direction: column-reverse;
@@ -103,11 +103,8 @@ const Article = styled.li`
   color: ${(props) => props.theme.colors.color2};
   border-bottom: 1px solid #e7daca;
   padding: 35px 20px;
-  height: 180px;
+  min-height: 200px;
   cursor: pointer;
-  @media screen and (max-width: 444px) {
-    height: auto;
-  }
 `;
 const ArticleUser = styled.div`
   display: flex;
