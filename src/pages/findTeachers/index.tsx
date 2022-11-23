@@ -1,5 +1,6 @@
 import React, { useEffect, useState } from "react";
 import styled from "styled-components";
+import parse from "html-react-parser";
 import Link from "next/link";
 import Image from "next/image";
 import { useRouter } from "next/router";
@@ -8,7 +9,6 @@ import produce from "immer";
 import { db } from "../../../lib/firebase";
 import StarIcon from "../../../public/star.png";
 import HalfStar from "../../../public/star-half.png";
-import Loading from "../../../public/loading.gif";
 
 const Wrapper = styled.div`
   background-color: ${(props) => props.theme.colors.color1};
@@ -115,7 +115,7 @@ const TeacherName = styled.p`
   margin-bottom: 10px;
   color: ${(props) => props.theme.colors.color2};
 `;
-const TeacherIntroduction = styled.p<{ showMore: boolean }>`
+const TeacherIntroduction = styled.div<{ showMore: boolean }>`
   margin-bottom: 10px;
   margin-right: 30px;
   height: ${(props) => (props.showMore ? "auto" : "97.8px")};
@@ -190,53 +190,16 @@ interface TeacherInterface {
   beTeacherTime: number;
 }
 
-function FindTeachers() {
+function FindTeachers({ results }: { results: TeacherInterface[] }) {
   const router = useRouter();
-  const [teachersList, setTeachersList] = useState<TeacherInterface[]>([]);
+  const [teachersList, setTeachersList] = useState(results);
   const [showMore, setShowMore] = useState<string>();
   const [selectSort, setSelectSort] = useState("comment");
 
-  useEffect(() => {
-    const getTeachersList = async () => {
-      const usersRef = collection(db, "users");
-      const teachersQuery = query(usersRef, where("identity", "==", "teacher"));
-      const querySnapshot = await getDocs(teachersQuery);
-      const results: {
-        name: string;
-        uid: string;
-        reviews: { score: number }[];
-        avatar: string;
-        introduction: string;
-        experience: string;
-        beTeacherTime: number;
-      }[] = [];
-      querySnapshot.forEach((data) => {
-        results.push({
-          uid: data.data().uid,
-          name: data.data().username,
-          reviews: data.data().reviews,
-          avatar: data.data().photoURL,
-          introduction: data.data().teacher_introduction,
-          experience: data.data().teacher_experience,
-          beTeacherTime: data.data().beTeacherTime,
-        });
-      });
-      setTeachersList(
-        results.sort((a, b) => {
-          const reviewsQtyA = a?.reviews?.length || 0;
-          const reviewsQtyB = b?.reviews?.length || 0;
-          if (reviewsQtyA < reviewsQtyB) {
-            return 1;
-          }
-          if (reviewsQtyA > reviewsQtyB) {
-            return -1;
-          }
-          return 0;
-        })
-      );
-    };
-    getTeachersList();
-  }, []);
+  // useEffect(() => {
+
+  //     setTeachersList();
+  // }, []);
 
   const handleSort = (sort: string) => {
     if (sort === "comment") {
@@ -294,12 +257,7 @@ function FindTeachers() {
       setSelectSort(sort);
     }
   };
-  if (teachersList.length === 0)
-    return (
-      <Wrapper>
-        <Image src={Loading} alt="loading" width={100} height={100} />
-      </Wrapper>
-    );
+
   return (
     <Wrapper>
       <Container>
@@ -340,12 +298,11 @@ function FindTeachers() {
               </Link>
               <TeacherInfo>
                 <TeacherName>{teacher.name}</TeacherName>
-                <TeacherIntroduction
-                  showMore={showMore === teacher.uid}
-                  dangerouslySetInnerHTML={{
-                    __html: `${teacher.introduction}<p style='margin:10px 0; color:#654116'>老師經歷</p>${teacher.experience}`,
-                  }}
-                />
+                <TeacherIntroduction showMore={showMore === teacher.uid}>
+                  {parse(
+                    `${teacher.introduction}<p style='margin:10px 0; color:#654116'>老師經歷</p>${teacher.experience}`
+                  )}
+                </TeacherIntroduction>
                 <ShowMoreButton
                   onClick={() => {
                     if (showMore === teacher.uid) {
@@ -406,3 +363,34 @@ function FindTeachers() {
 }
 
 export default FindTeachers;
+
+export const getStaticProps = async () => {
+  const usersRef = collection(db, "users");
+  const teachersQuery = query(usersRef, where("identity", "==", "teacher"));
+  const querySnapshot = await getDocs(teachersQuery);
+  const results: {
+    name: string;
+    uid: string;
+    reviews: { score: number }[] | null;
+    avatar: string;
+    introduction: string;
+    experience: string;
+    beTeacherTime: number;
+  }[] = [];
+  querySnapshot.forEach((data) => {
+    results.push({
+      uid: data.data().uid,
+      name: data.data().username,
+      reviews: data.data().reviews || null,
+      avatar: data.data().photoURL,
+      introduction: data.data().teacher_introduction,
+      experience: data.data().teacher_experience,
+      beTeacherTime: data.data().beTeacherTime,
+    });
+  });
+  return {
+    props: {
+      results,
+    },
+  };
+};
