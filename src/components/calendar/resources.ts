@@ -2,17 +2,17 @@ const levelData = [
   {
     text: "初學者",
     id: 1,
-    color: "#FFE15D",
+    color: "#FD841F",
   },
   {
     text: "一般練習者",
     id: 2,
-    color: "#F49D1A",
+    color: "#DC3535",
   },
   {
     text: "進階練習者",
     id: 3,
-    color: "#DC3535",
+    color: "#9C2C77",
   },
 ];
 const LearningModeData = [

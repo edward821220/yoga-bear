@@ -17,6 +17,7 @@ import {
   WeekView,
   MonthView,
   Toolbar,
+  DragDropProvider,
   DateNavigator,
   TodayButton,
   AllDayPanel,
@@ -61,6 +62,9 @@ function TextEditor(props: AppointmentForm.TextEditorProps) {
 }
 
 function BasicLayout({ onFieldChange, appointmentData, ...restProps }: AppointmentForm.BasicLayoutProps) {
+  const onMaximumChange = (nextValue: string) => {
+    onFieldChange({ maximum: nextValue });
+  };
   const onDescriptionChange = (nextValue: string) => {
     onFieldChange({ description: nextValue });
   };
@@ -73,11 +77,11 @@ function BasicLayout({ onFieldChange, appointmentData, ...restProps }: Appointme
 
   return (
     <AppointmentForm.BasicLayout appointmentData={appointmentData} onFieldChange={onFieldChange} {...restProps}>
-      <AppointmentForm.Label text="課程說明" type="titleLabel" />
+      <AppointmentForm.Label text="課程人數" type="titleLabel" />
       <AppointmentForm.TextEditor
-        value={appointmentData.description}
-        onValueChange={onDescriptionChange}
-        placeholder="請輸入課程內容（若是實體課請填寫上課地點）"
+        value={appointmentData.maximum}
+        onValueChange={onMaximumChange}
+        placeholder="請輸入人數上限"
         type="ordinaryTextEditor"
         readOnly={false}
       />
@@ -86,6 +90,14 @@ function BasicLayout({ onFieldChange, appointmentData, ...restProps }: Appointme
         value={appointmentData.price}
         onValueChange={onPriceChange}
         placeholder="請輸入課程價格"
+        type="ordinaryTextEditor"
+        readOnly={false}
+      />
+      <AppointmentForm.Label text="課程說明" type="titleLabel" />
+      <AppointmentForm.TextEditor
+        value={appointmentData.description}
+        onValueChange={onDescriptionChange}
+        placeholder="請輸入課程內容（若是實體課請填寫上課地點）"
         type="ordinaryTextEditor"
         readOnly={false}
       />
@@ -231,8 +243,9 @@ export default function TeacherCalendar({ uid, name }: { uid: string; name: stri
           <AppointmentTooltip headerComponent={Header} showOpenButton />
           <ConfirmationDialog />
           <AppointmentForm basicLayoutComponent={BasicLayout} textEditorComponent={TextEditor} />
-          <Resources data={resources} mainResourceName="上課方式" />
+          <Resources data={resources} mainResourceName="課程難度" />
           <AllDayPanel />
+          <DragDropProvider />
         </Scheduler>
       </Paper>
     </>

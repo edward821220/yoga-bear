@@ -204,9 +204,9 @@ function StudentRoom() {
     // when a users subscribe
     channelRef.current.bind("pusher:subscription_succeeded", (members: Members) => {
       if (members.count === 1) {
-        // when subscribing, if you are the first member, you are the host
         Swal.fire({ text: "老師還沒來唷！請稍候再進教室～", confirmButtonColor: "#5d7262", icon: "warning" });
         router.push("/myCourses/studentCalendar");
+        return;
       }
       handleRoomJoined();
     });

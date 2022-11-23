@@ -17,7 +17,7 @@ import {
   AppointmentTooltip,
   ConfirmationDialog,
 } from "@devexpress/dx-react-scheduler-material-ui";
-import { collection, getDocs, query, where, doc, updateDoc, arrayUnion } from "firebase/firestore";
+import { collection, getDocs, query, where, doc, updateDoc, arrayUnion, getDoc } from "firebase/firestore";
 import { useRecoilState } from "recoil";
 import { db } from "../../../lib/firebase";
 import { AuthContext } from "../../contexts/authContext";
@@ -50,38 +50,36 @@ function TextEditor(props: AppointmentForm.TextEditorProps) {
 }
 
 function BasicLayout({ onFieldChange, appointmentData, ...restProps }: AppointmentForm.BasicLayoutProps) {
-  const onDescriptionChange = (nextValue: string) => {
-    onFieldChange({ description: nextValue });
-  };
-  const onPriceChange = (nextValue: string) => {
-    onFieldChange({ price: nextValue });
-  };
-  const onPrecautionChange = (nextValue: string) => {
-    onFieldChange({ precaution: nextValue });
-  };
-
   return (
     <AppointmentForm.BasicLayout appointmentData={appointmentData} onFieldChange={onFieldChange} {...restProps}>
-      <AppointmentForm.Label text="課程說明" type="titleLabel" />
+      <AppointmentForm.Label text="課程人數" type="titleLabel" />
       <AppointmentForm.TextEditor
-        value={appointmentData.description}
-        onValueChange={onDescriptionChange}
-        placeholder="請輸入課程內容（若是實體課請填寫上課地點）"
+        value={Number(appointmentData.maximum) || 1}
+        onValueChange={() => {}}
+        placeholder="請輸入人數上限"
         type="ordinaryTextEditor"
         readOnly
       />
       <AppointmentForm.Label text="課程價格" type="titleLabel" />
       <AppointmentForm.TextEditor
-        value={appointmentData.price}
-        onValueChange={onPriceChange}
+        value={Number(appointmentData.price) || 0}
+        onValueChange={() => {}}
         placeholder="請輸入課程價格"
+        type="ordinaryTextEditor"
+        readOnly
+      />
+      <AppointmentForm.Label text="課程說明" type="titleLabel" />
+      <AppointmentForm.TextEditor
+        value={appointmentData.description}
+        onValueChange={() => {}}
+        placeholder="請輸入課程內容（若是實體課請填寫上課地點）"
         type="ordinaryTextEditor"
         readOnly
       />
       <AppointmentForm.Label text="注意事項" type="titleLabel" />
       <AppointmentForm.TextEditor
         value={appointmentData.precaution}
-        onValueChange={onPrecautionChange}
+        onValueChange={() => {}}
         placeholder="請輸入注意事項"
         type="ordinaryTextEditor"
         readOnly
@@ -100,11 +98,11 @@ function BasicLayout({ onFieldChange, appointmentData, ...restProps }: Appointme
 
 function Header({ appointmentData, ...restProps }: AppointmentTooltip.HeaderProps) {
   const { userData, isLogin } = useContext(AuthContext);
-  const { username, email } = userData;
+  const { email } = userData;
   const [showMemberModal, setShowMemberModal] = useRecoilState(showMemberModalState);
   const [bearMoney, setBearMoney] = useRecoilState(bearMoneyState);
   const isEnded = Date.now() > Date.parse(appointmentData?.endDate as string);
-
+  const maximum = Number(appointmentData?.maximum) || 1;
   return (
     <AppointmentTooltip.Header {...restProps} appointmentData={appointmentData}>
       {isEnded || (
@@ -128,11 +126,30 @@ function Header({ appointmentData, ...restProps }: AppointmentTooltip.HeaderProp
                 confirmButtonColor: "#3085d6",
                 cancelButtonColor: "#d33",
                 confirmButtonText: "Yes!",
-              }).then((result) => {
+              }).then(async (result) => {
                 if (result.isConfirmed) {
                   const roomRef = doc(db, "rooms", appointmentData.id as string);
+                  const res = await getDoc(roomRef);
+                  const data = res.data();
+                  const students = data?.students as string[];
+                  if (students?.includes(email)) {
+                    Swal.fire({
+                      title: "您已經預約過這個課程囉～",
+                      confirmButtonColor: "#5d7262",
+                      icon: "warning",
+                    });
+                    return;
+                  }
+                  if (students?.length === maximum) {
+                    Swal.fire({
+                      title: "人數滿額囉！請預約其他課程～",
+                      confirmButtonColor: "#5d7262",
+                      icon: "warning",
+                    });
+                    return;
+                  }
                   updateDoc(roomRef, {
-                    students: arrayUnion({ username, email }),
+                    students: arrayUnion(email),
                   });
                   if (price > bearMoney) {
                     Swal.fire({ title: "熊幣餘額不足唷！請加值～", confirmButtonColor: "#5d7262", icon: "warning" });
@@ -196,7 +213,7 @@ function ReserveCalendar({ teacherId }: { teacherId: string }) {
         <AppointmentTooltip headerComponent={Header} showOpenButton />
         <ConfirmationDialog />
         <AppointmentForm basicLayoutComponent={BasicLayout} textEditorComponent={TextEditor} />
-        <Resources data={resources} mainResourceName="Level" />
+        <Resources data={resources} mainResourceName="課程難度" />
         <AllDayPanel />
       </Scheduler>
     </Paper>
