@@ -349,13 +349,13 @@ function VideoCourses({ uid }: { uid: string }) {
       await Promise.all(
         myVideoCourses.map(async (id: string) => {
           const videoDocRef = doc(db, "video_courses", id);
-          const datas = await getDoc(videoDocRef);
-          if (datas.exists() && datas) {
+          const data = await getDoc(videoDocRef);
+          if (data.exists() && data) {
             results.push({
-              id: datas.data().id,
-              name: datas.data().name,
-              cover: datas.data().cover,
-              reviews: datas.data().reviews,
+              id: data.data().id,
+              name: data.data().name,
+              cover: data.data().cover,
+              reviews: data.data().reviews,
             });
           }
         })
@@ -610,7 +610,7 @@ function LaunchVideoCourse({ uid }: { uid: string }) {
   const [coverPreview, setCoverPreview] = useState("");
   const [coursePreview, setCoursePreview] = useState("");
   const [chapters, setChapters] = useState<
-    { id: number; title: string; units: { id: number; title: string; filname: string; video: string }[] }[]
+    { id: number; title: string; units: { id: number; title: string; filename: string; video: string }[] }[]
   >([]);
   const [showMemberModal, setShowMemberModal] = useState(false);
   const [progressBar, setProgressBar] = useState<{ file: string; progress: number }>({ file: "", progress: 0 });
@@ -675,7 +675,7 @@ function LaunchVideoCourse({ uid }: { uid: string }) {
       id: newVideoCoursesRef.id,
       name: courseName,
       cover: imageUrl,
-      price,
+      price: Number(price),
       introduction,
       introductionVideo: introductionVideoUrl,
       teacher_id: uid,
@@ -754,7 +754,7 @@ function LaunchVideoCourse({ uid }: { uid: string }) {
           onClick={() => {
             setChapters([
               ...chapters,
-              { id: chapters.length + 1, title: "", units: [{ id: 1, title: "", filname: "", video: "" }] },
+              { id: chapters.length + 1, title: "", units: [{ id: 1, title: "", filename: "", video: "" }] },
             ]);
           }}
         >
@@ -853,13 +853,13 @@ function LaunchVideoCourse({ uid }: { uid: string }) {
                         produce((draft) => {
                           const newChapter = draft.find((_, index) => index === chapterIndex);
                           if (!newChapter || !e.target.files) return;
-                          newChapter.units[unitIndex].filname = e.target.files[0].name;
+                          newChapter.units[unitIndex].filename = e.target.files[0].name;
                         })
                       );
                     }}
                   />
                   {chapter && (
-                    <p style={{ fontSize: "14px", textAlign: "center" }}>{chapter.units[unitIndex].filname}</p>
+                    <p style={{ fontSize: "14px", textAlign: "center" }}>{chapter.units[unitIndex].filename}</p>
                   )}
                 </LaunchFormLabelFile>
               </div>
@@ -871,7 +871,7 @@ function LaunchVideoCourse({ uid }: { uid: string }) {
                   produce((draft) => {
                     const newChapter = draft.find((_, index) => index === chapterIndex);
                     if (!newChapter) return;
-                    newChapter.units.push({ id: newChapter.units.length + 1, title: "", filname: "", video: "" });
+                    newChapter.units.push({ id: newChapter.units.length + 1, title: "", filename: "", video: "" });
                   })
                 );
               }}
@@ -903,12 +903,12 @@ function BeTeacher({
 }) {
   const router = useRouter();
   const [teacherIntroduction, setTeacherIntroduction] = useState("");
-  const [teacherExprience, setTeacherExprience] = useState("");
+  const [teacherExperience, setTeacherExperience] = useState("");
   const [certificate, setCertificate] = useState("");
 
   const handleSubmit = (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
-    if (!teacherIntroduction.trim() || !teacherExprience.trim())
+    if (!teacherIntroduction.trim() || !teacherExperience.trim())
       Swal.fire({ text: "請輸入自我介紹及教學經歷", confirmButtonColor: "#5d7262", icon: "warning" });
 
     const target = e.target as HTMLInputElement;
@@ -935,7 +935,7 @@ function BeTeacher({
               identity: "teacher",
               certificate: downloadURL,
               teacher_introduction: teacherIntroduction,
-              teacher_exprience: teacherExprience,
+              teacher_experience: teacherExperience,
               beTeacherTime: Date.now(),
             });
             setUserData((prev) => ({ ...prev, identity: "teacher" }));
@@ -960,8 +960,8 @@ function BeTeacher({
       <LaunchFormLabel>
         <LaunchFormLabelText>師資班及教學經歷：</LaunchFormLabelText>
         <Editor
-          content={teacherExprience}
-          setContent={setTeacherExprience}
+          content={teacherExperience}
+          setContent={setTeacherExperience}
           style={{}}
           placeholder="簡短描述過往經歷～"
         />
@@ -1052,7 +1052,7 @@ function MyCourses() {
         {category === "launchedVideoCourses" && <LaunchedVideoCourses uid={userData.uid} />}
         {category === "teacherCalendar" && (
           <CalendarWrapper>
-            <TeacherCalendar uid={userData.uid} />
+            <TeacherCalendar uid={userData.uid} name={userData.username} />
           </CalendarWrapper>
         )}
         {category === "studentCalendar" && (

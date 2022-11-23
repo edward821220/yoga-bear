@@ -86,6 +86,14 @@ function BasicLayout({ onFieldChange, appointmentData, ...restProps }: Appointme
         type="ordinaryTextEditor"
         readOnly
       />
+      <AppointmentForm.Label text="開課老師" type="titleLabel" />
+      <AppointmentForm.TextEditor
+        value={appointmentData.teacherName}
+        onValueChange={() => {}}
+        placeholder="開課老師"
+        type="ordinaryTextEditor"
+        readOnly
+      />
     </AppointmentForm.BasicLayout>
   );
 }
@@ -148,7 +156,7 @@ function Header({ appointmentData, ...restProps }: AppointmentTooltip.HeaderProp
 }
 
 function ReserveCalendar({ teacherId }: { teacherId: string }) {
-  const [data, setData] = useState<AppointmentModel[]>([]);
+  const [appointments, setAppointments] = useState<AppointmentModel[]>([]);
   const [currentDate, setCurrentDate] = useState(new Date(Date.now()));
 
   useEffect(() => {
@@ -158,21 +166,21 @@ function ReserveCalendar({ teacherId }: { teacherId: string }) {
       const querySnapshot = await getDocs(courseQuery);
       const results: AppointmentModel[] = [];
       /* eslint-disable @typescript-eslint/no-unsafe-member-access */
-      querySnapshot.forEach((datas) => {
+      querySnapshot.forEach((data) => {
         results.push({
-          ...datas.data(),
-          startDate: new Date(datas.data().startDate.seconds * 1000),
-          endDate: new Date(datas.data().endDate.seconds * 1000),
+          ...data.data(),
+          startDate: new Date(data.data().startDate.seconds * 1000),
+          endDate: new Date(data.data().endDate.seconds * 1000),
         });
       });
       /* eslint-enable @typescript-eslint/no-unsafe-member-access */
-      setData(results);
+      setAppointments(results);
     };
     getRooms();
   }, [teacherId]);
   return (
     <Paper>
-      <Scheduler data={data} height={600}>
+      <Scheduler data={appointments} height={600}>
         <ViewState
           currentDate={currentDate}
           currentViewName="Week"

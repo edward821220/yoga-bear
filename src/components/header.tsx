@@ -101,7 +101,7 @@ const HeaderLinkTeacher = styled(HeaderLink)`
   }
 `;
 
-const MycoursesLink = styled.span`
+const MyCoursesLink = styled.span`
   color: ${(props) => props.theme.colors.color2};
   cursor: pointer;
   @media screen and (max-width: 1024px) {
@@ -818,7 +818,7 @@ function Header() {
             <Link href="/forum">問答園地</Link>
           </HeaderLink>
           <HeaderLink>
-            <MycoursesLink
+            <MyCoursesLink
               onClick={() => {
                 if (!isLogin) {
                   Swal.fire({ title: "您還沒登入唷！", confirmButtonColor: "#5d7262", icon: "warning" });
@@ -829,7 +829,7 @@ function Header() {
               }}
             >
               我的課程
-            </MycoursesLink>
+            </MyCoursesLink>
           </HeaderLink>
           {userData.identity === "teacher" && (
             <HeaderLinkTeacher>

@@ -145,8 +145,8 @@ function Header({ appointmentData, ...restProps }: AppointmentTooltip.HeaderProp
   );
 }
 
-export default function TeacherCalendar({ uid }: { uid: string }) {
-  const [data, setData] = useState<AppointmentModel[]>([]);
+export default function TeacherCalendar({ uid, name }: { uid: string; name: string }) {
+  const [appointments, setAppointments] = useState<AppointmentModel[]>([]);
   const [view, setView] = useState("Week");
   const [currentDate, setCurrentDate] = useState(new Date(Date.now()));
 
@@ -157,15 +157,15 @@ export default function TeacherCalendar({ uid }: { uid: string }) {
       const querySnapshot = await getDocs(courseQuery);
       const results: AppointmentModel[] = [];
       /* eslint-disable @typescript-eslint/no-unsafe-member-access */
-      querySnapshot.forEach((datas) => {
+      querySnapshot.forEach((data) => {
         results.push({
-          ...datas.data(),
-          startDate: new Date(datas.data().startDate.seconds * 1000),
-          endDate: new Date(datas.data().endDate.seconds * 1000),
+          ...data.data(),
+          startDate: new Date(data.data().startDate.seconds * 1000),
+          endDate: new Date(data.data().endDate.seconds * 1000),
         });
       });
       /* eslint-enable @typescript-eslint/no-unsafe-member-access */
-      setData(results);
+      setAppointments(results);
     };
     getRooms();
   }, [uid]);
@@ -173,12 +173,18 @@ export default function TeacherCalendar({ uid }: { uid: string }) {
   const commitChanges = ({ added, changed, deleted }: ChangeSet): void => {
     if (added) {
       const newRoomRef = doc(collection(db, "rooms"));
-      setData([...data, { id: newRoomRef.id, startDate: added.startDate, ...added }]);
-      setDoc(newRoomRef, { id: newRoomRef.id, startDate: added.startDate, teacherId: uid, ...added });
+      setAppointments([...appointments, { id: newRoomRef.id, startDate: added.startDate, ...added }]);
+      setDoc(newRoomRef, {
+        id: newRoomRef.id,
+        startDate: added.startDate,
+        teacherId: uid,
+        teacherName: name,
+        ...added,
+      });
     }
     if (changed) {
-      setData(
-        data.map((appointment) => {
+      setAppointments(
+        appointments.map((appointment) => {
           if (appointment.id === undefined) return;
           if (changed[appointment.id] && typeof appointment.id === "string") {
             const roomRef = doc(db, "rooms", appointment.id);
@@ -192,7 +198,7 @@ export default function TeacherCalendar({ uid }: { uid: string }) {
       );
     }
     if (deleted !== undefined) {
-      setData(data.filter((appointment) => appointment.id !== deleted));
+      setAppointments(appointments.filter((appointment) => appointment.id !== deleted));
       if (typeof deleted !== "string") return;
       deleteDoc(doc(db, "rooms", deleted));
     }
@@ -208,7 +214,7 @@ export default function TeacherCalendar({ uid }: { uid: string }) {
         />
       </SwitcherWrapper>
       <Paper>
-        <Scheduler data={data} height={600}>
+        <Scheduler data={appointments} height={600}>
           <ViewState
             currentDate={currentDate}
             currentViewName={view}
@@ -225,7 +231,7 @@ export default function TeacherCalendar({ uid }: { uid: string }) {
           <AppointmentTooltip headerComponent={Header} showOpenButton />
           <ConfirmationDialog />
           <AppointmentForm basicLayoutComponent={BasicLayout} textEditorComponent={TextEditor} />
-          <Resources data={resources} mainResourceName="Level" />
+          <Resources data={resources} mainResourceName="上課方式" />
           <AllDayPanel />
         </Scheduler>
       </Paper>
