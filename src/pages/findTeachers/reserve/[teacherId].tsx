@@ -475,7 +475,7 @@ export async function getStaticPaths() {
     paths.push({ params: { teacherId } });
   });
 
-  return { paths, fallback: false };
+  return { paths, fallback: "blocking" };
 }
 
 export async function getStaticProps({ params }: { params: { teacherId: string } }) {
@@ -489,5 +489,5 @@ export async function getStaticProps({ params }: { params: { teacherId: string }
   const reviews = (userSnap.data().reviews as ReviewInterface[]) || null;
   const teacherData = { username, introduction, experience, reviews, avatar };
 
-  return { props: { teacherId: params.teacherId, teacherData } };
+  return { props: { teacherId: params.teacherId, teacherData }, revalidate: 60 };
 }
