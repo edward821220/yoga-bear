@@ -1,27 +1,47 @@
 import React, { useEffect, useRef, useState } from "react";
+import Swal from "sweetalert2";
 import Pusher, { Members, PresenceChannel } from "pusher-js";
 import { useRouter } from "next/router";
 import styled from "styled-components";
 
+const Wrapper = styled.div`
+  min-height: calc(100vh - 100px);
+  padding: 60px 0;
+  margin: 0 auto;
+  max-width: 1280px;
+`;
 const Title = styled.h2`
   font-size: 24px;
   text-align: center;
   color: #1d72c7;
+  margin-bottom: 60px;
 `;
-const Wrapper = styled.div`
+const ViewPorts = styled.div`
   display: flex;
-  min-height: calc(100vh - 100px);
+  justify-content: center;
+  align-items: center;
 `;
 const UserViewPort = styled.div`
   width: 400px;
   height: 300px;
-  border: 1px solid red;
+  border: 1px solid lightgray;
+  box-shadow: 0 0 5px #00000050;
   margin-right: 20px;
+`;
+const Button = styled.button`
+  background-color: ${(props) => props.theme.colors.color3};
+  color: ${(props) => props.theme.colors.color1};
+  border-radius: 5px;
+  min-width: 50px;
+  padding: 5px 10px;
+  margin-right: 10px;
+  cursor: pointer;
 `;
 const PartnerViewPort = styled.div`
   width: 400px;
   height: 300px;
-  border: 1px solid red;
+  border: 1px solid lightgray;
+  box-shadow: 0 0 5px #00000050;
   margin-right: 20px;
 `;
 const Video = styled.video``;
@@ -83,7 +103,9 @@ function StudentRoom() {
 
       // We implement our onTrack method for when we receive tracks
       connection.ontrack = handleTrackEvent;
-      connection.onicecandidateerror = (e) => alert(e);
+      connection.onicecandidateerror = () => {
+        Swal.fire({ text: "發生錯誤，請再試一次！", confirmButtonColor: "#5d7262", icon: "error" });
+      };
       return connection;
     };
     const handleRoomJoined = () => {
@@ -105,9 +127,9 @@ function StudentRoom() {
             channelRef.current.trigger("client-ready", {});
           }
         })
-        .catch((err) => {
+        .catch(() => {
           /* handle the error */
-          alert(err);
+          Swal.fire({ text: "發生錯誤，請再試一次！", confirmButtonColor: "#5d7262", icon: "error" });
         });
     };
     const handlePeerLeaving = () => {
@@ -143,8 +165,8 @@ function StudentRoom() {
             // This options needs to be turned on in Pusher app settings
             channelRef.current?.trigger("client-offer", offer);
           })
-          .catch((error) => {
-            alert(error);
+          .catch(() => {
+            Swal.fire({ text: "發生錯誤，請再試一次！", confirmButtonColor: "#5d7262", icon: "error" });
           });
       }
     };
@@ -165,8 +187,8 @@ function StudentRoom() {
           rtcConnection.current.setLocalDescription(answer);
           channelRef.current?.trigger("client-answer", answer);
         })
-        .catch((error) => {
-          alert(error);
+        .catch(() => {
+          Swal.fire({ text: "發生錯誤，請再試一次！", confirmButtonColor: "#5d7262", icon: "error" });
         });
     };
     // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
@@ -182,9 +204,9 @@ function StudentRoom() {
     // when a users subscribe
     channelRef.current.bind("pusher:subscription_succeeded", (members: Members) => {
       if (members.count === 1) {
-        // when subscribing, if you are the first member, you are the host
-        alert("老師還沒來唷！請稍候再進教室～");
+        Swal.fire({ text: "老師還沒來唷！請稍候再進教室～", confirmButtonColor: "#5d7262", icon: "warning" });
         router.push("/myCourses/studentCalendar");
+        return;
       }
       handleRoomJoined();
     });
@@ -252,28 +274,28 @@ function StudentRoom() {
   };
 
   return (
-    <>
+    <Wrapper>
       <Title>StudentRoom</Title>
-      <Wrapper>
+      <ViewPorts>
         <UserViewPort>
           <Video autoPlay ref={userVideo} width={400} height={320} />
           <div>
-            <button onClick={toggleMic} type="button">
-              {micActive ? "Mute Mic" : "UnMute Mic"}
-            </button>
-            <button onClick={leaveRoom} type="button">
-              Leave
-            </button>
-            <button onClick={toggleCamera} type="button">
+            <Button onClick={toggleCamera} type="button">
               {cameraActive ? "Stop Camera" : "Start Camera"}
-            </button>
+            </Button>
+            <Button onClick={toggleMic} type="button">
+              {micActive ? "Mute Mic" : "UnMute Mic"}
+            </Button>
+            <Button onClick={leaveRoom} type="button">
+              Leave
+            </Button>
           </div>
         </UserViewPort>
         <PartnerViewPort>
           <Video autoPlay ref={partnerVideo} width={400} height={320} />
         </PartnerViewPort>
-      </Wrapper>
-    </>
+      </ViewPorts>
+    </Wrapper>
   );
 }
 

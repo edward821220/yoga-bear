@@ -29,7 +29,9 @@
     "react-quill": "^2.0.0",
     "recoil": "^0.7.6",
     "styled-components": "^5.3.6",
-    "styled-reset": "^4.4.2"
+    "styled-reset": "^4.4.2",
+    "sweetalert2": "^11.6.9",
+    "swiper": "^8.4.4"
   },
   "devDependencies": {
     "@types/node": "18.11.7",

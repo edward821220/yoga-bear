@@ -28,6 +28,9 @@ a {
   text-decoration: none;
   color: #000000;
 }
+.swal2-container {
+    z-index: 10000 !important;    
+}
 `;
 const theme: DefaultTheme = {
   colors: {
@@ -38,6 +41,7 @@ const theme: DefaultTheme = {
     color5: "#f2deba",
     color6: "#00000080",
     color7: "#3f3f3f",
+    color8: "#f4f7f7",
   },
 };
 
@@ -45,6 +49,7 @@ export default function App({ Component, pageProps }: AppProps) {
   return (
     <>
       <Head>
+        <meta name="viewport" content="viewport-fit=cover" />
         <meta name="viewport" content="initial-scale=1.0, width=device-width" key="viewport" />
       </Head>
       <Reset />

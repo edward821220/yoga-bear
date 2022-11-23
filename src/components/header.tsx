@@ -2,6 +2,7 @@ import React, { useState, useContext, useEffect, Dispatch, SetStateAction } from
 import Link from "next/link";
 import Image from "next/image";
 import styled from "styled-components";
+import Swal from "sweetalert2";
 import { useRouter } from "next/router";
 import { useRecoilState, SetterOrUpdater } from "recoil";
 import { getDoc, doc, updateDoc } from "firebase/firestore";
@@ -9,13 +10,16 @@ import { ref, uploadBytesResumable, getDownloadURL } from "firebase/storage";
 import Modal from "./modal";
 import Editor from "./editor";
 import { AuthContext } from "../contexts/authContext";
-import { orderQtyState, bearMoneyState } from "../../lib/recoil";
+import { orderQtyState, bearMoneyState, showMemberModalState } from "../../lib/recoil";
 import { db, storage } from "../../lib/firebase";
 import BearLogo from "../../public/bear-logo2.png";
 import CartLogo from "../../public/cart.png";
 import MemberLogo from "../../public/member.png";
 import MoneyIcon from "../../public/newMoney.png";
 import PlusMoneyIcon from "../../public/add.png";
+import MoneyBear from "../../public/money.png";
+import Loading from "../../public/loading.gif";
+import MenuIcon from "../../public/menu.svg";
 
 const Wrapper = styled.header`
   display: flex;
@@ -33,11 +37,36 @@ const LogoWrapper = styled.div`
   margin-right: 40px;
   margin-left: 20px;
   flex-basis: 200px;
+  @media screen and (max-width: 1024px) {
+    margin-right: 0;
+    flex-basis: 150px;
+  }
 `;
-const HeaderLinks = styled.ul`
+const MenuLinksWrapper = styled.div`
+  position: relative;
+  margin-right: auto;
+`;
+const MenuIconWrapper = styled.div`
+  position: relative;
+  width: 26px;
+  height: auto;
+  display: none;
+  @media screen and (max-width: 788px) {
+    display: block;
+  }
+`;
+const HeaderLinks = styled.ul<{ showMenu: boolean }>`
   display: flex;
   align-items: center;
-  margin-right: auto;
+  @media screen and (max-width: 788px) {
+    display: ${(props) => (props.showMenu ? "block" : "none")};
+    align-items: center;
+    flex-direction: column;
+    position: absolute;
+    transform: translatex(-28px);
+    background-color: ${(props) => props.theme.colors.color4};
+    padding: 5px 0;
+  }
 `;
 const HeaderLink = styled.li`
   margin-right: 20px;
@@ -48,15 +77,48 @@ const HeaderLink = styled.li`
   a {
     color: ${(props) => props.theme.colors.color2};
   }
+  @media screen and (max-width: 1024px) {
+    margin-right: 10px;
+  }
+  @media screen and (max-width: 788px) {
+    font-size: 16px;
+    margin: 0;
+    padding: 0 5px;
+    &:hover {
+      background-color: ${(props) => props.theme.colors.color3};
+      a {
+        color: ${(props) => props.theme.colors.color1};
+      }
+      span {
+        color: ${(props) => props.theme.colors.color1};
+      }
+    }
+  }
 `;
-const MycoursesLink = styled.span`
+const HeaderLinkTeacher = styled(HeaderLink)`
+  @media screen and (max-width: 1140px) {
+    display: none;
+  }
+`;
+
+const MyCoursesLink = styled.span`
   color: ${(props) => props.theme.colors.color2};
   cursor: pointer;
+  @media screen and (max-width: 1024px) {
+    margin-right: 10px;
+  }
+  @media screen and (max-width: 788px) {
+    margin-right: 0;
+  }
 `;
 
 const Member = styled.ul`
   display: flex;
   align-items: center;
+  position: relative;
+  @media screen and (max-width: 468px) {
+    margin-bottom: 36px;
+  }
 `;
 
 const MoneyDisplay = styled.div`
@@ -71,6 +133,18 @@ const MoneyDisplay = styled.div`
   align-items: center;
   background-color: ${(props) => props.theme.colors.color1};
   border-radius: 5px;
+  @media screen and (max-width: 1024px) {
+    margin-right: 24px;
+    width: 120px;
+    height: 36px;
+  }
+  @media screen and (max-width: 468px) {
+    position: absolute;
+    transform: translate(-8px, 42px);
+    width: 100px;
+    height: 24px;
+    margin-right: 0;
+  }
 `;
 
 const MoneyIconWrapper = styled.div`
@@ -78,15 +152,34 @@ const MoneyIconWrapper = styled.div`
   width: 30px;
   height: 30px;
   margin-right: 5px;
+  @media screen and (max-width: 1024px) {
+    width: 24px;
+    height: 24px;
+  }
+  @media screen and (max-width: 468px) {
+    width: 17px;
+    height: 17px;
+  }
 `;
 const MoneyQty = styled.p`
   font-size: 18px;
+  @media screen and (max-width: 1024px) {
+    font-size: 16px;
+  }
 `;
 const MoneyPlusWrapper = styled.div`
   position: relative;
   width: 30px;
   height: 30px;
   cursor: pointer;
+  @media screen and (max-width: 1024px) {
+    width: 24px;
+    height: 24px;
+  }
+  @media screen and (max-width: 468px) {
+    width: 22px;
+    height: 22px;
+  }
 `;
 
 const CartIconWrapper = styled.li`
@@ -105,6 +198,14 @@ const CartIconWrapper = styled.li`
     border: 2px solid ${(props) => props.theme.colors.color3};
     border-radius: 50%;
     z-index: -1;
+    @media screen and (max-width: 1024px) {
+      width: 40px;
+      height: 40px;
+    }
+  }
+  @media screen and (max-width: 1024px) {
+    width: 32px;
+    margin-right: 24px;
   }
 `;
 const OrderQty = styled.div`
@@ -137,6 +238,15 @@ const MemberIconWrapper = styled.li`
     border-radius: 50%;
     border: 2px solid ${(props) => props.theme.colors.color3};
     z-index: -1;
+    @media screen and (max-width: 1024px) {
+      width: 40px;
+      height: 40px;
+    }
+  }
+  @media screen and (max-width: 1024px) {
+    width: 32px;
+    height: 31px;
+    margin-right: 24px;
   }
 `;
 const Form = styled.form`
@@ -154,7 +264,9 @@ const Avatar = styled.div`
   position: relative;
   width: 200px;
   height: 200px;
+  border-radius: 50%;
   margin-bottom: 20px;
+  overflow: hidden;
 `;
 const Label = styled.label``;
 const LabelText = styled.p`
@@ -209,7 +321,33 @@ const Button = styled.button`
 const ErrorMessage = styled.p`
   color: red;
 `;
-
+const LabelFile = styled.label`
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  margin-bottom: 10px;
+  cursor: pointer;
+`;
+const LabelButtonFile = styled.div`
+  font-size: 16px;
+  text-align: center;
+  color: gray;
+  background-color: white;
+  min-width: 100px;
+  max-width: 150px;
+  border: 1px solid gray;
+  border-radius: 5px;
+  padding: 10px;
+  margin: 0 auto;
+  margin-bottom: 10px;
+`;
+const LabelInputFile = styled.input`
+  display: none;
+  width: 500px;
+  line-height: 24px;
+  padding-left: 5px;
+  margin-bottom: 20px;
+`;
 const loginForm = [
   { key: "email", title: "Email", type: "email", placeholder: "請輸入電子信箱" },
   {
@@ -260,6 +398,7 @@ const isValidCCV = /\d{3}$/;
 interface MemberModalProps {
   setOrderQty: SetterOrUpdater<number>;
   setShowMemberModal: Dispatch<SetStateAction<boolean>>;
+  setBearMoney: SetterOrUpdater<number>;
   isLogin: boolean;
   signup: (emil: string, password: string, identity: string, username: string) => Promise<string>;
   login(email: string, password: string): void;
@@ -291,8 +430,10 @@ function MemberModal({
   signup,
   userData,
   setUserData,
+  setBearMoney,
 }: MemberModalProps) {
   const router = useRouter();
+  const [isUploading, setIsUploading] = useState(false);
   const [errorMessage, setErrorMessage] = useState("");
   const [loginData, setloginData] = useState<Record<string, string>>({
     email: "",
@@ -306,7 +447,8 @@ function MemberModal({
     identity: "student",
   });
   const [teacherIntroduction, setTeacherIntroduction] = useState("");
-  const [teacherExprience, setTeacherExprience] = useState("");
+  const [teacherExperience, setTeacherExperience] = useState("");
+  const [certificatePreview, setCertificatePreview] = useState("");
   const [needSignup, setNeedSignup] = useState(false);
 
   const handleClose = () => {
@@ -322,7 +464,7 @@ function MemberModal({
       return;
     }
     handleClose();
-    alert("恭喜您登入成功!");
+    Swal.fire({ title: "登入成功！", confirmButtonColor: "#5d7262", icon: "success" });
   };
   const handleSignup = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
@@ -349,8 +491,8 @@ function MemberModal({
       uploadTask.on(
         "state_changed",
         () => {},
-        (error) => {
-          alert(error);
+        () => {
+          Swal.fire({ text: "上傳失敗！請再試一次", confirmButtonColor: "#5d7262", icon: "error" });
         },
         () => {
           getDownloadURL(uploadTask.snapshot.ref).then((downloadURL) => {
@@ -358,7 +500,8 @@ function MemberModal({
             updateDoc(docRef, {
               certificate: downloadURL,
               teacher_introduction: teacherIntroduction,
-              teacher_exprience: teacherExprience,
+              teacher_experience: teacherExperience,
+              beTeacherTime: Date.now(),
             });
           });
         }
@@ -366,9 +509,10 @@ function MemberModal({
     }
     setNeedSignup(false);
     handleClose();
-    alert("恭喜您註冊成功!");
+    Swal.fire({ title: "恭喜您註冊成功！", confirmButtonColor: "#5d7262", icon: "success" });
   };
   const handleUploadAvatar = (e: React.FormEvent<HTMLLabelElement>): void => {
+    setIsUploading(true);
     const target = e.target as HTMLInputElement;
     if (!target.files) return;
     const file = target?.files[0];
@@ -377,20 +521,27 @@ function MemberModal({
     uploadTask.on(
       "state_changed",
       () => {},
-      (error) => {
-        alert(error);
+      () => {
+        Swal.fire({ text: "上傳失敗！請再試一次", confirmButtonColor: "#5d7262", icon: "error" });
       },
       () => {
-        getDownloadURL(uploadTask.snapshot.ref).then((downloadURL) => {
+        getDownloadURL(uploadTask.snapshot.ref).then(async (downloadURL) => {
           const docRef = doc(db, "users", userData.uid);
-          updateDoc(docRef, {
+          await updateDoc(docRef, {
             photoURL: downloadURL,
           });
           setUserData({ ...userData, avatar: downloadURL });
+          setIsUploading(false);
         });
       }
     );
   };
+  if (isUploading)
+    return (
+      <Modal handleClose={handleClose}>
+        <Image src={Loading} alt="loading" style={{ margin: "0 auto" }} width={100} height={100} />
+      </Modal>
+    );
 
   return (
     <Modal handleClose={handleClose}>
@@ -482,16 +633,27 @@ function MemberModal({
               <Label>
                 <LabelText>師資班及教學經歷：</LabelText>
                 <Editor
-                  content={teacherExprience}
-                  setContent={setTeacherExprience}
+                  content={teacherExperience}
+                  setContent={setTeacherExperience}
                   style={{ width: "200px", height: "100px", border: "1px solid gray", marginBottom: "10px" }}
                   placeholder="簡短描述過往經歷～"
                 />
               </Label>
-              <Label>
-                <LabelText>證照上傳</LabelText>
-                <FormInput type="file" accept="image/*, application/pdf" required />
-              </Label>
+              <LabelFile>
+                <LabelButtonFile>證照上傳</LabelButtonFile>
+                <LabelInputFile
+                  type="file"
+                  accept="image/*, application/pdf"
+                  required
+                  onChange={(e) => {
+                    if (!e.target.files) return;
+                    setCertificatePreview(e.target.files[0].name);
+                  }}
+                />
+                {certificatePreview && (
+                  <span style={{ fontSize: "14px", textAlign: "right", marginLeft: "5px" }}>{certificatePreview}</span>
+                )}
+              </LabelFile>
             </>
           )}
           <Button type="submit">送出</Button>
@@ -502,7 +664,7 @@ function MemberModal({
         <Form>
           <FormTitle>會員資訊</FormTitle>
           <Avatar>
-            <Image src={userData.avatar || MemberLogo} alt="avatar" fill sizes="contain" />
+            <Image src={userData.avatar} alt="avatar" fill sizes="contain" />
           </Avatar>
           <MemberInfo>用戶名稱：{userData.username}</MemberInfo>
           <MemberInfo>用戶身份：{userData.identity === "teacher" ? "老師" : "學生"}</MemberInfo>
@@ -515,6 +677,7 @@ function MemberModal({
             onClick={() => {
               logout();
               setOrderQty(0);
+              setBearMoney(0);
               setNeedSignup(false);
               handleClose();
               router.push("/");
@@ -548,19 +711,19 @@ function PaymentModal({ setShowPaymentModal, bearMoney, setBearMoney, userId }: 
   const handleSubmit = (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
     if (!paymentData.cardNumber.match(isValidCardNumber)) {
-      alert("請輸入正確的信用卡格式");
+      Swal.fire({ title: "請輸入正確的信用卡格式", confirmButtonColor: "#5d7262" });
       return;
     }
     if (!paymentData.expiration.match(isValidExpiration)) {
-      alert("請輸入正確的信用卡期限");
+      Swal.fire({ title: "請輸入正確的信用卡期限", confirmButtonColor: "#5d7262" });
       return;
     }
     if (!paymentData.cvv.match(isValidCCV)) {
-      alert("請輸入正確的信用卡安全碼");
+      Swal.fire({ title: "請輸入正確的信用卡號碼", confirmButtonColor: "#5d7262" });
       return;
     }
     setBearMoney((prev) => prev + Number(paymentData.money));
-    alert("儲值成功！可以上課囉！");
+    Swal.fire({ title: "儲值成功！可以上課囉！", confirmButtonColor: "#5d7262", icon: "success" });
     setShowPaymentModal(false);
     const docRef = doc(db, "users", userId);
     updateDoc(docRef, {
@@ -607,14 +770,16 @@ function PaymentModal({ setShowPaymentModal, bearMoney, setBearMoney, userId }: 
           );
         })}
         <Button type="submit">確定加值</Button>
+        <Image src={MoneyBear} alt="money-bear" width={100} height={100} />
       </Form>
     </Modal>
   );
 }
 
 function Header() {
-  const [showMemberModal, setShowMemberModal] = useState(false);
+  const [showMenu, setShowMenu] = useState(false);
   const [showPaymentModal, setShowPaymentModal] = useState(false);
+  const [showMemberModal, setShowMemberModal] = useRecoilState(showMemberModalState);
   const [orderQty, setOrderQty] = useRecoilState(orderQtyState);
   const [bearMoney, setBearMoney] = useRecoilState(bearMoneyState);
   const { signup, isLogin, login, logout, userData, setUserData } = useContext(AuthContext);
@@ -643,31 +808,48 @@ function Header() {
           <Image src={BearLogo} alt="logo" />
         </Link>
       </LogoWrapper>
-      <HeaderLinks>
-        <HeaderLink>
-          <Link href="/videoCourses">影音課程</Link>
-        </HeaderLink>
-        <HeaderLink>
-          <Link href="/findTeachers">預約老師</Link>
-        </HeaderLink>
-        <HeaderLink>
-          <Link href="/forum">問答園地</Link>
-        </HeaderLink>
-        <HeaderLink>
-          <MycoursesLink
-            onClick={() => {
-              if (!isLogin) {
-                alert("您還沒登入唷！");
-                setShowMemberModal(true);
-                return;
-              }
-              router.push("/myCourses/videoCourses");
-            }}
-          >
-            我的課程
-          </MycoursesLink>
-        </HeaderLink>
-      </HeaderLinks>
+      <MenuLinksWrapper
+        onMouseOver={() => {
+          setShowMenu(true);
+        }}
+        onMouseOut={() => {
+          setShowMenu(false);
+        }}
+      >
+        <MenuIconWrapper>
+          <Image src={MenuIcon} alt="menu" />
+        </MenuIconWrapper>
+        <HeaderLinks showMenu={showMenu}>
+          <HeaderLink>
+            <Link href="/videoCourses">影音課程</Link>
+          </HeaderLink>
+          <HeaderLink>
+            <Link href="/findTeachers">預約老師</Link>
+          </HeaderLink>
+          <HeaderLink>
+            <Link href="/forum">問答園地</Link>
+          </HeaderLink>
+          <HeaderLink>
+            <MyCoursesLink
+              onClick={() => {
+                if (!isLogin) {
+                  Swal.fire({ title: "您還沒登入唷！", confirmButtonColor: "#5d7262", icon: "warning" });
+                  setShowMemberModal(true);
+                  return;
+                }
+                router.push("/myCourses/videoCourses");
+              }}
+            >
+              我的課程
+            </MyCoursesLink>
+          </HeaderLink>
+          {userData.identity === "teacher" && (
+            <HeaderLinkTeacher>
+              <Link href="/myCourses/launchVideoCourse">老師開課</Link>
+            </HeaderLinkTeacher>
+          )}
+        </HeaderLinks>
+      </MenuLinksWrapper>
       <Member>
         <MoneyDisplay>
           <MoneyIconWrapper>
@@ -678,7 +860,7 @@ function Header() {
             onClick={() => {
               if (!isLogin) {
                 setShowPaymentModal(false);
-                alert("您還沒登入唷！");
+                Swal.fire({ title: "您還沒登入唷！", confirmButtonColor: "#5d7262", icon: "warning" });
                 setShowMemberModal(true);
                 return;
               }
@@ -695,7 +877,7 @@ function Header() {
             alt="cart"
             onClick={() => {
               if (!isLogin) {
-                alert("您還沒登入唷！");
+                Swal.fire({ title: "您還沒登入唷！", confirmButtonColor: "#5d7262", icon: "warning" });
                 setShowMemberModal(true);
                 return;
               }
@@ -722,6 +904,7 @@ function Header() {
           signup={signup}
           userData={userData}
           setUserData={setUserData}
+          setBearMoney={setBearMoney}
         />
       )}
       {showPaymentModal && (

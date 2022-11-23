@@ -1,6 +1,7 @@
 import React, { useState, useEffect, useContext } from "react";
 import Paper from "@mui/material/Paper";
 import Image from "next/image";
+import Swal from "sweetalert2";
 import { ViewState, EditingState, IntegratedEditing, AppointmentModel } from "@devexpress/dx-react-scheduler";
 import {
   Scheduler,
@@ -85,39 +86,45 @@ function TextEditor(props: AppointmentForm.TextEditorProps) {
 }
 
 function BasicLayout({ onFieldChange, appointmentData, ...restProps }: AppointmentForm.BasicLayoutProps) {
-  const onDescriptionChange = (nextValue: string) => {
-    onFieldChange({ description: nextValue });
-  };
-  const onPriceChange = (nextValue: string) => {
-    onFieldChange({ price: nextValue });
-  };
-  const onPrecautionChange = (nextValue: string) => {
-    onFieldChange({ precaution: nextValue });
-  };
-
   return (
     <AppointmentForm.BasicLayout appointmentData={appointmentData} onFieldChange={onFieldChange} {...restProps}>
-      <AppointmentForm.Label text="課程說明" type="titleLabel" />
+      <AppointmentForm.Label text="課程人數" type="titleLabel" />
       <AppointmentForm.TextEditor
-        value={appointmentData.description}
-        onValueChange={onDescriptionChange}
-        placeholder="請輸入課程內容（若是實體課請填寫上課地點）"
+        value={appointmentData.maximum}
+        onValueChange={() => {}}
+        placeholder="請輸入人數上限"
         type="ordinaryTextEditor"
         readOnly
       />
       <AppointmentForm.Label text="課程價格" type="titleLabel" />
       <AppointmentForm.TextEditor
         value={appointmentData.price}
-        onValueChange={onPriceChange}
+        onValueChange={() => {}}
         placeholder="請輸入課程價格"
+        type="ordinaryTextEditor"
+        readOnly
+      />
+      <AppointmentForm.Label text="課程說明" type="titleLabel" />
+      <AppointmentForm.TextEditor
+        value={appointmentData.description}
+        onValueChange={() => {}}
+        placeholder="請輸入課程內容（若是實體課請填寫上課地點）"
         type="ordinaryTextEditor"
         readOnly
       />
       <AppointmentForm.Label text="注意事項" type="titleLabel" />
       <AppointmentForm.TextEditor
         value={appointmentData.precaution}
-        onValueChange={onPrecautionChange}
+        onValueChange={() => {}}
         placeholder="請輸入注意事項"
+        type="ordinaryTextEditor"
+        readOnly
+      />
+      <AppointmentForm.Label text="開課老師" type="titleLabel" />
+      <AppointmentForm.TextEditor
+        value={appointmentData.teacherName}
+        onValueChange={() => {}}
+        placeholder="開課老師"
         type="ordinaryTextEditor"
         readOnly
       />
@@ -200,7 +207,7 @@ function Header({ appointmentData, ...restProps }: AppointmentTooltip.HeaderProp
               type="button"
               onClick={async () => {
                 if (score === 0) {
-                  alert("請點選星星評分");
+                  Swal.fire({ title: "請點選星星評分", confirmButtonColor: "#5d7262", icon: "warning" });
                   return;
                 }
                 if (!appointmentData || typeof appointmentData.teacherId !== "string") return;
@@ -218,7 +225,11 @@ function Header({ appointmentData, ...restProps }: AppointmentTooltip.HeaderProp
                 await updateDoc(roomRef, {
                   reviewedStudents: arrayUnion(userData.uid),
                 });
-                alert("感謝您的評論～您的支持是我們最大的動力！");
+                Swal.fire({
+                  text: "感謝您的評論～您的支持是我們最大的動力！",
+                  confirmButtonColor: "#5d7262",
+                  icon: "success",
+                });
                 setComments("");
                 setScore(0);
                 setShowReviewModal(false);
@@ -234,33 +245,33 @@ function Header({ appointmentData, ...restProps }: AppointmentTooltip.HeaderProp
 }
 
 function StudentCalendar({ userData }: { userData: { uid: string; username: string; email: string } }) {
-  const [data, setData] = useState<AppointmentModel[]>([]);
+  const [appointments, setAppointments] = useState<AppointmentModel[]>([]);
   const { uid, username, email } = userData;
   const [currentDate, setCurrentDate] = useState(new Date(Date.now()));
 
   useEffect(() => {
     const getRooms = async () => {
       const courseRef = collection(db, "rooms");
-      const courseQuery = query(courseRef, where("students", "array-contains", { username, email }));
+      const courseQuery = query(courseRef, where("students", "array-contains", email));
       const querySnapshot = await getDocs(courseQuery);
       const results: AppointmentModel[] = [];
       /* eslint-disable @typescript-eslint/no-unsafe-member-access */
-      querySnapshot.forEach((datas) => {
+      querySnapshot.forEach((data) => {
         results.push({
-          ...datas.data(),
-          startDate: new Date(datas.data().startDate.seconds * 1000),
-          endDate: new Date(datas.data().endDate.seconds * 1000),
+          ...data.data(),
+          startDate: new Date(data.data().startDate.seconds * 1000),
+          endDate: new Date(data.data().endDate.seconds * 1000),
         });
       });
       /* eslint-enable @typescript-eslint/no-unsafe-member-access */
-      setData(results);
+      setAppointments(results);
     };
     getRooms();
   }, [uid, username, email]);
 
   return (
     <Paper>
-      <Scheduler data={data} height={600}>
+      <Scheduler data={appointments} height={600}>
         <ViewState
           currentDate={currentDate}
           currentViewName="Week"
@@ -276,7 +287,7 @@ function StudentCalendar({ userData }: { userData: { uid: string; username: stri
         <AppointmentTooltip headerComponent={Header} showOpenButton />
         <ConfirmationDialog />
         <AppointmentForm basicLayoutComponent={BasicLayout} textEditorComponent={TextEditor} />
-        <Resources data={resources} mainResourceName="Level" />
+        <Resources data={resources} mainResourceName="課程難度" />
         <AllDayPanel />
       </Scheduler>
     </Paper>

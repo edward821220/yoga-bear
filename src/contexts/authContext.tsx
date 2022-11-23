@@ -1,6 +1,7 @@
 import React, { createContext, useState, useEffect, useMemo } from "react";
 import { createUserWithEmailAndPassword, signInWithEmailAndPassword, signOut, onAuthStateChanged } from "firebase/auth";
 import { doc, setDoc, getDoc } from "firebase/firestore";
+import Swal from "sweetalert2";
 import { auth, db } from "../../lib/firebase";
 
 interface AuthContextInterface {
@@ -53,9 +54,18 @@ export function AuthContextProvider({ children }: { children: React.ReactNode })
         email: res.user.email,
         identity,
         username,
+        photoURL:
+          "https://firebasestorage.googleapis.com/v0/b/yoga-bear-5faab.appspot.com/o/profile.png?alt=media&token=2fb4f433-e1b6-4f86-9b5d-b33d367e99b7",
       });
       if (typeof user.email === "string") {
-        setUserData({ uid: user.uid, email: user.email, identity, username, avatar: "" });
+        setUserData({
+          uid: user.uid,
+          email: user.email,
+          identity,
+          username,
+          avatar:
+            "https://firebasestorage.googleapis.com/v0/b/yoga-bear-5faab.appspot.com/o/profile.png?alt=media&token=2fb4f433-e1b6-4f86-9b5d-b33d367e99b7",
+        });
       }
       return user.uid;
     } catch (error) {
@@ -90,7 +100,7 @@ export function AuthContextProvider({ children }: { children: React.ReactNode })
     signOut(auth);
     setIsLogin(false);
     setUserData({ uid: "", email: "", identity: "", username: "", avatar: "" });
-    alert("您已登出帳號！");
+    Swal.fire({ title: "您已登出帳號！", confirmButtonColor: "#5d7262" });
   };
 
   return (

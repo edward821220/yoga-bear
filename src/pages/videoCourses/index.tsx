@@ -2,15 +2,17 @@ import React, { useEffect, useState } from "react";
 import styled from "styled-components";
 import Link from "next/link";
 import Image from "next/image";
+import produce from "immer";
 import { collection, getDocs } from "firebase/firestore";
 import { db } from "../../../lib/firebase";
 import StarIcon from "../../../public/star.png";
 import HalfStar from "../../../public/star-half.png";
+import Loading from "../../../public/loading.gif";
 
 const Wrapper = styled.div`
   background-color: ${(props) => props.theme.colors.color1};
   min-height: calc(100vh - 100px);
-  padding-top: 20px;
+  padding: 40px 0;
 `;
 const Container = styled.div`
   max-width: 1280px;
@@ -18,22 +20,74 @@ const Container = styled.div`
   display: flex;
   align-items: center;
   flex-direction: column;
+  @media screen and (max-width: 1280px) {
+    width: 96%;
+  }
 `;
-const CoursesList = styled.ul`
+const Bar = styled.div`
+  width: 100%;
+  margin-bottom: 40px;
+`;
+
+const BarSection = styled.ul`
   display: flex;
   justify-content: center;
-  flex-wrap: wrap;
+  align-items: center;
+`;
+const BarTitle = styled.h3`
+  font-size: 18px;
+  font-weight: bold;
+  margin-right: 20px;
+  color: ${(props) => props.theme.colors.color2};
+  @media screen and (max-width: 540px) {
+    display: none;
+  }
+`;
+const BarLink = styled.li<{ selectSort: boolean }>`
+  font-size: 16px;
+  text-align: center;
+  color: ${(props) => (props.selectSort ? props.theme.colors.color3 : props.theme.colors.color2)};
+  transition: 0.2s color linear;
+  margin-right: 20px;
+  cursor: pointer;
+  &:hover {
+    color: ${(props) => props.theme.colors.color3};
+  }
+  @media screen and (max-width: 540px) {
+    font-size: 15px;
+    margin-right: 10px;
+    &:last-child {
+      margin-right: 0;
+    }
+  }
+`;
+const CoursesList = styled.ul`
+  display: grid;
+  grid-template-columns: repeat(auto-fill, 300px);
+  grid-column-gap: calc((1024px - 900px) / 2);
+  grid-row-gap: 20px;
   width: 80%;
+  @media screen and (max-width: 1280px) {
+    display: flex;
+    justify-content: space-between;
+    flex-wrap: wrap;
+    margin: 0 auto;
+  }
+  @media screen and (max-width: 888px) {
+    justify-content: center;
+  }
 `;
 const Course = styled.li`
   color: ${(props) => props.theme.colors.color2};
   background-color: ${(props) => props.theme.colors.color1};
-  border: 2px solid ${(props) => props.theme.colors.color2};
+  border: 1px solid lightgray;
   border-radius: 5px;
-  margin-right: 20px;
-  margin-bottom: 20px;
-  &:nth-child(3n) {
-    margin-right: 0;
+  box-shadow: 0 0 5px #00000050;
+  @media screen and (max-width: 1280px) {
+    flex-basis: 45%;
+  }
+  @media screen and (max-width: 888px) {
+    flex-basis: 80%;
   }
 `;
 const CourseCover = styled.div`
@@ -41,10 +95,28 @@ const CourseCover = styled.div`
   width: 300px;
   height: 180px;
   margin-bottom: 10px;
+  @media screen and (max-width: 1280px) {
+    width: 100%;
+    height: 210px;
+  }
+  @media screen and (max-width: 888px) {
+    height: 240px;
+  }
+  @media screen and (max-width: 540px) {
+    height: 200px;
+  }
+  @media screen and (max-width: 450px) {
+    height: 150px;
+  }
 `;
 const CourseInfos = styled.div`
   width: 100%;
   margin-left: 10px;
+`;
+const CourseTitle = styled.p`
+  font-size: 18px;
+  font-weight: bold;
+  margin-bottom: 10px;
 `;
 const CourseInfo = styled.p`
   font-size: 18px;
@@ -66,6 +138,10 @@ const StarWrapper = styled.div`
   position: relative;
   width: 20px;
   height: 20px;
+  @media screen and (max-width: 450px) {
+    width: 16px;
+    height: 16px;
+  }
 `;
 
 interface CourseInterface {
@@ -74,10 +150,13 @@ interface CourseInterface {
   price: string;
   cover: string;
   reviews: { score: number; comments: string }[];
+  launchTime: number;
 }
 
 function VideoCourses() {
   const [coursesList, setCoursesList] = useState<CourseInterface[]>([]);
+  const [selectSort, setSelectSort] = useState("comment");
+
   useEffect(() => {
     const getCoursesList = async () => {
       const videoCoursesRef = collection(db, "video_courses");
@@ -88,6 +167,7 @@ function VideoCourses() {
         price: string;
         cover: string;
         reviews: { score: number; comments: string }[];
+        launchTime: number;
       }[] = [];
       querySnapshot.forEach((data) => {
         results.push({
@@ -96,26 +176,157 @@ function VideoCourses() {
           price: data.data().price,
           cover: data.data().cover,
           reviews: data.data().reviews,
+          launchTime: data.data().launchTime,
         });
       });
-      setCoursesList(results);
+      setCoursesList(
+        results.sort((a, b) => {
+          const reviewsQtyA = a?.reviews?.length || 0;
+          const reviewsQtyB = b?.reviews?.length || 0;
+          if (reviewsQtyA < reviewsQtyB) {
+            return 1;
+          }
+          if (reviewsQtyA > reviewsQtyB) {
+            return -1;
+          }
+          return 0;
+        })
+      );
     };
     getCoursesList();
   }, []);
 
+  const handleSort = (sort: string) => {
+    if (sort === "comment") {
+      setCoursesList(
+        produce((draft) =>
+          draft.sort((a, b) => {
+            const reviewsQtyA = a?.reviews?.length || 0;
+            const reviewsQtyB = b?.reviews?.length || 0;
+            if (reviewsQtyA < reviewsQtyB) {
+              return 1;
+            }
+            if (reviewsQtyA > reviewsQtyB) {
+              return -1;
+            }
+            return 0;
+          })
+        )
+      );
+      setSelectSort(sort);
+    } else if (sort === "score") {
+      setCoursesList(
+        produce((draft) =>
+          draft.sort((a, b) => {
+            const scoreA =
+              a?.reviews?.length > 0 ? a.reviews.reduce((acc, cur) => acc + cur.score, 0) / a.reviews.length : 0;
+            const scoreB =
+              b?.reviews?.length > 0 ? b.reviews.reduce((acc, cur) => acc + cur.score, 0) / b.reviews.length : 0;
+            if (scoreA < scoreB) {
+              return 1;
+            }
+            if (scoreA > scoreB) {
+              return -1;
+            }
+            return 0;
+          })
+        )
+      );
+      setSelectSort(sort);
+    } else if (sort === "new") {
+      setCoursesList(
+        produce((draft) =>
+          draft.sort((a, b) => {
+            const beTeacherTimeA = a.launchTime || 0;
+            const beTeacherTimeB = b.launchTime || 0;
+            if (beTeacherTimeA < beTeacherTimeB) {
+              return 1;
+            }
+            if (beTeacherTimeA > beTeacherTimeB) {
+              return -1;
+            }
+            return 0;
+          })
+        )
+      );
+      setSelectSort(sort);
+    } else if (sort === "price") {
+      setCoursesList(
+        produce((draft) =>
+          draft.sort((a, b) => {
+            const beTeacherTimeA = Number(a.price) || 0;
+            const beTeacherTimeB = Number(b.price) || 0;
+            if (beTeacherTimeA < beTeacherTimeB) {
+              return -1;
+            }
+            if (beTeacherTimeA > beTeacherTimeB) {
+              return 1;
+            }
+            return 0;
+          })
+        )
+      );
+      setSelectSort(sort);
+    }
+  };
+  if (coursesList.length === 0)
+    return (
+      <Wrapper>
+        <Container style={{ justifyContent: "center", height: "calc(100vh - 100px)" }}>
+          <Image src={Loading} alt="loading" width={100} height={100} />
+        </Container>
+      </Wrapper>
+    );
   return (
     <Wrapper>
       <Container>
+        <Bar>
+          <BarSection>
+            <BarTitle>目前排序</BarTitle>
+            <BarLink
+              selectSort={selectSort === "comment"}
+              onClick={() => {
+                handleSort("comment");
+              }}
+            >
+              評論多優先
+            </BarLink>
+            <BarLink
+              selectSort={selectSort === "score"}
+              onClick={() => {
+                handleSort("score");
+              }}
+            >
+              評價高優先
+            </BarLink>
+            <BarLink
+              selectSort={selectSort === "new"}
+              onClick={() => {
+                handleSort("new");
+              }}
+            >
+              新課程優先
+            </BarLink>
+            <BarLink
+              selectSort={selectSort === "price"}
+              onClick={() => {
+                handleSort("price");
+              }}
+            >
+              價格低優先
+            </BarLink>
+          </BarSection>
+        </Bar>
         <CoursesList>
           {coursesList.map((course) => (
             <Course key={course.id}>
               <CourseCover>
                 <Link href={`/videoCourses/courseDetail/${course.id}`}>
-                  <Image src={course.cover} alt="cover" fill />
+                  <Image src={course.cover} alt="cover" fill sizes="contain" />
                 </Link>
               </CourseCover>
               <CourseInfos>
-                <CourseInfo>{course.name}</CourseInfo>
+                <CourseTitle>{course.name}</CourseTitle>
                 <CourseInfo>NT. {course.price}</CourseInfo>
                 {course?.reviews?.length > 0 ? (
                   <CourseScore>

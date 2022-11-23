@@ -1,14 +1,15 @@
 import React, { useState, useContext, useRef, useMemo, useCallback } from "react";
 import dynamic from "next/dynamic";
 import styled from "styled-components";
+import Swal from "sweetalert2";
 import Image from "next/image";
 import { collection, doc, setDoc } from "firebase/firestore";
 import { ref, uploadBytesResumable, getDownloadURL } from "firebase/storage";
 import { useRouter } from "next/router";
 import ReactQuill, { ReactQuillProps } from "react-quill";
-import Avatar from "../../../public/member.png";
 import { db, storage } from "../../../lib/firebase";
 import { AuthContext } from "../../contexts/authContext";
+import Bear from "../../../public/Yoga-Bear.png";
 import "react-quill/dist/quill.snow.css";
 
 interface EditorInterface extends ReactQuillProps {
@@ -48,13 +49,15 @@ const ArticleUser = styled.div`
 `;
 const UserAvatarWrapper = styled.div`
   position: relative;
-  width: 30px;
-  height: 30px;
-  margin-right: 10px;
+  width: 66px;
+  height: 66px;
+  border-radius: 50%;
+  overflow: hidden;
+  margin-right: 20px;
 `;
 const UserName = styled.span`
-  font-size: 22px;
-  line-height: 30px;
+  font-size: 24px;
+  line-height: 66px;
 `;
 
 const Form = styled.form`
@@ -76,6 +79,7 @@ const Title = styled.input`
   font-size: 18px;
   line-height: 40px;
   padding-left: 10px;
+  border: 1px solid lightgray;
 `;
 const Button = styled.button`
   display: block;
@@ -86,6 +90,43 @@ const Button = styled.button`
   font-size: 18px;
   margin: 0 auto;
   cursor: pointer;
+`;
+const SpeechBubble = styled.div`
+  position: fixed;
+  bottom: 220px;
+  right: 40px;
+  background: #ddd;
+  color: #333;
+  display: inline-block;
+  font-size: 14px;
+  line-height: 28px;
+  margin-bottom: 1em;
+  padding: 10px;
+  text-align: center;
+  vertical-align: top;
+  width: 250px;
+  &::after {
+    border: 1em solid transparent;
+    border-top-color: #ddd;
+    content: "";
+    margin-left: -1em;
+    position: absolute;
+    top: 100%;
+    left: 50%;
+    width: 0;
+    height: 0;
+  }
+  @media screen and (max-width: 1280px) {
+    display: none;
+  }
+`;
+const BearWrapper = styled.div`
+  position: fixed;
+  bottom: 20px;
+  right: 60px;
+  @media screen and (max-width: 1280px) {
+    display: none;
+  }
 `;
 
 const formats = [
@@ -105,13 +146,22 @@ const formats = [
 function Post() {
   const [title, setTitle] = useState("");
   const [content, setContent] = useState("");
-  const { userData } = useContext(AuthContext);
+  const { isLogin, userData } = useContext(AuthContext);
   const router = useRouter();
   const quillRef = useRef<ReactQuill>(null);
 
   const handlePost = async () => {
+    if (!isLogin) {
+      Swal.fire({ title: "登入後才能發問唷！", confirmButtonColor: "#5d7262", icon: "warning" });
+      return;
+    }
     if (!title.trim()) {
-      alert("請輸入標題");
+      Swal.fire({ title: "請輸入標題！", confirmButtonColor: "#5d7262", icon: "warning" });
+      return;
+    }
+    if (!content.trim()) {
+      Swal.fire({ title: "請輸入內容！", confirmButtonColor: "#5d7262", icon: "warning" });
+      return;
     }
     const newPostRef = doc(collection(db, "posts"));
     await setDoc(newPostRef, {
@@ -121,7 +171,7 @@ function Post() {
       content,
       time: Date.now(),
     });
-    alert("您已成功提問！");
+    Swal.fire({ title: "您已成功提問！", confirmButtonColor: "#5d7262", icon: "success" });
     router.push("/forum");
   };
 
@@ -139,8 +189,8 @@ function Post() {
       uploadTask.on(
         "state_changed",
         () => {},
-        (error) => {
-          alert(error);
+        () => {
+          Swal.fire({ text: "上傳失敗！請再試一次", confirmButtonColor: "#5d7262", icon: "error" });
         },
         async () => {
           const downloadUrl = await getDownloadURL(uploadTask.snapshot.ref);
@@ -180,7 +230,7 @@ function Post() {
       <Container>
         <ArticleUser>
           <UserAvatarWrapper>
-            <Image src={userData.avatar || Avatar} alt="avatar" fill sizes="contain" />
+            <Image src={userData.avatar} alt="avatar" fill sizes="contain" />
           </UserAvatarWrapper>
           <UserName>{userData.username}</UserName>
         </ArticleUser>
@@ -197,7 +247,6 @@ function Post() {
             theme="snow"
             value={content}
             onChange={setContent}
-            placeholder="瑜伽相關的任何問題都非常歡迎大家提問唷～"
             modules={modules}
             formats={formats}
             forwardedRef={quillRef}
@@ -207,6 +256,14 @@ function Post() {
           </Button>
         </Form>
       </Container>
+      <SpeechBubble>
+        瑜伽相關的問題都歡迎大家提問唷
+        <br />
+        不要害羞～本熊會陪著你問問題的
+      </SpeechBubble>
+      <BearWrapper>
+        <Image src={Bear} alt="bear" width={200} height={200} />
+      </BearWrapper>
     </Wrapper>
   );
 }

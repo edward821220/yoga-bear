@@ -2,10 +2,13 @@ import React, { useState, useEffect, useContext } from "react";
 import { useRouter } from "next/router";
 import Image from "next/image";
 import styled from "styled-components";
+import Swal from "sweetalert2";
+import { useRecoilState } from "recoil";
 import { doc, getDoc, updateDoc, arrayUnion, arrayRemove } from "firebase/firestore";
 import produce from "immer";
 import { db } from "../../../../lib/firebase";
 import { AuthContext } from "../../../contexts/authContext";
+import { showMemberModalState } from "../../../../lib/recoil";
 import Avatar from "../../../../public/member.png";
 import LikeQtyIcon from "../../../../public/like.png";
 import MessageIcon from "../../../../public/message.png";
@@ -17,6 +20,9 @@ const Wrapper = styled.div`
   background-color: ${(props) => props.theme.colors.color1};
   min-height: calc(100vh - 100px);
   padding: 20px 0;
+  @media screen and (max-width: 888px) {
+    padding: 10px 5px;
+  }
 `;
 
 const Container = styled.div`
@@ -37,6 +43,8 @@ const UserAvatarWrapper = styled.div`
   width: 30px;
   height: 30px;
   margin-right: 10px;
+  border-radius: 50%;
+  overflow: hidden;
 `;
 const UserName = styled.p`
   font-size: 20px;
@@ -102,6 +110,8 @@ const Qtys = styled.div`
 `;
 const ClickLike = styled.div`
   display: flex;
+  justify-content: center;
+  align-items: center;
   position: relative;
   cursor: pointer;
 `;
@@ -118,18 +128,18 @@ const ActivityQty = styled.span`
 `;
 
 const MessagesContainer = styled.div`
-  background-color: #eceae6;
+  background-color: ${(props) => props.theme.colors.color8};
   padding: 10px 0px;
   width: 100%;
 `;
 const Messages = styled.ul``;
 const MessageQty = styled.p`
   padding: 5px 5px 10px 20px;
-  border-bottom: 2px solid #e7daca;
+  border-bottom: 1px solid #e7daca;
   margin: 0 10px 10px 10px;
 `;
 const Message = styled.li`
-  border-bottom: 2px solid #e7daca;
+  border-bottom: 1px solid #e7daca;
   margin: 0px 10px 10px 10px;
   padding: 10px 20px;
 `;
@@ -148,10 +158,15 @@ const MessageContent = styled.p`
 const MessageInfo = styled.div`
   display: flex;
   justify-content: flex-end;
+  align-items: center;
+  line-height: 24px;
 `;
 const MessageTime = styled.p`
   margin-right: 20px;
   margin-left: 20px;
+`;
+const LikeQty = styled.span`
+  line-height: 24px;
 `;
 const MessageFloor = styled.p``;
 const MessageBlock = styled.div`
@@ -164,11 +179,14 @@ const MessageBlock = styled.div`
 const MessageTextArea = styled.textarea`
   resize: none;
   flex-basis: 90%;
-  height: 50px;
+  height: 60px;
   border-radius: 5px;
   border: none;
   &:focus {
     outline: none;
+  }
+  @media screen and (max-width: 555px) {
+    flex-basis: 80%;
   }
 `;
 const Button = styled.button`
@@ -179,6 +197,9 @@ const Button = styled.button`
   height: 40px;
   padding: 5px;
   cursor: pointer;
+  @media screen and (max-width: 555px) {
+    flex-basis: 15%;
+  }
 `;
 
 interface MessageInterface {
@@ -204,6 +225,7 @@ interface ArticleInterface {
 function Article() {
   const router = useRouter();
   const { id } = router.query;
+  const [showMemberModal, setShowMemberModal] = useRecoilState(showMemberModalState);
   const [article, setArticle] = useState<ArticleInterface>({
     time: "",
     title: "",
@@ -260,7 +282,8 @@ function Article() {
   const handleLikeArticle = async () => {
     if (typeof id !== "string") return;
     if (!isLogin) {
-      alert("登入後才能按讚唷！");
+      Swal.fire({ title: "登入後才能按讚唷！", confirmButtonColor: "#5d7262", icon: "warning" });
+      setShowMemberModal(true);
       return;
     }
     setArticle(
@@ -286,7 +309,8 @@ function Article() {
   const handleLikeMessage = (index: number) => {
     if (typeof id !== "string") return;
     if (!isLogin) {
-      alert("登入後才能按讚唷！");
+      Swal.fire({ title: "登入後才能按讚唷！", confirmButtonColor: "#5d7262", icon: "warning" });
+      setShowMemberModal(true);
       return;
     }
     const updatedArticle = produce(article, (draft) => {
@@ -309,11 +333,12 @@ function Article() {
 
   const handleMessage = async () => {
     if (!isLogin) {
-      alert("登入後才能留言唷！");
+      Swal.fire({ title: "登入後才能留言唷！", confirmButtonColor: "#5d7262", icon: "warning" });
+      setShowMemberModal(true);
       return;
     }
     if (!inputMessage.trim()) {
-      alert("請輸入內容");
+      Swal.fire({ title: "請輸入內容！", confirmButtonColor: "#5d7262", icon: "warning" });
       return;
     }
     if (typeof id !== "string") return;
@@ -441,7 +466,7 @@ function Article() {
                           <IconWrapper>
                             <Image src={LikeIcon} alt="like-cliked" fill sizes="contain" />
                           </IconWrapper>
-                          <span>{message?.likes?.length || 0}</span>
+                          <LikeQty>{message?.likes?.length || 0}</LikeQty>
                         </ClickLike>
                       )}
                       <MessageTime>{new Date(message.time).toLocaleString()}</MessageTime>

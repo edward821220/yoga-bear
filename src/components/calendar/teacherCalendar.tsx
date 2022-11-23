@@ -17,6 +17,7 @@ import {
   WeekView,
   MonthView,
   Toolbar,
+  DragDropProvider,
   DateNavigator,
   TodayButton,
   AllDayPanel,
@@ -48,6 +49,9 @@ const RoomButtonWrapper = styled.div`
     background-color: #eeeeee;
   }
 `;
+const SwitcherWrapper = styled.div`
+  padding: 5px 0 0 10px;
+`;
 
 function TextEditor(props: AppointmentForm.TextEditorProps) {
   // eslint-disable-next-line react/destructuring-assignment
@@ -58,6 +62,9 @@ function TextEditor(props: AppointmentForm.TextEditorProps) {
 }
 
 function BasicLayout({ onFieldChange, appointmentData, ...restProps }: AppointmentForm.BasicLayoutProps) {
+  const onMaximumChange = (nextValue: string) => {
+    onFieldChange({ maximum: nextValue });
+  };
   const onDescriptionChange = (nextValue: string) => {
     onFieldChange({ description: nextValue });
   };
@@ -70,11 +77,11 @@ function BasicLayout({ onFieldChange, appointmentData, ...restProps }: Appointme
 
   return (
     <AppointmentForm.BasicLayout appointmentData={appointmentData} onFieldChange={onFieldChange} {...restProps}>
-      <AppointmentForm.Label text="課程說明" type="titleLabel" />
+      <AppointmentForm.Label text="課程人數" type="titleLabel" />
       <AppointmentForm.TextEditor
-        value={appointmentData.description}
-        onValueChange={onDescriptionChange}
-        placeholder="請輸入課程內容（若是實體課請填寫上課地點）"
+        value={appointmentData.maximum}
+        onValueChange={onMaximumChange}
+        placeholder="請輸入人數上限"
         type="ordinaryTextEditor"
         readOnly={false}
       />
@@ -83,6 +90,14 @@ function BasicLayout({ onFieldChange, appointmentData, ...restProps }: Appointme
         value={appointmentData.price}
         onValueChange={onPriceChange}
         placeholder="請輸入課程價格"
+        type="ordinaryTextEditor"
+        readOnly={false}
+      />
+      <AppointmentForm.Label text="課程說明" type="titleLabel" />
+      <AppointmentForm.TextEditor
+        value={appointmentData.description}
+        onValueChange={onDescriptionChange}
+        placeholder="請輸入課程內容（若是實體課請填寫上課地點）"
         type="ordinaryTextEditor"
         readOnly={false}
       />
@@ -142,8 +157,8 @@ function Header({ appointmentData, ...restProps }: AppointmentTooltip.HeaderProp
   );
 }
 
-export default function TeacherCalendar({ uid }: { uid: string }) {
-  const [data, setData] = useState<AppointmentModel[]>([]);
+export default function TeacherCalendar({ uid, name }: { uid: string; name: string }) {
+  const [appointments, setAppointments] = useState<AppointmentModel[]>([]);
   const [view, setView] = useState("Week");
   const [currentDate, setCurrentDate] = useState(new Date(Date.now()));
 
@@ -154,15 +169,15 @@ export default function TeacherCalendar({ uid }: { uid: string }) {
       const querySnapshot = await getDocs(courseQuery);
       const results: AppointmentModel[] = [];
       /* eslint-disable @typescript-eslint/no-unsafe-member-access */
-      querySnapshot.forEach((datas) => {
+      querySnapshot.forEach((data) => {
         results.push({
-          ...datas.data(),
-          startDate: new Date(datas.data().startDate.seconds * 1000),
-          endDate: new Date(datas.data().endDate.seconds * 1000),
+          ...data.data(),
+          startDate: new Date(data.data().startDate.seconds * 1000),
+          endDate: new Date(data.data().endDate.seconds * 1000),
         });
       });
       /* eslint-enable @typescript-eslint/no-unsafe-member-access */
-      setData(results);
+      setAppointments(results);
     };
     getRooms();
   }, [uid]);
@@ -170,12 +185,18 @@ export default function TeacherCalendar({ uid }: { uid: string }) {
   const commitChanges = ({ added, changed, deleted }: ChangeSet): void => {
     if (added) {
       const newRoomRef = doc(collection(db, "rooms"));
-      setData([...data, { id: newRoomRef.id, startDate: added.startDate, ...added }]);
-      setDoc(newRoomRef, { id: newRoomRef.id, startDate: added.startDate, teacherId: uid, ...added });
+      setAppointments([...appointments, { id: newRoomRef.id, startDate: added.startDate, ...added }]);
+      setDoc(newRoomRef, {
+        id: newRoomRef.id,
+        startDate: added.startDate,
+        teacherId: uid,
+        teacherName: name,
+        ...added,
+      });
     }
     if (changed) {
-      setData(
-        data.map((appointment) => {
+      setAppointments(
+        appointments.map((appointment) => {
           if (appointment.id === undefined) return;
           if (changed[appointment.id] && typeof appointment.id === "string") {
             const roomRef = doc(db, "rooms", appointment.id);
@@ -189,21 +210,23 @@ export default function TeacherCalendar({ uid }: { uid: string }) {
       );
     }
     if (deleted !== undefined) {
-      setData(data.filter((appointment) => appointment.id !== deleted));
+      setAppointments(appointments.filter((appointment) => appointment.id !== deleted));
       if (typeof deleted !== "string") return;
       deleteDoc(doc(db, "rooms", deleted));
     }
   };
   return (
     <>
-      <ExternalViewSwitcher
-        currentViewName={view}
-        onChange={(e: React.ChangeEvent<HTMLInputElement>): void => {
-          setView(e.target.value);
-        }}
-      />
+      <SwitcherWrapper>
+        <ExternalViewSwitcher
+          currentViewName={view}
+          onChange={(e: React.ChangeEvent<HTMLInputElement>): void => {
+            setView(e.target.value);
+          }}
+        />
+      </SwitcherWrapper>
       <Paper>
-        <Scheduler data={data} height={600}>
+        <Scheduler data={appointments} height={600}>
           <ViewState
             currentDate={currentDate}
             currentViewName={view}
@@ -220,8 +243,9 @@ export default function TeacherCalendar({ uid }: { uid: string }) {
           <AppointmentTooltip headerComponent={Header} showOpenButton />
           <ConfirmationDialog />
           <AppointmentForm basicLayoutComponent={BasicLayout} textEditorComponent={TextEditor} />
-          <Resources data={resources} mainResourceName="Level" />
+          <Resources data={resources} mainResourceName="課程難度" />
           <AllDayPanel />
+          <DragDropProvider />
         </Scheduler>
       </Paper>
     </>

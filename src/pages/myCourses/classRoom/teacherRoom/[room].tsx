@@ -2,28 +2,46 @@ import React, { useEffect, useRef, useState } from "react";
 import Pusher, { Members, PresenceChannel } from "pusher-js";
 import { useRouter } from "next/router";
 import styled from "styled-components";
+import Swal from "sweetalert2";
 
+const Wrapper = styled.div`
+  min-height: calc(100vh - 100px);
+  padding: 60px 0;
+  margin: 0 auto;
+  max-width: 1280px;
+`;
 const Title = styled.h2`
   font-size: 24px;
   text-align: center;
   color: #1d72c7;
+  margin-bottom: 60px;
 `;
-const Wrapper = styled.div`
+const ViewPorts = styled.div`
   display: flex;
-  min-height: calc(100vh - 100px);
-  padding: 20px;
-  margin: 0 auto;
+  justify-content: center;
+  align-items: center;
 `;
 const UserViewPort = styled.div`
   width: 400px;
   height: 300px;
-  border: 1px solid red;
+  border: 1px solid lightgray;
+  box-shadow: 0 0 5px #00000050;
   margin-right: 20px;
 `;
+const Button = styled.button`
+  background-color: ${(props) => props.theme.colors.color3};
+  color: ${(props) => props.theme.colors.color1};
+  border-radius: 5px;
+  min-width: 50px;
+  padding: 5px 10px;
+  margin-right: 10px;
+  cursor: pointer;
+`;
 const PartnerViewPort = styled.div`
-  width: 320px;
-  height: 240px;
-  border: 1px solid red;
+  width: 400px;
+  height: 300px;
+  border: 1px solid lightgray;
+  box-shadow: 0 0 5px #00000050;
   margin-right: 20px;
 `;
 const Video = styled.video``;
@@ -60,7 +78,6 @@ function TeacherRoom() {
 
   const userVideo = useRef<HTMLVideoElement>(null);
   const partnerVideo = useRef<HTMLVideoElement>(null);
-  const secondPartnerVideo = useRef<HTMLVideoElement>(null);
 
   useEffect(() => {
     if (!room || typeof room !== "string") return undefined;
@@ -86,7 +103,9 @@ function TeacherRoom() {
 
       // We implement our onTrack method for when we receive tracks
       connection.ontrack = handleTrackEvent;
-      connection.onicecandidateerror = (e) => alert(e);
+      connection.onicecandidateerror = () => {
+        Swal.fire({ text: "發生錯誤，請再試一次！", confirmButtonColor: "#5d7262", icon: "error" });
+      };
       return connection;
     };
     const handleRoomJoined = () => {
@@ -108,9 +127,9 @@ function TeacherRoom() {
             channelRef.current.trigger("client-ready", {});
           }
         })
-        .catch((err) => {
+        .catch(() => {
           /* handle the error */
-          alert(err);
+          Swal.fire({ text: "發生錯誤，請再試一次！", confirmButtonColor: "#5d7262", icon: "error" });
         });
     };
     const handlePeerLeaving = () => {
@@ -144,21 +163,23 @@ function TeacherRoom() {
             // This options needs to be turned on in Pusher app settings
             channelRef.current?.trigger("client-offer", offer);
           })
-          .catch((error) => {
-            alert(error);
+          .catch(() => {
+            Swal.fire({ text: "發生錯誤，請再試一次！", confirmButtonColor: "#5d7262", icon: "error" });
           });
       }
     };
 
     const handleAnswerReceived = (answer: RTCSessionDescriptionInit) => {
-      rtcConnection.current?.setRemoteDescription(answer).catch((error) => alert(error));
+      rtcConnection.current?.setRemoteDescription(answer).catch(() => {
+        Swal.fire({ text: "發生錯誤，請再試一次！", confirmButtonColor: "#5d7262", icon: "error" });
+      });
     };
 
     const handlerNewIceCandidateMsg = (incoming: RTCIceCandidate) => {
       // We cast the incoming candidate to RTCIceCandidate
       const candidate = new RTCIceCandidate(incoming);
-      rtcConnection.current?.addIceCandidate(candidate).catch((error) => {
-        alert(error);
+      rtcConnection.current?.addIceCandidate(candidate).catch(() => {
+        Swal.fire({ text: "發生錯誤，請再試一次！", confirmButtonColor: "#5d7262", icon: "error" });
       });
     };
     // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
@@ -257,31 +278,28 @@ function TeacherRoom() {
   };
 
   return (
-    <>
+    <Wrapper>
       <Title>TeacherRoom</Title>
-      <Wrapper>
+      <ViewPorts>
         <UserViewPort>
           <Video autoPlay ref={userVideo} width={400} height={320} />
+          <div>
+            <Button onClick={toggleCamera} type="button">
+              {cameraActive ? "Stop Camera" : "Start Camera"}
+            </Button>
+            <Button onClick={toggleMic} type="button">
+              {micActive ? "Mute Mic" : "UnMute Mic"}
+            </Button>
+            <Button onClick={leaveRoom} type="button">
+              Leave
+            </Button>
+          </div>
         </UserViewPort>
         <PartnerViewPort>
-          <Video autoPlay ref={partnerVideo} width={320} height={240} />
+          <Video autoPlay ref={partnerVideo} width={400} height={320} />
         </PartnerViewPort>
-        <PartnerViewPort>
-          <Video autoPlay ref={secondPartnerVideo} width={320} height={240} />
-        </PartnerViewPort>
-        <div>
-          <button onClick={toggleMic} type="button">
-            {micActive ? "Mute Mic" : "UnMute Mic"}
-          </button>
-          <button onClick={leaveRoom} type="button">
-            Leave
-          </button>
-          <button onClick={toggleCamera} type="button">
-            {cameraActive ? "Stop Camera" : "Start Camera"}
-          </button>
-        </div>
-      </Wrapper>
-    </>
+      </ViewPorts>
+    </Wrapper>
   );
 }
 
