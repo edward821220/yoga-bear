@@ -3,7 +3,7 @@ import styled from "styled-components";
 import Image from "next/image";
 import Link from "next/link";
 import { doc, getDoc, getDocs, collection, query, where } from "firebase/firestore";
-import { useRouter } from "next/router";
+import parse from "html-react-parser";
 import { db } from "../../../../lib/firebase";
 import ReserveCalendar from "../../../components/calendar/reserveCalendar";
 import Avatar from "../../../../public/member.png";
@@ -332,43 +332,32 @@ interface ReviewInterface {
   comments: string;
   userId: string;
 }
-export default function Reserve() {
-  const router = useRouter();
-  const { teacherId } = router.query;
-  const [teacherData, setTeacherData] = useState<{
+export default function Reserve({
+  teacherId,
+  teacherData,
+}: {
+  teacherId: string;
+  teacherData: {
     username: string;
     introduction: string;
     experience: string;
     reviews?: ReviewInterface[];
     avatar?: string;
-  }>();
-  const [reviewsUsersData, setReviewsUsersData] = useState<{ index: number; username: string; avatar: string }[]>([]);
+  };
+}) {
+  const [reviewUsersData, setReviewsUsersData] = useState<{ index: number; username: string; avatar: string }[]>([]);
 
   useEffect(() => {
-    const getTeacherData = async () => {
-      if (typeof teacherId !== "string") return;
-      const userRef = doc(db, "users", teacherId);
-      const userSnap = await getDoc(userRef);
-      if (!userSnap.exists()) return;
-      const username = userSnap.data().username as string;
-      const introduction = userSnap.data().teacher_introduction as string;
-      const experience = userSnap.data().teacher_experience as string;
-      const avatar = userSnap.data().photoURL as string;
-      const reviews = userSnap.data().reviews as ReviewInterface[];
-      setTeacherData({ username, introduction, experience, reviews, avatar });
-
-      if (!Array.isArray(reviews)) return;
-      reviews.forEach(async (review: { comments: string; score: number; userId: string }, index) => {
-        const reviewUserRef = doc(db, "users", review.userId);
-        const reviewUserSnap = await getDoc(reviewUserRef);
-        if (!reviewUserSnap.exists()) return;
-        const reviewUsername = reviewUserSnap.data().username;
-        const reviewUserAvatar = reviewUserSnap.data().photoURL;
-        setReviewsUsersData((prev) => [...prev, { index, username: reviewUsername, avatar: reviewUserAvatar }]);
-      });
-    };
-    getTeacherData();
-  }, [teacherId]);
+    if (!Array.isArray(teacherData.reviews)) return;
+    teacherData.reviews.forEach(async (review: { comments: string; score: number; userId: string }, index) => {
+      const reviewUserRef = doc(db, "users", review.userId);
+      const reviewUserSnap = await getDoc(reviewUserRef);
+      if (!reviewUserSnap.exists()) return;
+      const reviewUsername = reviewUserSnap.data().username;
+      const reviewUserAvatar = reviewUserSnap.data().photoURL;
+      setReviewsUsersData((prev) => [...prev, { index, username: reviewUsername, avatar: reviewUserAvatar }]);
+    });
+  }, [teacherData.reviews]);
 
   return (
     <Wrapper>
@@ -383,17 +372,11 @@ export default function Reserve() {
           <Introduction>
             <IntroductionTitle>自我介紹</IntroductionTitle>
             {teacherData && (
-              <IntroductionContents
-                className="ql-editor"
-                dangerouslySetInnerHTML={{ __html: teacherData.introduction }}
-              />
+              <IntroductionContents className="ql-editor">{parse(teacherData.introduction)}</IntroductionContents>
             )}
             <IntroductionTitle>老師經歷</IntroductionTitle>
             {teacherData && (
-              <IntroductionContents
-                className="ql-editor"
-                dangerouslySetInnerHTML={{ __html: teacherData.experience }}
-              />
+              <IntroductionContents className="ql-editor">{parse(teacherData.experience)}</IntroductionContents>
             )}
           </Introduction>
         </TeacherDetail>
@@ -449,7 +432,7 @@ export default function Reserve() {
                 <AvatarWrapper>
                   <Image
                     src={
-                      reviewsUsersData.find((reviewUserInfo) => reviewUserInfo.index === reviewIndex)?.avatar || Avatar
+                      reviewUsersData.find((reviewUserInfo) => reviewUserInfo.index === reviewIndex)?.avatar || Avatar
                     }
                     alt="avatar"
                     width={120}
@@ -457,7 +440,7 @@ export default function Reserve() {
                   />
                 </AvatarWrapper>
                 <UserName>
-                  {reviewsUsersData.find((reviewUserInfo) => reviewUserInfo.index === reviewIndex)?.username}
+                  {reviewUsersData.find((reviewUserInfo) => reviewUserInfo.index === reviewIndex)?.username}
                 </UserName>
               </User>
               <CommentWrapper>
@@ -481,4 +464,30 @@ export default function Reserve() {
       </Reviews>
     </Wrapper>
   );
+}
+
+export async function getStaticPaths() {
+  const usersRef = collection(db, "users");
+  const queryTeachers = await getDocs(query(usersRef, where("identity", "==", "teacher")));
+  const paths: { params: { teacherId: string } }[] = [];
+  queryTeachers.forEach((data) => {
+    const { uid: teacherId } = data.data();
+    paths.push({ params: { teacherId } });
+  });
+
+  return { paths, fallback: false };
+}
+
+export async function getStaticProps({ params }: { params: { teacherId: string } }) {
+  const userRef = doc(db, "users", params.teacherId);
+  const userSnap = await getDoc(userRef);
+  if (!userSnap.exists()) return;
+  const username = userSnap.data().username as string;
+  const introduction = userSnap.data().teacher_introduction as string;
+  const experience = userSnap.data().teacher_experience as string;
+  const avatar = userSnap.data().photoURL as string;
+  const reviews = (userSnap.data().reviews as ReviewInterface[]) || null;
+  const teacherData = { username, introduction, experience, reviews, avatar };
+
+  return { props: { teacherId: params.teacherId, teacherData }, revalidate: 60 };
 }

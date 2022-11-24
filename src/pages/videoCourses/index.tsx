@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from "react";
+import React, { useState } from "react";
 import styled from "styled-components";
 import Link from "next/link";
 import Image from "next/image";
@@ -7,7 +7,6 @@ import { collection, getDocs } from "firebase/firestore";
 import { db } from "../../../lib/firebase";
 import StarIcon from "../../../public/star.png";
 import HalfStar from "../../../public/star-half.png";
-import Loading from "../../../public/loading.gif";
 
 const Wrapper = styled.div`
   background-color: ${(props) => props.theme.colors.color1};
@@ -153,48 +152,9 @@ interface CourseInterface {
   launchTime: number;
 }
 
-function VideoCourses() {
-  const [coursesList, setCoursesList] = useState<CourseInterface[]>([]);
+function VideoCourses({ results }: { results: CourseInterface[] }) {
+  const [coursesList, setCoursesList] = useState(results);
   const [selectSort, setSelectSort] = useState("comment");
-
-  useEffect(() => {
-    const getCoursesList = async () => {
-      const videoCoursesRef = collection(db, "video_courses");
-      const querySnapshot = await getDocs(videoCoursesRef);
-      const results: {
-        name: string;
-        id: string;
-        price: string;
-        cover: string;
-        reviews: { score: number; comments: string }[];
-        launchTime: number;
-      }[] = [];
-      querySnapshot.forEach((data) => {
-        results.push({
-          id: data.data().id,
-          name: data.data().name,
-          price: data.data().price,
-          cover: data.data().cover,
-          reviews: data.data().reviews,
-          launchTime: data.data().launchTime,
-        });
-      });
-      setCoursesList(
-        results.sort((a, b) => {
-          const reviewsQtyA = a?.reviews?.length || 0;
-          const reviewsQtyB = b?.reviews?.length || 0;
-          if (reviewsQtyA < reviewsQtyB) {
-            return 1;
-          }
-          if (reviewsQtyA > reviewsQtyB) {
-            return -1;
-          }
-          return 0;
-        })
-      );
-    };
-    getCoursesList();
-  }, []);
 
   const handleSort = (sort: string) => {
     if (sort === "comment") {
@@ -269,14 +229,6 @@ function VideoCourses() {
       setSelectSort(sort);
     }
   };
-  if (coursesList.length === 0)
-    return (
-      <Wrapper>
-        <Container style={{ justifyContent: "center", height: "calc(100vh - 100px)" }}>
-          <Image src={Loading} alt="loading" width={100} height={100} />
-        </Container>
-      </Wrapper>
-    );
   return (
     <Wrapper>
       <Container>
@@ -371,3 +323,45 @@ function VideoCourses() {
 }
 
 export default VideoCourses;
+
+export const getStaticProps = async () => {
+  const videoCoursesRef = collection(db, "video_courses");
+  const querySnapshot = await getDocs(videoCoursesRef);
+  const results: {
+    name: string;
+    id: string;
+    price: string;
+    cover: string;
+    reviews: { score: number; comments: string }[];
+    launchTime: number;
+  }[] = [];
+  querySnapshot.forEach((data) => {
+    results.push({
+      id: data.data().id,
+      name: data.data().name,
+      price: data.data().price,
+      cover: data.data().cover,
+      reviews: data.data().reviews,
+      launchTime: data.data().launchTime,
+    });
+  });
+
+  results.sort((a, b) => {
+    const reviewsQtyA = a?.reviews?.length || 0;
+    const reviewsQtyB = b?.reviews?.length || 0;
+    if (reviewsQtyA < reviewsQtyB) {
+      return 1;
+    }
+    if (reviewsQtyA > reviewsQtyB) {
+      return -1;
+    }
+    return 0;
+  });
+
+  return {
+    props: {
+      results,
+    },
+    revalidate: 60,
+  };
+};
