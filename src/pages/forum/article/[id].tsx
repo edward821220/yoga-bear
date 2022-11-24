@@ -1,10 +1,10 @@
-import React, { useState, useEffect, useContext } from "react";
+import React, { useState, useContext } from "react";
 import { useRouter } from "next/router";
 import Image from "next/image";
 import styled from "styled-components";
 import Swal from "sweetalert2";
 import { useRecoilState } from "recoil";
-import { doc, getDoc, updateDoc, arrayUnion, arrayRemove } from "firebase/firestore";
+import { doc, collection, query, getDoc, getDocs, updateDoc, arrayUnion, arrayRemove } from "firebase/firestore";
 import produce from "immer";
 import { db } from "../../../../lib/firebase";
 import { AuthContext } from "../../../contexts/authContext";
@@ -105,7 +105,7 @@ const ArticleActivity = styled.div`
   margin-bottom: 10px;
   justify-content: space-between;
 `;
-const Qtys = styled.div`
+const Qty = styled.div`
   display: flex;
 `;
 const ClickLike = styled.div`
@@ -222,65 +222,14 @@ interface ArticleInterface {
   likes: string[];
 }
 
-function Article() {
+function Article({ id, articleData }: { id: string; articleData: ArticleInterface }) {
   const router = useRouter();
-  const { id } = router.query;
   const [showMemberModal, setShowMemberModal] = useRecoilState(showMemberModalState);
-  const [article, setArticle] = useState<ArticleInterface>({
-    time: "",
-    title: "",
-    authorId: "",
-    authorName: "",
-    authorAvatar: "",
-    content: "",
-    messages: [],
-    likes: [],
-  });
+  const [article, setArticle] = useState(articleData);
   const [inputMessage, setInputMessage] = useState("");
   const { userData, isLogin } = useContext(AuthContext);
 
-  useEffect(() => {
-    if (!id || typeof id !== "string") return;
-    const getArticle = async () => {
-      const docRef = doc(db, "posts", id);
-      const docSnap = await getDoc(docRef);
-      if (!docSnap.exists()) return;
-      const authorId: string = docSnap.data().author;
-      const userRef = doc(db, "users", authorId);
-      const userSnap = await getDoc(userRef);
-      if (!userSnap.exists()) return;
-      const messages = docSnap.data().messages as MessageInterface[];
-      if (messages) {
-        await Promise.all(
-          messages?.map(async (message, index) => {
-            const messageAuthorId = message.authorId;
-            const messageAuthorRef = doc(db, "users", messageAuthorId);
-            const messageAuthorSnap = await getDoc(messageAuthorRef);
-            if (messageAuthorSnap.exists()) {
-              messages[index].authorName = messageAuthorSnap.data().username;
-              messages[index].authorAvatar = messageAuthorSnap.data().photoURL || "";
-              messages[index].identity = messageAuthorSnap.data().identity;
-            }
-          })
-        );
-      }
-      const datas: ArticleInterface = {
-        time: docSnap.data().time,
-        title: docSnap.data().title,
-        authorId: docSnap.data().author,
-        content: docSnap.data().content,
-        messages: messages || [],
-        authorName: userSnap.data().username,
-        authorAvatar: userSnap.data().photoURL,
-        likes: docSnap.data().likes || [],
-      };
-      setArticle(datas);
-    };
-    getArticle();
-  }, [id]);
-
   const handleLikeArticle = async () => {
-    if (typeof id !== "string") return;
     if (!isLogin) {
       Swal.fire({ title: "登入後才能按讚唷！", confirmButtonColor: "#5d7262", icon: "warning" });
       setShowMemberModal(true);
@@ -296,7 +245,6 @@ function Article() {
   };
 
   const handleDislikeArticle = async () => {
-    if (typeof id !== "string") return;
     setArticle(
       produce((draft: ArticleInterface) => {
         draft.likes.splice(draft.likes.indexOf(userData.uid), 1);
@@ -307,7 +255,6 @@ function Article() {
   };
 
   const handleLikeMessage = (index: number) => {
-    if (typeof id !== "string") return;
     if (!isLogin) {
       Swal.fire({ title: "登入後才能按讚唷！", confirmButtonColor: "#5d7262", icon: "warning" });
       setShowMemberModal(true);
@@ -322,7 +269,6 @@ function Article() {
   };
 
   const handleDislikeMessage = (index: number) => {
-    if (typeof id !== "string") return;
     const updatedArticle = produce(article, (draft) => {
       draft.messages[index].likes.splice(draft.messages[index].likes.indexOf(userData.uid), 1);
     });
@@ -341,7 +287,6 @@ function Article() {
       Swal.fire({ title: "請輸入內容！", confirmButtonColor: "#5d7262", icon: "warning" });
       return;
     }
-    if (typeof id !== "string") return;
     const articleRef = doc(db, "posts", id);
     await updateDoc(articleRef, {
       messages: arrayUnion({
@@ -383,7 +328,7 @@ function Article() {
             {/* eslint-disable-next-line react/no-danger */}
             <Content className="ql-editor" dangerouslySetInnerHTML={{ __html: article.content }} />
             <ArticleActivity>
-              <Qtys>
+              <Qty>
                 <IconWrapper>
                   <Image src={LikeQtyIcon} alt="like" fill sizes="contain" />
                 </IconWrapper>
@@ -392,7 +337,7 @@ function Article() {
                   <Image src={MessageIcon} alt="like" fill sizes="contain" />
                 </IconWrapper>
                 <ActivityQty>{article?.messages?.length || 0}</ActivityQty>
-              </Qtys>
+              </Qty>
               {article.likes.includes(userData.uid) || (
                 <ClickLike onClick={handleLikeArticle}>
                   <IconWrapper>
@@ -403,7 +348,7 @@ function Article() {
               {article.likes.includes(userData.uid) && (
                 <ClickLike onClick={handleDislikeArticle}>
                   <IconWrapper>
-                    <Image src={LikeIcon} alt="like-cliked" fill sizes="contain" />
+                    <Image src={LikeIcon} alt="like-clicked" fill sizes="contain" />
                   </IconWrapper>
                 </ClickLike>
               )}
@@ -464,7 +409,7 @@ function Article() {
                           }}
                         >
                           <IconWrapper>
-                            <Image src={LikeIcon} alt="like-cliked" fill sizes="contain" />
+                            <Image src={LikeIcon} alt="like-clicked" fill sizes="contain" />
                           </IconWrapper>
                           <LikeQty>{message?.likes?.length || 0}</LikeQty>
                         </ClickLike>
@@ -493,3 +438,52 @@ function Article() {
 }
 
 export default Article;
+
+export async function getStaticPaths() {
+  const articlesRef = collection(db, "posts");
+  const queryArticles = await getDocs(query(articlesRef));
+  const paths: { params: { id: string } }[] = [];
+  queryArticles.forEach((data) => {
+    const { id } = data.data();
+    paths.push({ params: { id } });
+  });
+
+  return { paths, fallback: false };
+}
+
+export async function getStaticProps({ params }: { params: { id: string } }) {
+  const docRef = doc(db, "posts", params.id);
+  const docSnap = await getDoc(docRef);
+  if (!docSnap.exists()) return;
+  const authorId: string = docSnap.data().author;
+  const userRef = doc(db, "users", authorId);
+  const userSnap = await getDoc(userRef);
+  if (!userSnap.exists()) return;
+  const messages = docSnap.data().messages as MessageInterface[];
+  if (messages) {
+    await Promise.all(
+      messages?.map(async (message, index) => {
+        const messageAuthorId = message.authorId;
+        const messageAuthorRef = doc(db, "users", messageAuthorId);
+        const messageAuthorSnap = await getDoc(messageAuthorRef);
+        if (messageAuthorSnap.exists()) {
+          messages[index].authorName = messageAuthorSnap.data().username;
+          messages[index].authorAvatar = messageAuthorSnap.data().photoURL || "";
+          messages[index].identity = messageAuthorSnap.data().identity;
+        }
+      })
+    );
+  }
+  const articleData: ArticleInterface = {
+    time: docSnap.data().time,
+    title: docSnap.data().title,
+    authorId: docSnap.data().author,
+    content: docSnap.data().content,
+    messages: messages || [],
+    authorName: userSnap.data().username,
+    authorAvatar: userSnap.data().photoURL,
+    likes: docSnap.data().likes || [],
+  };
+
+  return { props: { id: params.id, articleData }, revalidate: 60 };
+}
