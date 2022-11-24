@@ -1,5 +1,6 @@
 import React, { useState } from "react";
 import styled from "styled-components";
+import { useRouter } from "next/router";
 import Link from "next/link";
 import Image from "next/image";
 import produce from "immer";
@@ -153,8 +154,17 @@ interface CourseInterface {
 }
 
 function VideoCourses({ results }: { results: CourseInterface[] }) {
+  const router = useRouter();
   const [coursesList, setCoursesList] = useState(results);
   const [selectSort, setSelectSort] = useState("comment");
+  const [isFirst, setIsFirst] = useState(true);
+  const { keywords } = router.query;
+
+  if (isFirst && typeof keywords === "string") {
+    setCoursesList((prev) => prev.filter((course) => course.name.includes(keywords)));
+    setIsFirst(false);
+    return <h1>搜尋中</h1>;
+  }
 
   const handleSort = (sort: string) => {
     if (sort === "comment") {

@@ -288,7 +288,7 @@ const RadioLabel = styled.label`
 const RadioInput = styled.input`
   margin-left: 5px;
 `;
-const FileLable = styled.label`
+const FileLabel = styled.label`
   display: flex;
   justify-content: center;
   align-items: center;
@@ -679,10 +679,10 @@ function MemberModal({
           </Avatar>
           <MemberInfo>用戶名稱：{userData.username}</MemberInfo>
           <MemberInfo>用戶身份：{userData.identity === "teacher" ? "老師" : "學生"}</MemberInfo>
-          <FileLable onChange={handleUploadAvatar}>
+          <FileLabel onChange={handleUploadAvatar}>
             頭像上傳
             <FileInput type="file" accept="image/*" />
-          </FileLable>
+          </FileLabel>
           <Button
             type="button"
             onClick={() => {

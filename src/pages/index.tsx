@@ -66,6 +66,7 @@ const Banner = styled.div`
   height: auto;
   max-height: 400px;
   overflow: hidden;
+  opacity: 0.85;
 `;
 const BannerImage = styled(Image)`
   height: auto;
@@ -77,6 +78,19 @@ const BannerImage = styled(Image)`
   @media screen and (max-width: 388px) {
     transform: translate(0, 0);
   }
+`;
+const SearchInput = styled.input`
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  font-size: 18px;
+  padding: 10px;
+  width: 400px;
+  height: 40px;
+  border: 1px solid lightgray;
+  box-shadow: 0 0 5px #00000098;
+  border-radius: 5px;
 `;
 const Container = styled.div`
   max-width: 1280px;
@@ -201,6 +215,7 @@ export default function Home({
       <Wrapper>
         <Banner>
           <BannerImage src={BannerPic} alt="banner" />
+          <SearchInput placeholder="找老師 or 找課程" />
         </Banner>
         <Container>
           <Title>四個愛上 Yoga Bear 的理由</Title>

@@ -195,6 +195,14 @@ function FindTeachers({ results }: { results: TeacherInterface[] }) {
   const [teachersList, setTeachersList] = useState(results);
   const [showMore, setShowMore] = useState<string>();
   const [selectSort, setSelectSort] = useState("comment");
+  const [isFirst, setIsFirst] = useState(true);
+  const { keywords } = router.query;
+
+  if (isFirst && typeof keywords === "string") {
+    setTeachersList((prev) => prev.filter((teacher) => teacher.name.includes(keywords)));
+    setIsFirst(false);
+    return <h1>搜尋中</h1>;
+  }
 
   const handleSort = (sort: string) => {
     if (sort === "comment") {
