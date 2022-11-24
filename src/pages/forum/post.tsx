@@ -2,6 +2,7 @@ import React, { useState, useContext, useRef, useMemo, useCallback } from "react
 import dynamic from "next/dynamic";
 import styled from "styled-components";
 import Swal from "sweetalert2";
+import imageCompression from "browser-image-compression";
 import Image from "next/image";
 import { collection, doc, setDoc } from "firebase/firestore";
 import { ref, uploadBytesResumable, getDownloadURL } from "firebase/storage";
@@ -180,30 +181,40 @@ function Post() {
     input.setAttribute("type", "file");
     input.setAttribute("accept", "image/*");
     input.click();
-    input.onchange = () => {
+    input.onchange = async () => {
       const { files } = input;
       if (!files) return;
       const file = files[0];
-      const storageRef = ref(storage, `article/${Date.now()}-${file.name}`);
-      const uploadTask = uploadBytesResumable(storageRef, file);
-      uploadTask.on(
-        "state_changed",
-        () => {},
-        () => {
-          Swal.fire({ text: "上傳失敗！請再試一次", confirmButtonColor: "#5d7262", icon: "error" });
-        },
-        async () => {
-          const downloadUrl = await getDownloadURL(uploadTask.snapshot.ref);
-          /* eslint-disable @typescript-eslint/no-unsafe-member-access */
-          /* eslint-disable @typescript-eslint/no-unsafe-call */
-          const quillEditor = quillRef?.current?.editor;
-          const range = quillRef?.current?.selection;
-          if (!range) return;
-          const { index } = range;
-          // eslint-disable-next-line @typescript-eslint/restrict-plus-operands
-          quillEditor?.insertEmbed(index + 1, "image", downloadUrl);
-        }
-      );
+      const options = {
+        maxSizeMB: 1,
+        maxWidthOrHeight: 1920,
+        useWebWorker: true,
+      };
+      try {
+        const compressedFile = await imageCompression(file, options);
+        const storageRef = ref(storage, `article/${Date.now()}-${compressedFile.name}`);
+        const uploadTask = uploadBytesResumable(storageRef, compressedFile);
+        uploadTask.on(
+          "state_changed",
+          () => {},
+          () => {
+            Swal.fire({ text: "上傳失敗！請再試一次", confirmButtonColor: "#5d7262", icon: "error" });
+          },
+          async () => {
+            const downloadUrl = await getDownloadURL(uploadTask.snapshot.ref);
+            /* eslint-disable @typescript-eslint/no-unsafe-member-access */
+            /* eslint-disable @typescript-eslint/no-unsafe-call */
+            const quillEditor = quillRef?.current?.editor;
+            const range = quillRef?.current?.selection;
+            if (!range) return;
+            const { index } = range;
+            // eslint-disable-next-line @typescript-eslint/restrict-plus-operands
+            quillEditor?.insertEmbed(index + 1, "image", downloadUrl);
+          }
+        );
+      } catch (error) {
+        Swal.fire({ text: "圖片壓縮失敗！請再試一次", confirmButtonColor: "#5d7262", icon: "error" });
+      }
     };
   }, []);
 

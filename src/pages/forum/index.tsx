@@ -2,6 +2,7 @@ import Image from "next/image";
 import React, { useContext } from "react";
 import styled from "styled-components";
 import Swal from "sweetalert2";
+import parse from "html-react-parser";
 import { useRouter } from "next/router";
 import { useRecoilState } from "recoil";
 import { collection, doc, getDoc, getDocs, query, orderBy } from "firebase/firestore";
@@ -133,9 +134,12 @@ const ArticleText = styled.div`
 const PicPreview = styled.div`
   position: relative;
   flex-basis: 25%;
+  height: 90px;
+  overflow: hidden;
   img {
-    width: 160px;
-    height: 90px;
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
   }
 `;
 
@@ -224,9 +228,9 @@ function Forum({ posts }: { posts: PostInterface[] }) {
                 <ArticleInfo>
                   <ArticleText>
                     <ArticleTitle>{article.title}</ArticleTitle>
-                    {article.preview && <ArticlePreview dangerouslySetInnerHTML={{ __html: article?.preview }} />}
+                    {article.preview && <ArticlePreview>{parse(article?.preview)}</ArticlePreview>}
                   </ArticleText>
-                  {article.picPreview && <PicPreview dangerouslySetInnerHTML={{ __html: article?.picPreview }} />}
+                  {article.picPreview && <PicPreview>{parse(article?.picPreview)}</PicPreview>}
                 </ArticleInfo>
                 <OtherInfos>
                   <ArticleActivity>
