@@ -18,6 +18,7 @@
     "@mui/icons-material": "^5.10.9",
     "@mui/material": "^5.10.12",
     "@mui/x-date-pickers": "^5.0.6",
+    "browser-image-compression": "^2.0.0",
     "firebase": "^9.13.0",
     "html-react-parser": "^3.0.4",
     "immer": "^9.0.16",

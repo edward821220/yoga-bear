@@ -3,6 +3,7 @@ import Link from "next/link";
 import Image from "next/image";
 import styled from "styled-components";
 import Swal from "sweetalert2";
+import imageCompression from "browser-image-compression";
 import { useRouter } from "next/router";
 import { useRecoilState, SetterOrUpdater } from "recoil";
 import { getDoc, doc, updateDoc } from "firebase/firestore";
@@ -511,30 +512,40 @@ function MemberModal({
     handleClose();
     Swal.fire({ title: "恭喜您註冊成功！", confirmButtonColor: "#5d7262", icon: "success" });
   };
-  const handleUploadAvatar = (e: React.FormEvent<HTMLLabelElement>): void => {
+  const handleUploadAvatar = async (e: React.FormEvent<HTMLLabelElement>): Promise<Promise<void>> => {
     setIsUploading(true);
     const target = e.target as HTMLInputElement;
     if (!target.files) return;
     const file = target?.files[0];
-    const storageRef = ref(storage, `avatars/${userData.uid}-${file.name}`);
-    const uploadTask = uploadBytesResumable(storageRef, file);
-    uploadTask.on(
-      "state_changed",
-      () => {},
-      () => {
-        Swal.fire({ text: "上傳失敗！請再試一次", confirmButtonColor: "#5d7262", icon: "error" });
-      },
-      () => {
-        getDownloadURL(uploadTask.snapshot.ref).then(async (downloadURL) => {
-          const docRef = doc(db, "users", userData.uid);
-          await updateDoc(docRef, {
-            photoURL: downloadURL,
+    const options = {
+      maxSizeMB: 1,
+      maxWidthOrHeight: 1920,
+      useWebWorker: true,
+    };
+    try {
+      const compressedFile = await imageCompression(file, options);
+      const storageRef = ref(storage, `avatars/${userData.uid}-${compressedFile.name}`);
+      const uploadTask = uploadBytesResumable(storageRef, compressedFile);
+      uploadTask.on(
+        "state_changed",
+        () => {},
+        () => {
+          Swal.fire({ text: "上傳失敗！請再試一次", confirmButtonColor: "#5d7262", icon: "error" });
+        },
+        () => {
+          getDownloadURL(uploadTask.snapshot.ref).then(async (downloadURL) => {
+            const docRef = doc(db, "users", userData.uid);
+            await updateDoc(docRef, {
+              photoURL: downloadURL,
+            });
+            setUserData({ ...userData, avatar: downloadURL });
+            setIsUploading(false);
           });
-          setUserData({ ...userData, avatar: downloadURL });
-          setIsUploading(false);
-        });
-      }
-    );
+        }
+      );
+    } catch (error) {
+      Swal.fire({ text: "圖片壓縮失敗！請再試一次", confirmButtonColor: "#5d7262", icon: "error" });
+    }
   };
   if (isUploading)
     return (
