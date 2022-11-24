@@ -1,5 +1,5 @@
 import Image from "next/image";
-import React, { useState, useEffect, useContext } from "react";
+import React, { useContext } from "react";
 import styled from "styled-components";
 import Swal from "sweetalert2";
 import { useRouter } from "next/router";
@@ -195,52 +195,11 @@ interface PostInterface {
   likesQty: number;
 }
 
-function Forum() {
+function Forum({ posts }: { posts: PostInterface[] }) {
   const router = useRouter();
-  const [posts, setPosts] = useState<PostInterface[]>([]);
   const [showMemberModal, setShowMemberModal] = useRecoilState(showMemberModalState);
   const { isLogin } = useContext(AuthContext);
 
-  useEffect(() => {
-    const getPosts = async () => {
-      const q = query(collection(db, "posts"), orderBy("time", "desc"));
-      const querySnapshot = await getDocs(q);
-      const results: PostInterface[] = querySnapshot.docs.map((data) => {
-        const article = data.data() as PostInterface;
-        const images = article?.content?.match(/<img.*?>/g);
-        const paragraphs = article?.content?.match(/<p>.*?<\/p>/g);
-        const messagesQty = article?.messages?.length || 0;
-        const likesQty = article?.likes?.length || 0;
-        let preview = "";
-        let picPreview = "";
-        if (paragraphs) preview = `${paragraphs[0].slice(3, -4)}...`;
-        if (images) [picPreview] = images;
-        return {
-          id: data.data().id,
-          time: new Date(data.data().time as string).toLocaleString(),
-          title: data.data().title,
-          content: data.data().content,
-          authorId: data.data().author,
-          preview,
-          picPreview,
-          messagesQty,
-          likesQty,
-        };
-      });
-      await Promise.all(
-        results.map(async (result: PostInterface, index) => {
-          const docRef = doc(db, "users", result.authorId);
-          const docSnap = await getDoc(docRef);
-          if (docSnap.exists()) {
-            results[index].authorName = docSnap.data().username;
-            results[index].authorAvatar = docSnap.data().photoURL;
-          }
-        })
-      );
-      setPosts(results);
-    };
-    getPosts();
-  }, []);
   return (
     <Wrapper>
       <Banner>
@@ -312,3 +271,46 @@ function Forum() {
 }
 
 export default Forum;
+
+export const getStaticProps = async () => {
+  const q = query(collection(db, "posts"), orderBy("time", "desc"));
+  const querySnapshot = await getDocs(q);
+  const results: PostInterface[] = querySnapshot.docs.map((data) => {
+    const article = data.data() as PostInterface;
+    const images = article?.content?.match(/<img.*?>/g);
+    const paragraphs = article?.content?.match(/<p>.*?<\/p>/g);
+    const messagesQty = article?.messages?.length || 0;
+    const likesQty = article?.likes?.length || 0;
+    let preview = "";
+    let picPreview = "";
+    if (paragraphs) preview = `${paragraphs[0].slice(3, -4)}...`;
+    if (images) [picPreview] = images;
+    return {
+      id: data.data().id,
+      time: new Date(data.data().time as string).toLocaleString(),
+      title: data.data().title,
+      content: data.data().content,
+      authorId: data.data().author,
+      preview,
+      picPreview,
+      messagesQty,
+      likesQty,
+    };
+  });
+  await Promise.all(
+    results.map(async (result: PostInterface, index) => {
+      const docRef = doc(db, "users", result.authorId);
+      const docSnap = await getDoc(docRef);
+      if (docSnap.exists()) {
+        results[index].authorName = docSnap.data().username;
+        results[index].authorAvatar = docSnap.data().photoURL;
+      }
+    })
+  );
+  return {
+    props: {
+      posts: results,
+    },
+    revalidate: 60,
+  };
+};
