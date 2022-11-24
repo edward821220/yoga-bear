@@ -2,6 +2,7 @@ import React, { useState, useEffect, useContext } from "react";
 import { getDoc, doc, updateDoc, arrayRemove, arrayUnion } from "firebase/firestore";
 import styled from "styled-components";
 import Swal from "sweetalert2";
+import emailjs from "@emailjs/browser";
 import Image from "next/image";
 import { useRecoilState } from "recoil";
 import { useRouter } from "next/router";
@@ -228,6 +229,12 @@ function Cart() {
           });
           Swal.fire({ text: "購買成功！可以去上課囉～", confirmButtonColor: "#5d7262", icon: "success" });
           setOrderQty(0);
+          const templateParams = {
+            email: userData.email,
+            name: userData.username,
+            price: subtotal,
+          };
+          emailjs.send("service_b8k8uuv", "template_8utvv8h", templateParams, "ZY0JeIuS-PmILJZtR");
           router.push("/myCourses/videoCourses");
         }
       }
