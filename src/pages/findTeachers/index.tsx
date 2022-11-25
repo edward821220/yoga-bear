@@ -4,7 +4,7 @@ import parse from "html-react-parser";
 import Link from "next/link";
 import Image from "next/image";
 import { useRouter } from "next/router";
-import { collection, getDocs, query, where } from "firebase/firestore";
+import { collection, getDocs, query as storeQuery, where } from "firebase/firestore";
 import produce from "immer";
 import { db } from "../../../lib/firebase";
 import StarIcon from "../../../public/star.png";
@@ -15,7 +15,6 @@ const Wrapper = styled.div`
   min-height: calc(100vh - 100px);
   display: flex;
   flex-direction: column;
-  justify-content: center;
   align-items: center;
   padding: 40px;
 `;
@@ -62,6 +61,7 @@ const TeachersList = styled.ul`
   display: flex;
   flex-wrap: wrap;
   width: 66%;
+  min-width: 844px;
   @media screen and (max-width: 1280px) {
     min-width: 800px;
   }
@@ -195,14 +195,6 @@ function FindTeachers({ results }: { results: TeacherInterface[] }) {
   const [teachersList, setTeachersList] = useState(results);
   const [showMore, setShowMore] = useState<string>();
   const [selectSort, setSelectSort] = useState("comment");
-  const [isFirst, setIsFirst] = useState(true);
-  const { keywords } = router.query;
-
-  if (isFirst && typeof keywords === "string") {
-    setTeachersList((prev) => prev.filter((teacher) => teacher.name.includes(keywords)));
-    setIsFirst(false);
-    return <h1>搜尋中</h1>;
-  }
 
   const handleSort = (sort: string) => {
     if (sort === "comment") {
@@ -367,11 +359,12 @@ function FindTeachers({ results }: { results: TeacherInterface[] }) {
 
 export default FindTeachers;
 
-export const getStaticProps = async () => {
+export const getServerSideProps = async ({ query }: { query: { keywords: string } }) => {
+  const { keywords }: { keywords: string } = query;
   const usersRef = collection(db, "users");
-  const teachersQuery = query(usersRef, where("identity", "==", "teacher"));
+  const teachersQuery = storeQuery(usersRef, where("identity", "==", "teacher"));
   const querySnapshot = await getDocs(teachersQuery);
-  const results: {
+  let results: {
     name: string;
     uid: string;
     reviews: { score: number }[] | null;
@@ -392,6 +385,10 @@ export const getStaticProps = async () => {
     });
   });
 
+  if (keywords) {
+    results = results.filter((teacher) => teacher.name.includes(keywords));
+  }
+
   results.sort((a, b) => {
     const reviewsQtyA = a?.reviews?.length || 0;
     const reviewsQtyB = b?.reviews?.length || 0;
@@ -408,6 +405,5 @@ export const getStaticProps = async () => {
     props: {
       results,
     },
-    revalidate: 60,
   };
 };

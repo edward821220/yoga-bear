@@ -436,7 +436,7 @@ function MemberModal({
   const router = useRouter();
   const [isUploading, setIsUploading] = useState(false);
   const [errorMessage, setErrorMessage] = useState("");
-  const [loginData, setloginData] = useState<Record<string, string>>({
+  const [loginData, setLoginData] = useState<Record<string, string>>({
     email: "",
     password: "",
   });
@@ -518,7 +518,7 @@ function MemberModal({
     if (!target.files) return;
     const file = target?.files[0];
     const options = {
-      maxSizeMB: 1,
+      maxSizeMB: 0.3,
       maxWidthOrHeight: 1920,
       useWebWorker: true,
     };
@@ -568,7 +568,7 @@ function MemberModal({
                 value={loginData[item.key]}
                 required
                 onChange={(e: React.ChangeEvent<HTMLInputElement>) => {
-                  setloginData({
+                  setLoginData({
                     ...loginData,
                     [item.key]: e.target.value,
                   });

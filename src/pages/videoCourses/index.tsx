@@ -154,17 +154,8 @@ interface CourseInterface {
 }
 
 function VideoCourses({ results }: { results: CourseInterface[] }) {
-  const router = useRouter();
   const [coursesList, setCoursesList] = useState(results);
   const [selectSort, setSelectSort] = useState("comment");
-  const [isFirst, setIsFirst] = useState(true);
-  const { keywords } = router.query;
-
-  if (isFirst && typeof keywords === "string") {
-    setCoursesList((prev) => prev.filter((course) => course.name.includes(keywords)));
-    setIsFirst(false);
-    return <h1>搜尋中</h1>;
-  }
 
   const handleSort = (sort: string) => {
     if (sort === "comment") {
@@ -334,10 +325,11 @@ function VideoCourses({ results }: { results: CourseInterface[] }) {
 
 export default VideoCourses;
 
-export const getStaticProps = async () => {
+export const getServerSideProps = async ({ query }: { query: { keywords: string } }) => {
+  const { keywords }: { keywords: string } = query;
   const videoCoursesRef = collection(db, "video_courses");
   const querySnapshot = await getDocs(videoCoursesRef);
-  const results: {
+  let results: {
     name: string;
     id: string;
     price: string;
@@ -356,6 +348,10 @@ export const getStaticProps = async () => {
     });
   });
 
+  if (keywords) {
+    results = results.filter((course) => course.name.includes(keywords));
+  }
+
   results.sort((a, b) => {
     const reviewsQtyA = a?.reviews?.length || 0;
     const reviewsQtyB = b?.reviews?.length || 0;
@@ -372,6 +368,5 @@ export const getStaticProps = async () => {
     props: {
       results,
     },
-    revalidate: 60,
   };
 };

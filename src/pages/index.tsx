@@ -1,3 +1,4 @@
+import { useState } from "react";
 import Head from "next/head";
 import styled from "styled-components";
 import Image from "next/image";
@@ -67,6 +68,7 @@ const Banner = styled.div`
   max-height: 400px;
   overflow: hidden;
   opacity: 0.85;
+  filter: brightness(85%);
 `;
 const BannerImage = styled(Image)`
   height: auto;
@@ -79,19 +81,92 @@ const BannerImage = styled(Image)`
     transform: translate(0, 0);
   }
 `;
-const SearchInput = styled.input`
+const SloganContainer = styled.div`
   position: absolute;
   top: 50%;
   left: 50%;
   transform: translate(-50%, -50%);
-  font-size: 18px;
-  padding: 10px;
-  width: 400px;
-  height: 40px;
+  z-index: 999;
+`;
+const Slogan = styled.h1`
+  font-size: 28px;
+  font-weight: bold;
+  margin-bottom: 10px;
+  color: #000;
+  text-shadow: gray 0.1em 0.1em 0.2em;
+  @media screen and (max-width: 900px) {
+    font-size: 24px;
+  }
+  @media screen and (max-width: 660px) {
+    font-size: 20px;
+  }
+  @media screen and (max-width: 500px) {
+    font-size: 18px;
+    margin-bottom: 5px;
+  }
+`;
+const SubSlogan = styled.h2`
+  font-size: 22px;
+  margin-bottom: 20px;
+  color: #fff;
+  text-shadow: black 0.1em 0.1em 0.2em;
+  @media screen and (max-width: 900px) {
+    font-size: 18px;
+  }
+  @media screen and (max-width: 660px) {
+    font-size: 16px;
+  }
+  @media screen and (max-width: 500px) {
+    font-size: 14px;
+    margin-bottom: 10px;
+  }
+`;
+const SearchBox = styled.form`
   border: 1px solid lightgray;
   box-shadow: 0 0 5px #00000098;
   border-radius: 5px;
+  max-width: 500px;
+  @media screen and (max-width: 650px) {
+    max-width: 300px;
+  }
+  @media screen and (max-width: 400px) {
+    max-width: 280px;
+  }
 `;
+const SearchInput = styled.input`
+  font-size: 18px;
+  padding: 10px;
+  width: 360px;
+  height: 40px;
+  border: none;
+  &:focus {
+    outline: none;
+  }
+  @media screen and (max-width: 900px) {
+    max-width: 75%;
+  }
+  @media screen and (max-width: 650px) {
+    font-size: 14px;
+    height: 28px;
+  }
+`;
+const SearchSelect = styled.select`
+  padding: 5px;
+  font-size: 18px;
+  height: 40px;
+  background-color: #fff;
+  border: none;
+  @media screen and (max-width: 900px) {
+    width: 25%;
+  }
+  @media screen and (max-width: 650px) {
+    font-size: 14px;
+    height: 28px;
+    padding: 0;
+  }
+`;
+const SearchSelectOption = styled.option``;
+
 const Container = styled.div`
   max-width: 1280px;
   margin: 0 auto;
@@ -206,7 +281,8 @@ export default function Home({
   teachersList: TeachersListInterface[];
 }) {
   const router = useRouter();
-
+  const [keywords, setKeywords] = useState("");
+  const [category, setCategory] = useState("course");
   return (
     <>
       <Head>
@@ -215,7 +291,29 @@ export default function Home({
       <Wrapper>
         <Banner>
           <BannerImage src={BannerPic} alt="banner" />
-          <SearchInput placeholder="找老師 or 找課程" />
+          <SloganContainer>
+            <Slogan>最親切的瑜伽學習平台</Slogan>
+            <SubSlogan>讓 Yoga Bear 幫你找到適合自己的老師！</SubSlogan>
+            <SearchBox
+              onSubmit={(e: React.FormEvent<HTMLFormElement>) => {
+                e.preventDefault();
+                if (category === "course") router.push(`/videoCourses?keywords=${keywords}`);
+                if (category === "teacher") router.push(`/findTeachers?keywords=${keywords}`);
+              }}
+            >
+              <SearchInput
+                placeholder="你想學什麼呢？"
+                value={keywords}
+                onChange={(e) => {
+                  setKeywords(e.target.value);
+                }}
+              />
+              <SearchSelect value={category} onChange={(e) => setCategory(e.target.value)}>
+                <SearchSelectOption value="course">找課程</SearchSelectOption>
+                <SearchSelectOption value="teacher">找老師</SearchSelectOption>
+              </SearchSelect>
+            </SearchBox>
+          </SloganContainer>
         </Banner>
         <Container>
           <Title>四個愛上 Yoga Bear 的理由</Title>
