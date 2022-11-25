@@ -4,6 +4,7 @@ import Image from "next/image";
 import { useRouter } from "next/router";
 import styled from "styled-components";
 import Swal from "sweetalert2";
+import parse from "html-react-parser";
 import { useRecoilState } from "recoil";
 import {
   doc,
@@ -17,7 +18,6 @@ import {
   deleteDoc,
 } from "firebase/firestore";
 import produce from "immer";
-import { Identity } from "@mui/base";
 import { db } from "../../../../lib/firebase";
 import { AuthContext } from "../../../contexts/authContext";
 import { showMemberModalState } from "../../../../lib/recoil";
@@ -365,7 +365,7 @@ function Article({ id, articleData }: { id: string; articleData: ArticleInterfac
           {article && (
             <ArticleContainer>
               {/* eslint-disable-next-line react/no-danger */}
-              <Content className="ql-editor" dangerouslySetInnerHTML={{ __html: article.content }} />
+              <Content className="ql-editor">{parse(article.content)}</Content>
               <ArticleActivity>
                 <Qty>
                   <IconWrapper>

@@ -5,6 +5,7 @@ import { doc, query, getDoc, getDocs, collection, updateDoc, arrayUnion } from "
 import { useRouter } from "next/router";
 import styled from "styled-components";
 import Swal from "sweetalert2";
+import parse from "html-react-parser";
 import { useRecoilState } from "recoil";
 import { FullScreen, useFullScreenHandle } from "react-full-screen";
 import { db } from "../../../../lib/firebase";
@@ -743,7 +744,7 @@ function CourseDetail({ courseData, teacherData, reviewsUsersData }: CourseDetai
   return (
     <CourseDetailContainer>
       <SubTitle>課程特色</SubTitle>
-      <Introduction className="ql-editor" dangerouslySetInnerHTML={{ __html: courseData.introduction }} />
+      <Introduction className="ql-editor">{parse(courseData.introduction)}</Introduction>
       <SubTitle>關於老師</SubTitle>
       <About>
         <TeacherInfo
@@ -756,7 +757,7 @@ function CourseDetail({ courseData, teacherData, reviewsUsersData }: CourseDetai
           </TeacherWrapper>
           <TeacherName>{teacherData.teacherName}</TeacherName>
         </TeacherInfo>
-        <Introduction className="ql-editor" dangerouslySetInnerHTML={{ __html: teacherData.teacherExperience }} />
+        <Introduction className="ql-editor">{parse(teacherData.teacherExperience)}</Introduction>
       </About>
       <SubTitle>課程評價</SubTitle>
       <ScoreContainer>
