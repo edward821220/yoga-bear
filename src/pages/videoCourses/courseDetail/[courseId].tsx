@@ -1,5 +1,6 @@
 import React, { useState, useEffect, useRef, useContext } from "react";
 import Image from "next/image";
+import Head from "next/head";
 import { doc, query, getDoc, getDocs, collection, updateDoc, arrayUnion } from "firebase/firestore";
 import { useRouter } from "next/router";
 import styled from "styled-components";
@@ -900,64 +901,69 @@ function CourseInfo({ courseId, courseData }: { courseId: string; courseData: Co
   };
 
   return (
-    <Wrapper>
-      <CourseContainer backgroundImage={courseData?.cover || ""}>
-        <Title>{courseData?.name}</Title>
-        <CourseRoom>
-          <VideoPlayer introductionVideo={courseData?.introductionVideo} />
-          <ChapterSelector>
-            <SubTitle>課程章節</SubTitle>
-            <CourseTitle>
-              <PlayIconWrapper>
-                <PlayIcon>
-                  <Image src={Play} alt="play" fill sizes="contain" />
-                </PlayIcon>
-                課程介紹影片
-              </PlayIconWrapper>
-            </CourseTitle>
-            <Chapters>
-              {courseData?.chapters.map((chapter, chapterIndex) => (
-                <Chapter key={chapter.id}>
-                  <ChapterTitle>
-                    章節 {chapterIndex + 1}：{chapter.title}
-                  </ChapterTitle>
-                  {chapter.units.map((unit, unitIndex) => (
-                    <Units key={unit.id}>
-                      <Unit>
-                        <UnitTitle>
-                          <PlayIcon>
-                            <Image src={Lock} alt="lock" fill sizes="contain" />
-                          </PlayIcon>
-                          單元 {unitIndex + 1}：{unit.title}
-                        </UnitTitle>
-                      </Unit>
-                    </Units>
-                  ))}
-                </Chapter>
-              ))}
-            </Chapters>
-          </ChapterSelector>
-        </CourseRoom>
-        {typeof courseId === "string" && !boughtCourses?.includes(courseId) ? (
-          <Button type="button" onClick={addToCart}>
-            加入購物車
-          </Button>
-        ) : (
-          <Button
-            type="button"
-            onClick={() => {
-              if (typeof courseId !== "string") return;
-              router.push(`/myCourses/classRoom/videoRoom/${courseId}`);
-            }}
-          >
-            前往課程
-          </Button>
+    <>
+      <Head>
+        <title>{courseData.name} - Yoga Bear</title>
+      </Head>
+      <Wrapper>
+        <CourseContainer backgroundImage={courseData?.cover || ""}>
+          <Title>{courseData?.name}</Title>
+          <CourseRoom>
+            <VideoPlayer introductionVideo={courseData?.introductionVideo} />
+            <ChapterSelector>
+              <SubTitle>課程章節</SubTitle>
+              <CourseTitle>
+                <PlayIconWrapper>
+                  <PlayIcon>
+                    <Image src={Play} alt="play" fill sizes="contain" />
+                  </PlayIcon>
+                  課程介紹影片
+                </PlayIconWrapper>
+              </CourseTitle>
+              <Chapters>
+                {courseData?.chapters.map((chapter, chapterIndex) => (
+                  <Chapter key={chapter.id}>
+                    <ChapterTitle>
+                      章節 {chapterIndex + 1}：{chapter.title}
+                    </ChapterTitle>
+                    {chapter.units.map((unit, unitIndex) => (
+                      <Units key={unit.id}>
+                        <Unit>
+                          <UnitTitle>
+                            <PlayIcon>
+                              <Image src={Lock} alt="lock" fill sizes="contain" />
+                            </PlayIcon>
+                            單元 {unitIndex + 1}：{unit.title}
+                          </UnitTitle>
+                        </Unit>
+                      </Units>
+                    ))}
+                  </Chapter>
+                ))}
+              </Chapters>
+            </ChapterSelector>
+          </CourseRoom>
+          {typeof courseId === "string" && !boughtCourses?.includes(courseId) ? (
+            <Button type="button" onClick={addToCart}>
+              加入購物車
+            </Button>
+          ) : (
+            <Button
+              type="button"
+              onClick={() => {
+                if (typeof courseId !== "string") return;
+                router.push(`/myCourses/classRoom/videoRoom/${courseId}`);
+              }}
+            >
+              前往課程
+            </Button>
+          )}
+        </CourseContainer>
+        {courseData && teacherData && (
+          <CourseDetail courseData={courseData} teacherData={teacherData} reviewsUsersData={reviewsUsersData} />
         )}
-      </CourseContainer>
-      {courseData && teacherData && (
-        <CourseDetail courseData={courseData} teacherData={teacherData} reviewsUsersData={reviewsUsersData} />
-      )}
-    </Wrapper>
+      </Wrapper>
+    </>
   );
 }
 

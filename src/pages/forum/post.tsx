@@ -1,12 +1,13 @@
 import React, { useState, useContext, useRef, useMemo, useCallback } from "react";
-import dynamic from "next/dynamic";
 import styled from "styled-components";
 import Swal from "sweetalert2";
 import imageCompression from "browser-image-compression";
+import Head from "next/head";
 import Image from "next/image";
+import dynamic from "next/dynamic";
+import { useRouter } from "next/router";
 import { collection, doc, setDoc } from "firebase/firestore";
 import { ref, uploadBytesResumable, getDownloadURL } from "firebase/storage";
-import { useRouter } from "next/router";
 import ReactQuill, { ReactQuillProps } from "react-quill";
 import { db, storage } from "../../../lib/firebase";
 import { AuthContext } from "../../contexts/authContext";
@@ -237,45 +238,50 @@ function Post() {
   );
 
   return (
-    <Wrapper>
-      <Container>
-        <ArticleUser>
-          <UserAvatarWrapper>
-            <Image src={userData.avatar} alt="avatar" fill sizes="contain" />
-          </UserAvatarWrapper>
-          <UserName>{userData.username}</UserName>
-        </ArticleUser>
-        <Form>
-          <Label>
-            <Title
-              value={title}
-              placeholder="想問什麼呢？"
-              onChange={(e: React.ChangeEvent<HTMLInputElement>) => setTitle(e.target.value)}
+    <>
+      <Head>
+        <title>我想問問題 - Yoga Bear</title>
+      </Head>
+      <Wrapper>
+        <Container>
+          <ArticleUser>
+            <UserAvatarWrapper>
+              <Image src={userData.avatar} alt="avatar" fill sizes="contain" />
+            </UserAvatarWrapper>
+            <UserName>{userData.username}</UserName>
+          </ArticleUser>
+          <Form>
+            <Label>
+              <Title
+                value={title}
+                placeholder="想問什麼呢？"
+                onChange={(e: React.ChangeEvent<HTMLInputElement>) => setTitle(e.target.value)}
+              />
+            </Label>
+            <Editor
+              style={{ height: "320px", marginBottom: "80px" }}
+              theme="snow"
+              value={content}
+              onChange={setContent}
+              modules={modules}
+              formats={formats}
+              forwardedRef={quillRef}
             />
-          </Label>
-          <Editor
-            style={{ height: "320px", marginBottom: "80px" }}
-            theme="snow"
-            value={content}
-            onChange={setContent}
-            modules={modules}
-            formats={formats}
-            forwardedRef={quillRef}
-          />
-          <Button onClick={handlePost} type="button">
-            發問
-          </Button>
-        </Form>
-      </Container>
-      <SpeechBubble>
-        瑜伽相關的問題都歡迎大家提問唷
-        <br />
-        不要害羞～本熊會陪著你問問題的
-      </SpeechBubble>
-      <BearWrapper>
-        <Image src={Bear} alt="bear" width={200} height={200} />
-      </BearWrapper>
-    </Wrapper>
+            <Button onClick={handlePost} type="button">
+              發問
+            </Button>
+          </Form>
+        </Container>
+        <SpeechBubble>
+          瑜伽相關的問題都歡迎大家提問唷
+          <br />
+          不要害羞～本熊會陪著你問問題的
+        </SpeechBubble>
+        <BearWrapper>
+          <Image src={Bear} alt="bear" width={200} height={200} />
+        </BearWrapper>
+      </Wrapper>
+    </>
   );
 }
 

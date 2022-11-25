@@ -1,6 +1,7 @@
 import { useState, useEffect } from "react";
 import styled from "styled-components";
 import { useRouter } from "next/router";
+import Head from "next/head";
 import Image from "next/image";
 import Link from "next/link";
 import { doc, getDoc, getDocs, collection, query, where } from "firebase/firestore";
@@ -373,94 +374,59 @@ export default function Reserve() {
   }, [teacherId]);
 
   return (
-    <Wrapper>
-      <TeacherContainer>
-        <TeacherDetail>
-          <TeacherInfo>
-            <TeacherAvatar>
-              <Image src={teacherData?.avatar || Avatar} alt="avatar" width={120} height={120} />
-            </TeacherAvatar>
-            <TeacherName>{teacherData?.username} 老師</TeacherName>
-          </TeacherInfo>
-          <Introduction>
-            <IntroductionTitle>自我介紹</IntroductionTitle>
-            {teacherData && (
-              <IntroductionContents className="ql-editor">{parse(teacherData.introduction)}</IntroductionContents>
-            )}
-            <IntroductionTitle>老師經歷</IntroductionTitle>
-            {teacherData && (
-              <IntroductionContents className="ql-editor">{parse(teacherData.experience)}</IntroductionContents>
-            )}
-          </Introduction>
-        </TeacherDetail>
-        <CalendarWrapper>{typeof teacherId === "string" && <ReserveCalendar teacherId={teacherId} />}</CalendarWrapper>
-      </TeacherContainer>
-      {typeof teacherId === "string" && (
-        <>
-          <IntroductionTitle style={{ paddingLeft: "10px", marginBottom: "42px" }}>老師的影音課程</IntroductionTitle>
-          <CoursesWrapper>
-            <CourseContainer>
-              <LaunchedVideoCourses uid={teacherId} />
-            </CourseContainer>
-          </CoursesWrapper>
-        </>
-      )}
-      <Reviews>
-        {teacherData?.reviews && (
-          <ScoreContainer>
-            <Average>
-              {(teacherData.reviews.reduce((acc, cur) => acc + cur.score, 0) / teacherData.reviews.length || 0).toFixed(
-                1
-              ) || 0}
-            </Average>
-            <ReviewsInfo>
-              <StarIcons>
-                {Array.from(
-                  {
-                    length: Math.floor(
-                      teacherData.reviews.reduce((acc, cur) => acc + cur.score, 0) / teacherData.reviews.length
-                    ),
-                  },
-                  (v, i) => i + 1
-                ).map((starIndex) => (
-                  <StarWrapper key={starIndex}>
-                    <Image src={Star} alt="star" fill sizes="contain" />
-                  </StarWrapper>
-                ))}
-                {(teacherData.reviews.reduce((acc, cur) => acc + cur.score, 0) / teacherData.reviews.length) % 1 !==
-                  0 && (
-                  <StarWrapper>
-                    <Image src={HalfStar} alt="star" fill sizes="contain" />
-                  </StarWrapper>
-                )}
-              </StarIcons>
-              <ReviewQty>{teacherData.reviews.length} 則評價</ReviewQty>
-            </ReviewsInfo>
-          </ScoreContainer>
+    <>
+      <Head>
+        <title>{teacherData?.username} 老師 - Yoga Bear</title>
+      </Head>
+      <Wrapper>
+        <TeacherContainer>
+          <TeacherDetail>
+            <TeacherInfo>
+              <TeacherAvatar>
+                <Image src={teacherData?.avatar || Avatar} alt="avatar" width={120} height={120} />
+              </TeacherAvatar>
+              <TeacherName>{teacherData?.username} 老師</TeacherName>
+            </TeacherInfo>
+            <Introduction>
+              <IntroductionTitle>自我介紹</IntroductionTitle>
+              {teacherData && (
+                <IntroductionContents className="ql-editor">{parse(teacherData.introduction)}</IntroductionContents>
+              )}
+              <IntroductionTitle>老師經歷</IntroductionTitle>
+              {teacherData && (
+                <IntroductionContents className="ql-editor">{parse(teacherData.experience)}</IntroductionContents>
+              )}
+            </Introduction>
+          </TeacherDetail>
+          <CalendarWrapper>
+            {typeof teacherId === "string" && <ReserveCalendar teacherId={teacherId} />}
+          </CalendarWrapper>
+        </TeacherContainer>
+        {typeof teacherId === "string" && (
+          <>
+            <IntroductionTitle style={{ paddingLeft: "10px", marginBottom: "42px" }}>老師的影音課程</IntroductionTitle>
+            <CoursesWrapper>
+              <CourseContainer>
+                <LaunchedVideoCourses uid={teacherId} />
+              </CourseContainer>
+            </CoursesWrapper>
+          </>
         )}
-        {teacherData &&
-          teacherData?.reviews?.map((review, reviewIndex) => (
-            <Review key={review.userId}>
-              <User>
-                <AvatarWrapper>
-                  <Image
-                    src={
-                      reviewUsersData.find((reviewUserInfo) => reviewUserInfo.index === reviewIndex)?.avatar || Avatar
-                    }
-                    alt="avatar"
-                    width={120}
-                    height={120}
-                  />
-                </AvatarWrapper>
-                <UserName>
-                  {reviewUsersData.find((reviewUserInfo) => reviewUserInfo.index === reviewIndex)?.username}
-                </UserName>
-              </User>
-              <CommentWrapper>
-                <Score>
+        <Reviews>
+          {teacherData?.reviews && (
+            <ScoreContainer>
+              <Average>
+                {(
+                  teacherData.reviews.reduce((acc, cur) => acc + cur.score, 0) / teacherData.reviews.length || 0
+                ).toFixed(1) || 0}
+              </Average>
+              <ReviewsInfo>
+                <StarIcons>
                   {Array.from(
                     {
-                      length: review.score,
+                      length: Math.floor(
+                        teacherData.reviews.reduce((acc, cur) => acc + cur.score, 0) / teacherData.reviews.length
+                      ),
                     },
                     (v, i) => i + 1
                   ).map((starIndex) => (
@@ -468,13 +434,55 @@ export default function Reserve() {
                       <Image src={Star} alt="star" fill sizes="contain" />
                     </StarWrapper>
                   ))}
-                </Score>
-                <Class>課程：{review.class}</Class>
-                <Comments>{review.comments}</Comments>
-              </CommentWrapper>
-            </Review>
-          ))}
-      </Reviews>
-    </Wrapper>
+                  {(teacherData.reviews.reduce((acc, cur) => acc + cur.score, 0) / teacherData.reviews.length) % 1 !==
+                    0 && (
+                    <StarWrapper>
+                      <Image src={HalfStar} alt="star" fill sizes="contain" />
+                    </StarWrapper>
+                  )}
+                </StarIcons>
+                <ReviewQty>{teacherData.reviews.length} 則評價</ReviewQty>
+              </ReviewsInfo>
+            </ScoreContainer>
+          )}
+          {teacherData &&
+            teacherData?.reviews?.map((review, reviewIndex) => (
+              <Review key={review.userId}>
+                <User>
+                  <AvatarWrapper>
+                    <Image
+                      src={
+                        reviewUsersData.find((reviewUserInfo) => reviewUserInfo.index === reviewIndex)?.avatar || Avatar
+                      }
+                      alt="avatar"
+                      width={120}
+                      height={120}
+                    />
+                  </AvatarWrapper>
+                  <UserName>
+                    {reviewUsersData.find((reviewUserInfo) => reviewUserInfo.index === reviewIndex)?.username}
+                  </UserName>
+                </User>
+                <CommentWrapper>
+                  <Score>
+                    {Array.from(
+                      {
+                        length: review.score,
+                      },
+                      (v, i) => i + 1
+                    ).map((starIndex) => (
+                      <StarWrapper key={starIndex}>
+                        <Image src={Star} alt="star" fill sizes="contain" />
+                      </StarWrapper>
+                    ))}
+                  </Score>
+                  <Class>課程：{review.class}</Class>
+                  <Comments>{review.comments}</Comments>
+                </CommentWrapper>
+              </Review>
+            ))}
+        </Reviews>
+      </Wrapper>
+    </>
   );
 }

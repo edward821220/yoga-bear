@@ -2,6 +2,7 @@ import React, { useContext, useEffect, useState } from "react";
 import styled from "styled-components";
 import Swal from "sweetalert2";
 import produce from "immer";
+import Head from "next/head";
 import Link from "next/link";
 import Image from "next/image";
 import { useRouter } from "next/router";
@@ -983,6 +984,16 @@ function BeTeacher({
     </LaunchForm>
   );
 }
+
+const routeTitle: Record<string, string> = {
+  videoCourses: "我的影音課程（學生）",
+  studentCalendar: "已預約課表（學生）",
+  beTeacher: "我要當老師（學生）",
+  launchedVideoCourses: "已上架影音課（老師）",
+  launchVideoCourse: "影音課程上架（老師）",
+  teacherCalendar: "排課行事曆（老師）",
+};
+
 function MyCourses() {
   const router = useRouter();
   const { category } = router.query;
@@ -999,74 +1010,77 @@ function MyCourses() {
   }, [category]);
 
   return (
-    <Wrapper>
-      <Bar>
-        {userData.identity === "teacher" && (
-          <BarSection>
-            <BarTitle>學生</BarTitle>
-            <ToggleButtonLabel
-              onChange={(e: React.FormEvent<HTMLLabelElement>) => {
-                const target = e.target as HTMLInputElement;
-                const check = target.checked;
-                setTeacherAuthority(check);
-                if (teacherAuthority === false) {
-                  router.push("/myCourses/launchedVideoCourses");
-                } else {
-                  router.push("/myCourses/videoCourses");
-                }
-              }}
-            >
-              <ToggleButton state={teacherAuthority} />
-            </ToggleButtonLabel>
-            <BarTitle>老師</BarTitle>
-          </BarSection>
-        )}
-        {userData.identity && !teacherAuthority && (
-          <BarSection>
-            <BarLink active={typeof category === "string" && category === "videoCourses"}>
-              <Link href="/myCourses/videoCourses">我的影音課程</Link>
-            </BarLink>
-            <BarLink active={typeof category === "string" && category === "studentCalendar"}>
-              <Link href="/myCourses/studentCalendar">已預約課表</Link>
-            </BarLink>
-            {userData.identity === "student" && (
-              <BarLink active={typeof category === "string" && category === "beTeacher"}>
-                <Link href="/myCourses/beTeacher">我要當老師</Link>
+    <>
+      <Head>{typeof category === "string" && <title>{routeTitle[category]} - Yoga Bear</title>}</Head>
+      <Wrapper>
+        <Bar>
+          {userData.identity === "teacher" && (
+            <BarSection>
+              <BarTitle>學生</BarTitle>
+              <ToggleButtonLabel
+                onChange={(e: React.FormEvent<HTMLLabelElement>) => {
+                  const target = e.target as HTMLInputElement;
+                  const check = target.checked;
+                  setTeacherAuthority(check);
+                  if (teacherAuthority === false) {
+                    router.push("/myCourses/launchedVideoCourses");
+                  } else {
+                    router.push("/myCourses/videoCourses");
+                  }
+                }}
+              >
+                <ToggleButton state={teacherAuthority} />
+              </ToggleButtonLabel>
+              <BarTitle>老師</BarTitle>
+            </BarSection>
+          )}
+          {userData.identity && !teacherAuthority && (
+            <BarSection>
+              <BarLink active={typeof category === "string" && category === "videoCourses"}>
+                <Link href="/myCourses/videoCourses">我的影音課程</Link>
               </BarLink>
-            )}
-          </BarSection>
-        )}
-        {userData.identity === "teacher" && teacherAuthority && (
-          <BarSection>
-            <BarLink active={typeof category === "string" && category === "launchedVideoCourses"}>
-              <Link href="/myCourses/launchedVideoCourses">已上架影音課</Link>
-            </BarLink>
-            <BarLink active={typeof category === "string" && category === "launchVideoCourse"}>
-              <Link href="/myCourses/launchVideoCourse">影音課程上架</Link>
-            </BarLink>
-            <BarLink active={typeof category === "string" && category === "teacherCalendar"}>
-              <Link href="/myCourses/teacherCalendar">排課行事曆</Link>
-            </BarLink>
-          </BarSection>
-        )}
-      </Bar>
-      <Main>
-        {category === "videoCourses" && <VideoCourses uid={userData.uid} />}
-        {category === "launchVideoCourse" && <LaunchVideoCourse uid={userData.uid} />}
-        {category === "launchedVideoCourses" && <LaunchedVideoCourses uid={userData.uid} />}
-        {category === "teacherCalendar" && (
-          <CalendarWrapper>
-            <TeacherCalendar uid={userData.uid} name={userData.username} />
-          </CalendarWrapper>
-        )}
-        {category === "studentCalendar" && (
-          <CalendarWrapper>
-            <StudentCalendar userData={userData} />
-          </CalendarWrapper>
-        )}
-        {category === "beTeacher" && <BeTeacher uid={userData.uid} setUserData={setUserData} />}
-      </Main>
-    </Wrapper>
+              <BarLink active={typeof category === "string" && category === "studentCalendar"}>
+                <Link href="/myCourses/studentCalendar">已預約課表</Link>
+              </BarLink>
+              {userData.identity === "student" && (
+                <BarLink active={typeof category === "string" && category === "beTeacher"}>
+                  <Link href="/myCourses/beTeacher">我要當老師</Link>
+                </BarLink>
+              )}
+            </BarSection>
+          )}
+          {userData.identity === "teacher" && teacherAuthority && (
+            <BarSection>
+              <BarLink active={typeof category === "string" && category === "launchedVideoCourses"}>
+                <Link href="/myCourses/launchedVideoCourses">已上架影音課</Link>
+              </BarLink>
+              <BarLink active={typeof category === "string" && category === "launchVideoCourse"}>
+                <Link href="/myCourses/launchVideoCourse">影音課程上架</Link>
+              </BarLink>
+              <BarLink active={typeof category === "string" && category === "teacherCalendar"}>
+                <Link href="/myCourses/teacherCalendar">排課行事曆</Link>
+              </BarLink>
+            </BarSection>
+          )}
+        </Bar>
+        <Main>
+          {category === "videoCourses" && <VideoCourses uid={userData.uid} />}
+          {category === "launchVideoCourse" && <LaunchVideoCourse uid={userData.uid} />}
+          {category === "launchedVideoCourses" && <LaunchedVideoCourses uid={userData.uid} />}
+          {category === "teacherCalendar" && (
+            <CalendarWrapper>
+              <TeacherCalendar uid={userData.uid} name={userData.username} />
+            </CalendarWrapper>
+          )}
+          {category === "studentCalendar" && (
+            <CalendarWrapper>
+              <StudentCalendar userData={userData} />
+            </CalendarWrapper>
+          )}
+          {category === "beTeacher" && <BeTeacher uid={userData.uid} setUserData={setUserData} />}
+        </Main>
+      </Wrapper>
+    </>
   );
 }
 

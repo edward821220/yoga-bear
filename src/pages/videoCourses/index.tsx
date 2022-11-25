@@ -1,6 +1,6 @@
 import React, { useState } from "react";
 import styled from "styled-components";
-import { useRouter } from "next/router";
+import Head from "next/head";
 import Link from "next/link";
 import Image from "next/image";
 import produce from "immer";
@@ -231,95 +231,100 @@ function VideoCourses({ results }: { results: CourseInterface[] }) {
     }
   };
   return (
-    <Wrapper>
-      <Container>
-        <Bar>
-          <BarSection>
-            <BarTitle>目前排序</BarTitle>
-            <BarLink
-              selectSort={selectSort === "comment"}
-              onClick={() => {
-                handleSort("comment");
-              }}
-            >
-              評論多優先
-            </BarLink>
-            <BarLink
-              selectSort={selectSort === "score"}
-              onClick={() => {
-                handleSort("score");
-              }}
-            >
-              評價高優先
-            </BarLink>
-            <BarLink
-              selectSort={selectSort === "new"}
-              onClick={() => {
-                handleSort("new");
-              }}
-            >
-              新課程優先
-            </BarLink>
-            <BarLink
-              selectSort={selectSort === "price"}
-              onClick={() => {
-                handleSort("price");
-              }}
-            >
-              價格低優先
-            </BarLink>
-          </BarSection>
-        </Bar>
-        <CoursesList>
-          {coursesList.map((course) => (
-            <Course key={course.id}>
-              <CourseCover>
-                <Link href={`/videoCourses/courseDetail/${course.id}`}>
-                  <Image src={course.cover} alt="cover" fill sizes="contain" />
-                </Link>
-              </CourseCover>
-              <CourseInfos>
-                <CourseTitle>{course.name}</CourseTitle>
-                <CourseInfo>NT. {course.price}</CourseInfo>
-                {course?.reviews?.length > 0 ? (
-                  <CourseScore>
-                    <StarIcons>
-                      {/* eslint-disable no-unsafe-optional-chaining */}
-                      {Array.from(
-                        {
-                          length: Math.floor(
-                            course?.reviews?.reduce((acc, cur) => acc + cur.score, 0) / course?.reviews?.length
-                          ),
-                        },
-                        (v, i) => i + 1
-                      ).map((starIndex) => (
-                        <StarWrapper key={starIndex}>
-                          <Image src={StarIcon} alt="star" fill sizes="contain" />
-                        </StarWrapper>
-                      ))}
-                      {(course?.reviews?.reduce((acc, cur) => acc + cur.score, 0) / course?.reviews?.length) % 1 !==
-                        0 && (
-                        <StarWrapper>
-                          <Image src={HalfStar} alt="star" fill sizes="contain" />
-                        </StarWrapper>
-                      )}
-                    </StarIcons>
-                    <CourseReviewsInfo>
-                      {(
-                        course?.reviews?.reduce((acc, cur) => acc + cur.score, 0) / course?.reviews?.length || 0
-                      ).toFixed(1) || 0}
-                      分 ，{course?.reviews?.length || 0}則評論
-                    </CourseReviewsInfo>
-                  </CourseScore>
-                ) : (
-                  <CourseReviewsInfo>目前無評價</CourseReviewsInfo>
-                )}
-              </CourseInfos>
-            </Course>
-          ))}
-        </CoursesList>
-      </Container>
-    </Wrapper>
+    <>
+      <Head>
+        <title>影音課程 - Yoga Bear</title>
+      </Head>
+      <Wrapper>
+        <Container>
+          <Bar>
+            <BarSection>
+              <BarTitle>目前排序</BarTitle>
+              <BarLink
+                selectSort={selectSort === "comment"}
+                onClick={() => {
+                  handleSort("comment");
+                }}
+              >
+                評論多優先
+              </BarLink>
+              <BarLink
+                selectSort={selectSort === "score"}
+                onClick={() => {
+                  handleSort("score");
+                }}
+              >
+                評價高優先
+              </BarLink>
+              <BarLink
+                selectSort={selectSort === "new"}
+                onClick={() => {
+                  handleSort("new");
+                }}
+              >
+                新課程優先
+              </BarLink>
+              <BarLink
+                selectSort={selectSort === "price"}
+                onClick={() => {
+                  handleSort("price");
+                }}
+              >
+                價格低優先
+              </BarLink>
+            </BarSection>
+          </Bar>
+          <CoursesList>
+            {coursesList.map((course) => (
+              <Course key={course.id}>
+                <CourseCover>
+                  <Link href={`/videoCourses/courseDetail/${course.id}`}>
+                    <Image src={course.cover} alt="cover" fill sizes="contain" />
+                  </Link>
+                </CourseCover>
+                <CourseInfos>
+                  <CourseTitle>{course.name}</CourseTitle>
+                  <CourseInfo>NT. {course.price}</CourseInfo>
+                  {course?.reviews?.length > 0 ? (
+                    <CourseScore>
+                      <StarIcons>
+                        {/* eslint-disable no-unsafe-optional-chaining */}
+                        {Array.from(
+                          {
+                            length: Math.floor(
+                              course?.reviews?.reduce((acc, cur) => acc + cur.score, 0) / course?.reviews?.length
+                            ),
+                          },
+                          (v, i) => i + 1
+                        ).map((starIndex) => (
+                          <StarWrapper key={starIndex}>
+                            <Image src={StarIcon} alt="star" fill sizes="contain" />
+                          </StarWrapper>
+                        ))}
+                        {(course?.reviews?.reduce((acc, cur) => acc + cur.score, 0) / course?.reviews?.length) % 1 !==
+                          0 && (
+                          <StarWrapper>
+                            <Image src={HalfStar} alt="star" fill sizes="contain" />
+                          </StarWrapper>
+                        )}
+                      </StarIcons>
+                      <CourseReviewsInfo>
+                        {(
+                          course?.reviews?.reduce((acc, cur) => acc + cur.score, 0) / course?.reviews?.length || 0
+                        ).toFixed(1) || 0}
+                        分 ，{course?.reviews?.length || 0}則評論
+                      </CourseReviewsInfo>
+                    </CourseScore>
+                  ) : (
+                    <CourseReviewsInfo>目前無評價</CourseReviewsInfo>
+                  )}
+                </CourseInfos>
+              </Course>
+            ))}
+          </CoursesList>
+        </Container>
+      </Wrapper>
+    </>
   );
 }
 

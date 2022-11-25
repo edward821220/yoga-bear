@@ -1,6 +1,7 @@
 import React, { useState, useContext } from "react";
-import { useRouter } from "next/router";
+import Head from "next/head";
 import Image from "next/image";
+import { useRouter } from "next/router";
 import styled from "styled-components";
 import Swal from "sweetalert2";
 import { useRecoilState } from "recoil";
@@ -16,6 +17,7 @@ import {
   deleteDoc,
 } from "firebase/firestore";
 import produce from "immer";
+import { Identity } from "@mui/base";
 import { db } from "../../../../lib/firebase";
 import { AuthContext } from "../../../contexts/authContext";
 import { showMemberModalState } from "../../../../lib/recoil";
@@ -156,12 +158,10 @@ const Message = styled.li`
   padding: 10px 20px;
 `;
 
-const MessageAuthor = styled.div`
+const MessageAuthor = styled.div<{ identity: string }>`
   display: flex;
   margin-bottom: 15px;
-`;
-const MessageAuthorTeacher = styled(MessageAuthor)`
-  cursor: pointer;
+  cursor: ${(props) => props.identity === "teacher" && "pointer"};
 `;
 
 const MessageContent = styled.p`
@@ -325,166 +325,178 @@ function Article({ id, articleData }: { id: string; articleData: ArticleInterfac
   };
 
   return (
-    <Wrapper>
-      <Container>
-        <ArticleUser>
-          <UserAvatarWrapper>
-            <Image src={article?.authorAvatar || Avatar} alt="avatar" fill sizes="contain" />
-          </UserAvatarWrapper>
-          <UserName>{article?.authorName}</UserName>
-          {userData.uid === article.authorId && (
-            <IconWrapper
-              style={{ marginRight: 0, width: "20px", cursor: "pointer" }}
-              onClick={() => {
-                Swal.fire({
-                  text: `確定要刪除文章嗎？`,
-                  icon: "warning",
-                  showCancelButton: true,
-                  confirmButtonColor: "#d33",
-                  cancelButtonColor: "#3085d6",
-                  confirmButtonText: "Yes!",
-                }).then(async (result) => {
-                  if (result.isConfirmed) {
-                    const articleRef = doc(db, "posts", id);
-                    await deleteDoc(articleRef);
-                    router.push("/forum");
-                  }
-                });
-              }}
-            >
-              <Image src={Remove} alt="remove" />
-            </IconWrapper>
+    <>
+      <Head>
+        <title>{article.title} - Yoga Bear</title>
+      </Head>
+      <Wrapper>
+        <Container>
+          <ArticleUser>
+            <UserAvatarWrapper>
+              <Image src={article?.authorAvatar || Avatar} alt="avatar" fill sizes="contain" />
+            </UserAvatarWrapper>
+            <UserName>{article?.authorName}</UserName>
+            {userData.uid === article.authorId && (
+              <IconWrapper
+                style={{ marginRight: 0, width: "20px", cursor: "pointer" }}
+                onClick={() => {
+                  Swal.fire({
+                    text: `確定要刪除文章嗎？`,
+                    icon: "warning",
+                    showCancelButton: true,
+                    confirmButtonColor: "#d33",
+                    cancelButtonColor: "#3085d6",
+                    confirmButtonText: "Yes!",
+                  }).then(async (result) => {
+                    if (result.isConfirmed) {
+                      const articleRef = doc(db, "posts", id);
+                      await deleteDoc(articleRef);
+                      router.push("/forum");
+                    }
+                  });
+                }}
+              >
+                <Image src={Remove} alt="remove" />
+              </IconWrapper>
+            )}
+          </ArticleUser>
+          <Title>{article?.title}</Title>
+          {article && <PostTime>{new Date(article.time).toLocaleString()}</PostTime>}
+          {article && (
+            <ArticleContainer>
+              {/* eslint-disable-next-line react/no-danger */}
+              <Content className="ql-editor" dangerouslySetInnerHTML={{ __html: article.content }} />
+              <ArticleActivity>
+                <Qty>
+                  <IconWrapper>
+                    <Image src={LikeQtyIcon} alt="like" fill sizes="contain" />
+                  </IconWrapper>
+                  <ActivityQty>{article?.likes?.length || 0}</ActivityQty>
+                  <IconWrapper>
+                    <Image src={MessageIcon} alt="like" fill sizes="contain" />
+                  </IconWrapper>
+                  <ActivityQty>{article?.messages?.length || 0}</ActivityQty>
+                </Qty>
+                {article?.likes?.includes(userData.uid) || (
+                  <ClickLike onClick={handleLikeArticle}>
+                    <IconWrapper>
+                      <Image src={LikeBlankIcon} alt="like-click" fill sizes="contain" />
+                    </IconWrapper>
+                  </ClickLike>
+                )}
+                {article?.likes?.includes(userData.uid) && (
+                  <ClickLike onClick={handleDislikeArticle}>
+                    <IconWrapper>
+                      <Image src={LikeIcon} alt="like-clicked" fill sizes="contain" />
+                    </IconWrapper>
+                  </ClickLike>
+                )}
+              </ArticleActivity>
+            </ArticleContainer>
           )}
-        </ArticleUser>
-        <Title>{article?.title}</Title>
-        {article && <PostTime>{new Date(article.time).toLocaleString()}</PostTime>}
-        {article && (
-          <ArticleContainer>
-            {/* eslint-disable-next-line react/no-danger */}
-            <Content className="ql-editor" dangerouslySetInnerHTML={{ __html: article.content }} />
-            <ArticleActivity>
-              <Qty>
-                <IconWrapper>
-                  <Image src={LikeQtyIcon} alt="like" fill sizes="contain" />
-                </IconWrapper>
-                <ActivityQty>{article?.likes?.length || 0}</ActivityQty>
-                <IconWrapper>
-                  <Image src={MessageIcon} alt="like" fill sizes="contain" />
-                </IconWrapper>
-                <ActivityQty>{article?.messages?.length || 0}</ActivityQty>
-              </Qty>
-              {article?.likes?.includes(userData.uid) || (
-                <ClickLike onClick={handleLikeArticle}>
-                  <IconWrapper>
-                    <Image src={LikeBlankIcon} alt="like-click" fill sizes="contain" />
-                  </IconWrapper>
-                </ClickLike>
-              )}
-              {article?.likes?.includes(userData.uid) && (
-                <ClickLike onClick={handleDislikeArticle}>
-                  <IconWrapper>
-                    <Image src={LikeIcon} alt="like-clicked" fill sizes="contain" />
-                  </IconWrapper>
-                </ClickLike>
-              )}
-            </ArticleActivity>
-          </ArticleContainer>
-        )}
-        {article && article?.messages?.length > 0 && (
-          <MessagesContainer>
-            <Messages>
-              <MessageQty>共 {article?.messages.length} 則留言</MessageQty>
-              {Array.isArray(article.messages) &&
-                article.messages.map((message: MessageInterface, index) => (
-                  <Message key={message.authorId + new Date(message.time).toLocaleString()}>
-                    <MessageAuthor>
-                      <UserAvatarWrapper>
-                        <Image src={message.authorAvatar || Avatar} alt="avatar" fill sizes="contain" />
-                      </UserAvatarWrapper>
-                      <UserName>
-                        {message.authorName} ({message.identity === "student" ? "學生" : "老師"})
-                        {message.authorId === article.authorId && " - 原PO"}
-                      </UserName>
-                      {userData.uid === message.authorId && (
-                        <IconWrapper
-                          style={{ marginRight: 0, width: "20px", cursor: "pointer" }}
-                          onClick={() => {
-                            Swal.fire({
-                              text: `確定要刪除留言嗎？`,
-                              icon: "warning",
-                              showCancelButton: true,
-                              confirmButtonColor: "#d33",
-                              cancelButtonColor: "#3085d6",
-                              confirmButtonText: "Yes!",
-                            }).then((result) => {
-                              if (result.isConfirmed) {
-                                const newMessages = article.messages.filter(
-                                  (_, messageIndex) => messageIndex !== index
-                                );
-                                setArticle(
-                                  produce((draft) => {
-                                    // eslint-disable-next-line no-param-reassign
-                                    draft.messages = newMessages;
-                                  })
-                                );
-                                const articleRef = doc(db, "posts", id);
-                                updateDoc(articleRef, {
-                                  messages: newMessages,
-                                });
-                              }
-                            });
-                          }}
-                        >
-                          <Image src={Remove} alt="remove" />
-                        </IconWrapper>
-                      )}
-                    </MessageAuthor>
-                    <MessageContent>{message.message}</MessageContent>
-                    <MessageInfo>
-                      {message?.likes?.includes(userData.uid) || (
-                        <ClickLike
-                          onClick={() => {
-                            handleLikeMessage(index);
-                          }}
-                        >
-                          <IconWrapper>
-                            <Image src={LikeBlankIcon} alt="like-click" fill sizes="contain" />
+          {article && article?.messages?.length > 0 && (
+            <MessagesContainer>
+              <Messages>
+                <MessageQty>共 {article?.messages.length} 則留言</MessageQty>
+                {Array.isArray(article.messages) &&
+                  article.messages.map((message: MessageInterface, index) => (
+                    <Message key={message.authorId + new Date(message.time).toLocaleString()}>
+                      <MessageAuthor
+                        identity={message.identity}
+                        onClick={() => {
+                          if (message.identity === "teacher") {
+                            router.push(`/findTeachers/reserve/${message.authorId}`);
+                          }
+                        }}
+                      >
+                        <UserAvatarWrapper>
+                          <Image src={message.authorAvatar || Avatar} alt="avatar" fill sizes="contain" />
+                        </UserAvatarWrapper>
+                        <UserName>
+                          {message.authorName} ({message.identity === "student" ? "學生" : "老師"})
+                          {message.authorId === article.authorId && " - 原PO"}
+                        </UserName>
+                        {userData.uid === message.authorId && (
+                          <IconWrapper
+                            style={{ marginRight: 0, width: "20px", cursor: "pointer" }}
+                            onClick={() => {
+                              Swal.fire({
+                                text: `確定要刪除留言嗎？`,
+                                icon: "warning",
+                                showCancelButton: true,
+                                confirmButtonColor: "#d33",
+                                cancelButtonColor: "#3085d6",
+                                confirmButtonText: "Yes!",
+                              }).then((result) => {
+                                if (result.isConfirmed) {
+                                  const newMessages = article.messages.filter(
+                                    (_, messageIndex) => messageIndex !== index
+                                  );
+                                  setArticle(
+                                    produce((draft) => {
+                                      // eslint-disable-next-line no-param-reassign
+                                      draft.messages = newMessages;
+                                    })
+                                  );
+                                  const articleRef = doc(db, "posts", id);
+                                  updateDoc(articleRef, {
+                                    messages: newMessages,
+                                  });
+                                }
+                              });
+                            }}
+                          >
+                            <Image src={Remove} alt="remove" />
                           </IconWrapper>
-                          <span>{message?.likes?.length || 0}</span>
-                        </ClickLike>
-                      )}
-                      {message?.likes?.includes(userData.uid) && (
-                        <ClickLike
-                          onClick={() => {
-                            handleDislikeMessage(index);
-                          }}
-                        >
-                          <IconWrapper>
-                            <Image src={LikeIcon} alt="like-clicked" fill sizes="contain" />
-                          </IconWrapper>
-                          <LikeQty>{message?.likes?.length || 0}</LikeQty>
-                        </ClickLike>
-                      )}
-                      <MessageTime>{new Date(message.time).toLocaleString()}</MessageTime>
-                      <MessageFloor>B{index + 1}</MessageFloor>
-                    </MessageInfo>
-                  </Message>
-                ))}
-            </Messages>
-          </MessagesContainer>
-        )}
-        <MessageBlock>
-          <MessageTextArea
-            value={inputMessage}
-            placeholder="留言......"
-            onChange={(e) => {
-              setInputMessage(e.target.value);
-            }}
-          />
-          <Button onClick={handleMessage}>送出</Button>
-        </MessageBlock>
-      </Container>
-    </Wrapper>
+                        )}
+                      </MessageAuthor>
+                      <MessageContent>{message.message}</MessageContent>
+                      <MessageInfo>
+                        {message?.likes?.includes(userData.uid) || (
+                          <ClickLike
+                            onClick={() => {
+                              handleLikeMessage(index);
+                            }}
+                          >
+                            <IconWrapper>
+                              <Image src={LikeBlankIcon} alt="like-click" fill sizes="contain" />
+                            </IconWrapper>
+                            <span>{message?.likes?.length || 0}</span>
+                          </ClickLike>
+                        )}
+                        {message?.likes?.includes(userData.uid) && (
+                          <ClickLike
+                            onClick={() => {
+                              handleDislikeMessage(index);
+                            }}
+                          >
+                            <IconWrapper>
+                              <Image src={LikeIcon} alt="like-clicked" fill sizes="contain" />
+                            </IconWrapper>
+                            <LikeQty>{message?.likes?.length || 0}</LikeQty>
+                          </ClickLike>
+                        )}
+                        <MessageTime>{new Date(message.time).toLocaleString()}</MessageTime>
+                        <MessageFloor>B{index + 1}</MessageFloor>
+                      </MessageInfo>
+                    </Message>
+                  ))}
+              </Messages>
+            </MessagesContainer>
+          )}
+          <MessageBlock>
+            <MessageTextArea
+              value={inputMessage}
+              placeholder="留言......"
+              onChange={(e) => {
+                setInputMessage(e.target.value);
+              }}
+            />
+            <Button onClick={handleMessage}>送出</Button>
+          </MessageBlock>
+        </Container>
+      </Wrapper>
+    </>
   );
 }
 
