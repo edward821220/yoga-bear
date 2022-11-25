@@ -125,48 +125,40 @@ const SearchBox = styled.form`
   border: 1px solid lightgray;
   box-shadow: 0 0 5px #00000098;
   border-radius: 5px;
-  max-width: 500px;
-  @media screen and (max-width: 650px) {
-    max-width: 300px;
-  }
-  @media screen and (max-width: 400px) {
-    max-width: 280px;
+  margin-bottom: 10px;
+  min-width: 320px;
+  @media screen and (max-width: 500px) {
+    min-width: 280px;
   }
 `;
 const SearchInput = styled.input`
   font-size: 18px;
   padding: 10px;
-  width: 360px;
+  width: 100%;
   height: 40px;
   border: none;
   &:focus {
     outline: none;
   }
-  @media screen and (max-width: 900px) {
-    max-width: 75%;
-  }
   @media screen and (max-width: 650px) {
     font-size: 14px;
     height: 28px;
   }
 `;
-const SearchSelect = styled.select`
-  padding: 5px;
-  font-size: 18px;
-  height: 40px;
-  background-color: #fff;
-  border: none;
-  @media screen and (max-width: 900px) {
-    width: 25%;
-  }
+const SearchLabel = styled.label`
+  margin-right: 10px;
+  color: #000;
+  text-shadow: #fff 0.1em 0.1em 0.2em;
   @media screen and (max-width: 650px) {
     font-size: 14px;
-    height: 28px;
-    padding: 0;
+  }
+  @media screen and (max-width: 450px) {
+    font-size: 12px;
   }
 `;
-const SearchSelectOption = styled.option``;
-
+const SearchRadio = styled.input`
+  margin-right: 5px;
+`;
 const Container = styled.div`
   max-width: 1280px;
   margin: 0 auto;
@@ -273,6 +265,7 @@ interface TeachersListInterface {
   avatar: string;
   name: string;
 }
+
 export default function Home({
   coursesList,
   teachersList,
@@ -302,17 +295,35 @@ export default function Home({
               }}
             >
               <SearchInput
-                placeholder="你想學什麼呢？"
+                placeholder={category === "course" ? "你想學什麼呢？" : "你想找哪個老師呢？"}
                 value={keywords}
                 onChange={(e) => {
                   setKeywords(e.target.value);
                 }}
               />
-              <SearchSelect value={category} onChange={(e) => setCategory(e.target.value)}>
-                <SearchSelectOption value="course">找課程</SearchSelectOption>
-                <SearchSelectOption value="teacher">找老師</SearchSelectOption>
-              </SearchSelect>
             </SearchBox>
+            <SearchLabel>
+              <SearchRadio
+                type="radio"
+                value="course"
+                name="category"
+                onChange={(e) => {
+                  setCategory(e.target.value);
+                }}
+              />
+              找課程
+            </SearchLabel>
+            <SearchLabel>
+              <SearchRadio
+                type="radio"
+                value="teacher"
+                name="category"
+                onChange={(e) => {
+                  setCategory(e.target.value);
+                }}
+              />
+              找老師
+            </SearchLabel>
           </SloganContainer>
         </Banner>
         <Container>
@@ -411,7 +422,7 @@ export default function Home({
               </SwiperSlide>
             ))}
           </Swiper>
-          <Title>六個開始練瑜伽的理由</Title>
+          <Title>六個開始練瑜伽的動機</Title>
           <Reasons>
             <Reason>
               <ReasonIcon

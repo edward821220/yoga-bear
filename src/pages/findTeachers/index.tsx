@@ -386,7 +386,7 @@ export const getServerSideProps = async ({ query }: { query: { keywords: string 
   });
 
   if (keywords) {
-    results = results.filter((teacher) => teacher.name.includes(keywords));
+    results = results.filter((teacher) => teacher.name.toLowerCase().includes(keywords.toLowerCase()));
   }
 
   results.sort((a, b) => {
