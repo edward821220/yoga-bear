@@ -285,7 +285,7 @@ export default function Home({
         <Banner>
           <BannerImage src={BannerPic} alt="banner" />
           <SloganContainer>
-            <Slogan>最親切的瑜伽學習平台</Slogan>
+            <Slogan>瑜伽練習者的好夥伴</Slogan>
             <SubSlogan>讓 Yoga Bear 幫你找到適合自己的老師！</SubSlogan>
             <SearchBox
               onSubmit={(e: React.FormEvent<HTMLFormElement>) => {
