@@ -11,7 +11,7 @@ import { collection, doc, setDoc, getDoc, updateDoc, arrayUnion, getDocs, query,
 import { AuthContext } from "../../contexts/authContext";
 import { storage, db } from "../../../lib/firebase";
 import Modal from "../../components/modal";
-import Editor from "../../components/editor";
+import Editor from "../../components/editor/editor";
 import ToggleButton from "../../components/toggleButton";
 import Bear from "../../../public/bear.png";
 import Trash from "../../../public/trash.png";

@@ -11,6 +11,7 @@ import ReserveCalendar from "../../../components/calendar/reserveCalendar";
 import Avatar from "../../../../public/member.png";
 import Star from "../../../../public/star.png";
 import HalfStar from "../../../../public/star-half.png";
+import Loading from "../../../../public/loading.gif";
 
 const Wrapper = styled.div`
   background-color: ${(props) => props.theme.colors.color1};
@@ -373,6 +374,13 @@ export default function Reserve() {
     getTeacherData();
   }, [teacherId]);
 
+  if (!teacherData) {
+    return (
+      <TeacherContainer style={{ justifyContent: "center", alignItems: "center" }}>
+        <Image src={Loading} alt="loading" width={100} height={100} />
+      </TeacherContainer>
+    );
+  }
   return (
     <>
       <Head>

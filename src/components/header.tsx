@@ -9,7 +9,7 @@ import { useRecoilState, SetterOrUpdater } from "recoil";
 import { getDoc, doc, updateDoc } from "firebase/firestore";
 import { ref, uploadBytesResumable, getDownloadURL } from "firebase/storage";
 import Modal from "./modal";
-import Editor from "./editor";
+import Editor from "./editor/editor";
 import { AuthContext } from "../contexts/authContext";
 import { orderQtyState, bearMoneyState, showMemberModalState } from "../../lib/recoil";
 import { db, storage } from "../../lib/firebase";

@@ -1,11 +1,11 @@
 import React, { useState, useContext } from "react";
 import Head from "next/head";
 import Image from "next/image";
-import { useRouter } from "next/router";
+import { useRouter, NextRouter } from "next/router";
 import styled from "styled-components";
 import Swal from "sweetalert2";
 import parse from "html-react-parser";
-import { useRecoilState } from "recoil";
+import { useRecoilState, SetterOrUpdater } from "recoil";
 import {
   doc,
   collection,
@@ -27,7 +27,9 @@ import MessageIcon from "../../../../public/message.png";
 import LikeBlankIcon from "../../../../public/favorite-blank.png";
 import LikeIcon from "../../../../public/favorite.png";
 import Remove from "../../../../public/trash.png";
+import Edit from "../../../../public/edit.png";
 import "react-quill/dist/quill.snow.css";
+import RichEditor from "../../../components/editor/richEditor";
 
 const Wrapper = styled.div`
   background-color: ${(props) => props.theme.colors.color1};
@@ -136,6 +138,13 @@ const IconWrapper = styled.div`
   height: 24px;
   margin-right: 10px;
 `;
+const ClickIconWrapper = styled.div`
+  position: relative;
+  width: 20px;
+  height: 20px;
+  margin-left: 10px;
+  cursor: pointer;
+`;
 const ActivityQty = styled.span`
   margin-right: 20px;
   font-size: 20px;
@@ -234,38 +243,31 @@ interface ArticleInterface {
   likes: string[];
 }
 
-function Article({ id, articleData }: { id: string; articleData: ArticleInterface }) {
-  const router = useRouter();
-  const [showMemberModal, setShowMemberModal] = useRecoilState(showMemberModalState);
-  const [article, setArticle] = useState(articleData);
+interface MessagesSectionPropsInterface {
+  id: string;
+  article: ArticleInterface;
+  setArticle: React.Dispatch<React.SetStateAction<ArticleInterface>>;
+  setShowMemberModal: SetterOrUpdater<boolean>;
+  isLogin: boolean;
+  userData: {
+    uid: string;
+    email: string;
+    identity: string;
+    username: string;
+    avatar: string;
+  };
+  router: NextRouter;
+}
+function MessagesSection({
+  id,
+  article,
+  setArticle,
+  setShowMemberModal,
+  isLogin,
+  userData,
+  router,
+}: MessagesSectionPropsInterface) {
   const [inputMessage, setInputMessage] = useState("");
-  const { userData, isLogin } = useContext(AuthContext);
-
-  const handleLikeArticle = async () => {
-    if (!isLogin) {
-      Swal.fire({ title: "登入後才能按讚唷！", confirmButtonColor: "#5d7262", icon: "warning" });
-      setShowMemberModal(true);
-      return;
-    }
-    setArticle(
-      produce((draft: ArticleInterface) => {
-        draft.likes.push(userData.uid);
-      })
-    );
-    const articleRef = doc(db, "posts", id);
-    await updateDoc(articleRef, { likes: arrayUnion(userData.uid) });
-  };
-
-  const handleDislikeArticle = async () => {
-    setArticle(
-      produce((draft: ArticleInterface) => {
-        draft.likes.splice(draft.likes.indexOf(userData.uid), 1);
-      })
-    );
-    const articleRef = doc(db, "posts", id);
-    await updateDoc(articleRef, { likes: arrayRemove(userData.uid) });
-  };
-
   const handleLikeMessage = (index: number) => {
     if (!isLogin) {
       Swal.fire({ title: "登入後才能按讚唷！", confirmButtonColor: "#5d7262", icon: "warning" });
@@ -323,6 +325,141 @@ function Article({ id, articleData }: { id: string; articleData: ArticleInterfac
       })
     );
   };
+  return (
+    <>
+      {article && article?.messages?.length > 0 && (
+        <MessagesContainer>
+          <Messages>
+            <MessageQty>共 {article?.messages.length} 則留言</MessageQty>
+            {Array.isArray(article.messages) &&
+              article.messages.map((message: MessageInterface, index) => (
+                <Message key={message.authorId + new Date(message.time).toLocaleString()}>
+                  <MessageAuthor
+                    identity={message.identity}
+                    onClick={() => {
+                      if (message.identity === "teacher") {
+                        router.push(`/findTeachers/reserve/${message.authorId}`);
+                      }
+                    }}
+                  >
+                    <UserAvatarWrapper>
+                      <Image src={message.authorAvatar || Avatar} alt="avatar" fill sizes="contain" />
+                    </UserAvatarWrapper>
+                    <UserName>
+                      {message.authorName} ({message.identity === "student" ? "學生" : "老師"})
+                      {message.authorId === article.authorId && " - 原PO"}
+                    </UserName>
+                    {userData.uid === message.authorId && (
+                      <ClickIconWrapper
+                        style={{ marginRight: 0, width: "20px", cursor: "pointer" }}
+                        onClick={() => {
+                          Swal.fire({
+                            text: `確定要刪除留言嗎？`,
+                            icon: "warning",
+                            showCancelButton: true,
+                            confirmButtonColor: "#d33",
+                            cancelButtonColor: "#3085d6",
+                            confirmButtonText: "Yes!",
+                          }).then((result) => {
+                            if (result.isConfirmed) {
+                              const newMessages = article.messages.filter((_, messageIndex) => messageIndex !== index);
+                              setArticle(
+                                produce((draft) => {
+                                  // eslint-disable-next-line no-param-reassign
+                                  draft.messages = newMessages;
+                                })
+                              );
+                              const articleRef = doc(db, "posts", id);
+                              updateDoc(articleRef, {
+                                messages: newMessages,
+                              });
+                            }
+                          });
+                        }}
+                      >
+                        <Image src={Remove} alt="remove" />
+                      </ClickIconWrapper>
+                    )}
+                  </MessageAuthor>
+                  <MessageContent>{message.message}</MessageContent>
+                  <MessageInfo>
+                    {message?.likes?.includes(userData.uid) || (
+                      <ClickLike
+                        onClick={() => {
+                          handleLikeMessage(index);
+                        }}
+                      >
+                        <IconWrapper>
+                          <Image src={LikeBlankIcon} alt="like-click" fill sizes="contain" />
+                        </IconWrapper>
+                        <span>{message?.likes?.length || 0}</span>
+                      </ClickLike>
+                    )}
+                    {message?.likes?.includes(userData.uid) && (
+                      <ClickLike
+                        onClick={() => {
+                          handleDislikeMessage(index);
+                        }}
+                      >
+                        <IconWrapper>
+                          <Image src={LikeIcon} alt="like-clicked" fill sizes="contain" />
+                        </IconWrapper>
+                        <LikeQty>{message?.likes?.length || 0}</LikeQty>
+                      </ClickLike>
+                    )}
+                    <MessageTime>{new Date(message.time).toLocaleString()}</MessageTime>
+                    <MessageFloor>B{index + 1}</MessageFloor>
+                  </MessageInfo>
+                </Message>
+              ))}
+          </Messages>
+        </MessagesContainer>
+      )}
+      <MessageBlock>
+        <MessageTextArea
+          value={inputMessage}
+          placeholder="留言......"
+          onChange={(e) => {
+            setInputMessage(e.target.value);
+          }}
+        />
+        <Button onClick={handleMessage}>送出</Button>
+      </MessageBlock>
+    </>
+  );
+}
+
+function Article({ id, articleData }: { id: string; articleData: ArticleInterface }) {
+  const router = useRouter();
+  const [showMemberModal, setShowMemberModal] = useRecoilState(showMemberModalState);
+  const [article, setArticle] = useState(articleData);
+  const [isEditState, setIsEditState] = useState(false);
+  const { userData, isLogin } = useContext(AuthContext);
+
+  const handleLikeArticle = async () => {
+    if (!isLogin) {
+      Swal.fire({ title: "登入後才能按讚唷！", confirmButtonColor: "#5d7262", icon: "warning" });
+      setShowMemberModal(true);
+      return;
+    }
+    setArticle(
+      produce((draft: ArticleInterface) => {
+        draft.likes.push(userData.uid);
+      })
+    );
+    const articleRef = doc(db, "posts", id);
+    await updateDoc(articleRef, { likes: arrayUnion(userData.uid) });
+  };
+
+  const handleDislikeArticle = async () => {
+    setArticle(
+      produce((draft: ArticleInterface) => {
+        draft.likes.splice(draft.likes.indexOf(userData.uid), 1);
+      })
+    );
+    const articleRef = doc(db, "posts", id);
+    await updateDoc(articleRef, { likes: arrayRemove(userData.uid) });
+  };
 
   return (
     <>
@@ -337,31 +474,37 @@ function Article({ id, articleData }: { id: string; articleData: ArticleInterfac
             </UserAvatarWrapper>
             <UserName>{article?.authorName}</UserName>
             {userData.uid === article.authorId && (
-              <IconWrapper
-                style={{ marginRight: 0, width: "20px", cursor: "pointer" }}
-                onClick={() => {
-                  Swal.fire({
-                    text: `確定要刪除文章嗎？`,
-                    icon: "warning",
-                    showCancelButton: true,
-                    confirmButtonColor: "#d33",
-                    cancelButtonColor: "#3085d6",
-                    confirmButtonText: "Yes!",
-                  }).then(async (result) => {
-                    if (result.isConfirmed) {
-                      const articleRef = doc(db, "posts", id);
-                      await deleteDoc(articleRef);
-                      router.push("/forum");
-                    }
-                  });
-                }}
-              >
-                <Image src={Remove} alt="remove" />
-              </IconWrapper>
+              <>
+                <ClickIconWrapper style={{ marginRight: 0, width: "20px", cursor: "pointer" }}>
+                  <Image src={Edit} alt="edit" />
+                </ClickIconWrapper>
+                <ClickIconWrapper
+                  style={{ marginRight: 0, width: "20px", cursor: "pointer" }}
+                  onClick={() => {
+                    Swal.fire({
+                      text: `確定要刪除文章嗎？`,
+                      icon: "warning",
+                      showCancelButton: true,
+                      confirmButtonColor: "#d33",
+                      cancelButtonColor: "#3085d6",
+                      confirmButtonText: "Yes!",
+                    }).then(async (result) => {
+                      if (result.isConfirmed) {
+                        const articleRef = doc(db, "posts", id);
+                        await deleteDoc(articleRef);
+                        router.push("/forum");
+                      }
+                    });
+                  }}
+                >
+                  <Image src={Remove} alt="remove" />
+                </ClickIconWrapper>
+              </>
             )}
           </ArticleUser>
           <Title>{article?.title}</Title>
           {article && <PostTime>{new Date(article.time).toLocaleString()}</PostTime>}
+          {/* {isEditState && <RichEditor />} */}
           {article && (
             <ArticleContainer>
               {/* eslint-disable-next-line react/no-danger */}
@@ -394,106 +537,15 @@ function Article({ id, articleData }: { id: string; articleData: ArticleInterfac
               </ArticleActivity>
             </ArticleContainer>
           )}
-          {article && article?.messages?.length > 0 && (
-            <MessagesContainer>
-              <Messages>
-                <MessageQty>共 {article?.messages.length} 則留言</MessageQty>
-                {Array.isArray(article.messages) &&
-                  article.messages.map((message: MessageInterface, index) => (
-                    <Message key={message.authorId + new Date(message.time).toLocaleString()}>
-                      <MessageAuthor
-                        identity={message.identity}
-                        onClick={() => {
-                          if (message.identity === "teacher") {
-                            router.push(`/findTeachers/reserve/${message.authorId}`);
-                          }
-                        }}
-                      >
-                        <UserAvatarWrapper>
-                          <Image src={message.authorAvatar || Avatar} alt="avatar" fill sizes="contain" />
-                        </UserAvatarWrapper>
-                        <UserName>
-                          {message.authorName} ({message.identity === "student" ? "學生" : "老師"})
-                          {message.authorId === article.authorId && " - 原PO"}
-                        </UserName>
-                        {userData.uid === message.authorId && (
-                          <IconWrapper
-                            style={{ marginRight: 0, width: "20px", cursor: "pointer" }}
-                            onClick={() => {
-                              Swal.fire({
-                                text: `確定要刪除留言嗎？`,
-                                icon: "warning",
-                                showCancelButton: true,
-                                confirmButtonColor: "#d33",
-                                cancelButtonColor: "#3085d6",
-                                confirmButtonText: "Yes!",
-                              }).then((result) => {
-                                if (result.isConfirmed) {
-                                  const newMessages = article.messages.filter(
-                                    (_, messageIndex) => messageIndex !== index
-                                  );
-                                  setArticle(
-                                    produce((draft) => {
-                                      // eslint-disable-next-line no-param-reassign
-                                      draft.messages = newMessages;
-                                    })
-                                  );
-                                  const articleRef = doc(db, "posts", id);
-                                  updateDoc(articleRef, {
-                                    messages: newMessages,
-                                  });
-                                }
-                              });
-                            }}
-                          >
-                            <Image src={Remove} alt="remove" />
-                          </IconWrapper>
-                        )}
-                      </MessageAuthor>
-                      <MessageContent>{message.message}</MessageContent>
-                      <MessageInfo>
-                        {message?.likes?.includes(userData.uid) || (
-                          <ClickLike
-                            onClick={() => {
-                              handleLikeMessage(index);
-                            }}
-                          >
-                            <IconWrapper>
-                              <Image src={LikeBlankIcon} alt="like-click" fill sizes="contain" />
-                            </IconWrapper>
-                            <span>{message?.likes?.length || 0}</span>
-                          </ClickLike>
-                        )}
-                        {message?.likes?.includes(userData.uid) && (
-                          <ClickLike
-                            onClick={() => {
-                              handleDislikeMessage(index);
-                            }}
-                          >
-                            <IconWrapper>
-                              <Image src={LikeIcon} alt="like-clicked" fill sizes="contain" />
-                            </IconWrapper>
-                            <LikeQty>{message?.likes?.length || 0}</LikeQty>
-                          </ClickLike>
-                        )}
-                        <MessageTime>{new Date(message.time).toLocaleString()}</MessageTime>
-                        <MessageFloor>B{index + 1}</MessageFloor>
-                      </MessageInfo>
-                    </Message>
-                  ))}
-              </Messages>
-            </MessagesContainer>
-          )}
-          <MessageBlock>
-            <MessageTextArea
-              value={inputMessage}
-              placeholder="留言......"
-              onChange={(e) => {
-                setInputMessage(e.target.value);
-              }}
-            />
-            <Button onClick={handleMessage}>送出</Button>
-          </MessageBlock>
+          <MessagesSection
+            id={id}
+            article={article}
+            setArticle={setArticle}
+            setShowMemberModal={setShowMemberModal}
+            isLogin={isLogin}
+            userData={userData}
+            router={router}
+          />
         </Container>
       </Wrapper>
     </>
