@@ -108,7 +108,6 @@ function RichEditor({
 
   return (
     <Editor
-      style={{ height: "320px", marginBottom: "80px" }}
       theme="snow"
       value={content}
       onChange={setContent}

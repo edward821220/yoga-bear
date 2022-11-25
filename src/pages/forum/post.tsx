@@ -42,6 +42,8 @@ const UserName = styled.span`
 
 const Form = styled.form`
   .quill {
+    height: 400px;
+    margin-bottom: 80px;
     strong {
       font-weight: bold;
     }

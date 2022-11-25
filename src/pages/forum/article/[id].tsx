@@ -27,6 +27,7 @@ import MessageIcon from "../../../../public/message.png";
 import LikeBlankIcon from "../../../../public/favorite-blank.png";
 import LikeIcon from "../../../../public/favorite.png";
 import Remove from "../../../../public/trash.png";
+import Save from "../../../../public/save.png";
 import Edit from "../../../../public/edit.png";
 import "react-quill/dist/quill.snow.css";
 import RichEditor from "../../../components/editor/richEditor";
@@ -47,6 +48,23 @@ const Container = styled.div`
   border: 2px solid ${(props) => props.theme.colors.color2};
   border-radius: 5px;
   background-color: ${(props) => props.theme.colors.color1};
+  .quill {
+    margin: 30px 5px;
+    min-height: 400px;
+    height: 100%;
+    * {
+      border: none;
+    }
+    strong {
+      font-weight: bold;
+    }
+    em {
+      font-style: italic;
+    }
+  }
+  .ql-toolbar {
+    border-bottom: 1px solid lightgray;
+  }
 `;
 
 const ArticleUser = styled.div`
@@ -238,7 +256,7 @@ interface ArticleInterface {
   authorId: string;
   authorName: string;
   authorAvatar: string;
-  content: string;
+  content?: string;
   messages: MessageInterface[];
   likes: string[];
 }
@@ -430,9 +448,11 @@ function MessagesSection({
 }
 
 function Article({ id, articleData }: { id: string; articleData: ArticleInterface }) {
+  const { time, title, authorId, authorName, authorAvatar, content: articleContent, messages, likes } = articleData;
   const router = useRouter();
   const [showMemberModal, setShowMemberModal] = useRecoilState(showMemberModalState);
-  const [article, setArticle] = useState(articleData);
+  const [article, setArticle] = useState({ time, title, authorId, authorName, authorAvatar, messages, likes });
+  const [content, setContent] = useState<string>(articleContent || "");
   const [isEditState, setIsEditState] = useState(false);
   const { userData, isLogin } = useContext(AuthContext);
 
@@ -475,11 +495,29 @@ function Article({ id, articleData }: { id: string; articleData: ArticleInterfac
             <UserName>{article?.authorName}</UserName>
             {userData.uid === article.authorId && (
               <>
-                <ClickIconWrapper style={{ marginRight: 0, width: "20px", cursor: "pointer" }}>
-                  <Image src={Edit} alt="edit" />
-                </ClickIconWrapper>
+                {isEditState || (
+                  <ClickIconWrapper
+                    onClick={() => {
+                      setIsEditState(true);
+                    }}
+                  >
+                    <Image src={Edit} alt="edit" />
+                  </ClickIconWrapper>
+                )}
+                {isEditState && (
+                  <ClickIconWrapper
+                    onClick={async () => {
+                      const postRef = doc(db, "posts", id);
+                      await updateDoc(postRef, {
+                        content,
+                      });
+                      setIsEditState(false);
+                    }}
+                  >
+                    <Image src={Save} alt="save" />
+                  </ClickIconWrapper>
+                )}
                 <ClickIconWrapper
-                  style={{ marginRight: 0, width: "20px", cursor: "pointer" }}
                   onClick={() => {
                     Swal.fire({
                       text: `確定要刪除文章嗎？`,
@@ -504,11 +542,11 @@ function Article({ id, articleData }: { id: string; articleData: ArticleInterfac
           </ArticleUser>
           <Title>{article?.title}</Title>
           {article && <PostTime>{new Date(article.time).toLocaleString()}</PostTime>}
-          {/* {isEditState && <RichEditor />} */}
-          {article && (
+          {isEditState && <RichEditor content={content} setContent={setContent} />}
+          {article && !isEditState && (
             <ArticleContainer>
               {/* eslint-disable-next-line react/no-danger */}
-              <Content className="ql-editor">{parse(article.content)}</Content>
+              {typeof content === "string" && <Content className="ql-editor">{parse(content)}</Content>}
               <ArticleActivity>
                 <Qty>
                   <IconWrapper>
@@ -537,15 +575,17 @@ function Article({ id, articleData }: { id: string; articleData: ArticleInterfac
               </ArticleActivity>
             </ArticleContainer>
           )}
-          <MessagesSection
-            id={id}
-            article={article}
-            setArticle={setArticle}
-            setShowMemberModal={setShowMemberModal}
-            isLogin={isLogin}
-            userData={userData}
-            router={router}
-          />
+          {!isEditState && (
+            <MessagesSection
+              id={id}
+              article={article}
+              setArticle={setArticle}
+              setShowMemberModal={setShowMemberModal}
+              isLogin={isLogin}
+              userData={userData}
+              router={router}
+            />
+          )}
         </Container>
       </Wrapper>
     </>
