@@ -14,6 +14,7 @@ import LikeQtyIcon from "../../../../public/like.png";
 import MessageIcon from "../../../../public/message.png";
 import LikeBlankIcon from "../../../../public/favorite-blank.png";
 import LikeIcon from "../../../../public/favorite.png";
+import Remove from "../../../../public/trash.png";
 import "react-quill/dist/quill.snow.css";
 
 const Wrapper = styled.div`
@@ -48,6 +49,7 @@ const UserAvatarWrapper = styled.div`
 `;
 const UserName = styled.p`
   font-size: 20px;
+  margin-right: auto;
 `;
 
 const Title = styled.h2`
@@ -338,14 +340,14 @@ function Article({ id, articleData }: { id: string; articleData: ArticleInterfac
                 </IconWrapper>
                 <ActivityQty>{article?.messages?.length || 0}</ActivityQty>
               </Qty>
-              {article.likes.includes(userData.uid) || (
+              {article?.likes?.includes(userData.uid) || (
                 <ClickLike onClick={handleLikeArticle}>
                   <IconWrapper>
                     <Image src={LikeBlankIcon} alt="like-click" fill sizes="contain" />
                   </IconWrapper>
                 </ClickLike>
               )}
-              {article.likes.includes(userData.uid) && (
+              {article?.likes?.includes(userData.uid) && (
                 <ClickLike onClick={handleDislikeArticle}>
                   <IconWrapper>
                     <Image src={LikeIcon} alt="like-clicked" fill sizes="contain" />
@@ -362,32 +364,48 @@ function Article({ id, articleData }: { id: string; articleData: ArticleInterfac
               {Array.isArray(article.messages) &&
                 article.messages.map((message: MessageInterface, index) => (
                   <Message key={message.authorId + new Date(message.time).toLocaleString()}>
-                    {message.identity === "student" && (
-                      <MessageAuthor>
-                        <UserAvatarWrapper>
-                          <Image src={message.authorAvatar || Avatar} alt="avatar" fill sizes="contain" />
-                        </UserAvatarWrapper>
-                        <UserName>
-                          {message.authorName} (學生)
-                          {message.authorId === article.authorId && " - 原PO"}
-                        </UserName>
-                      </MessageAuthor>
-                    )}
-                    {message.identity === "teacher" && (
-                      <MessageAuthorTeacher
-                        onClick={() => {
-                          router.push(`/findTeachers/reserve/${message.authorId}`);
-                        }}
-                      >
-                        <UserAvatarWrapper>
-                          <Image src={message.authorAvatar || Avatar} alt="avatar" fill sizes="contain" />
-                        </UserAvatarWrapper>
-                        <UserName>
-                          {message.authorName} (老師)
-                          {message.authorId === article.authorId && " - 原PO"}
-                        </UserName>
-                      </MessageAuthorTeacher>
-                    )}
+                    <MessageAuthor>
+                      <UserAvatarWrapper>
+                        <Image src={message.authorAvatar || Avatar} alt="avatar" fill sizes="contain" />
+                      </UserAvatarWrapper>
+                      <UserName>
+                        {message.authorName} ({message.identity === "student" ? "學生" : "老師"})
+                        {message.authorId === article.authorId && " - 原PO"}
+                      </UserName>
+                      {userData.uid === message.authorId && (
+                        <IconWrapper
+                          style={{ marginRight: 0, width: "20px", cursor: "pointer" }}
+                          onClick={() => {
+                            Swal.fire({
+                              text: `確定要刪除留言嗎？`,
+                              icon: "warning",
+                              showCancelButton: true,
+                              confirmButtonColor: "#d33",
+                              cancelButtonColor: "#3085d6",
+                              confirmButtonText: "Yes!",
+                            }).then((result) => {
+                              if (result.isConfirmed) {
+                                const newMessages = article.messages.filter(
+                                  (_, messageIndex) => messageIndex !== index
+                                );
+                                setArticle(
+                                  produce((draft) => {
+                                    // eslint-disable-next-line no-param-reassign
+                                    draft.messages = newMessages;
+                                  })
+                                );
+                                const articleRef = doc(db, "posts", id);
+                                updateDoc(articleRef, {
+                                  messages: newMessages,
+                                });
+                              }
+                            });
+                          }}
+                        >
+                          <Image src={Remove} alt="remove" />
+                        </IconWrapper>
+                      )}
+                    </MessageAuthor>
                     <MessageContent>{message.message}</MessageContent>
                     <MessageInfo>
                       {message?.likes?.includes(userData.uid) || (
