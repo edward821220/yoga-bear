@@ -1,5 +1,6 @@
 import { useState, useEffect } from "react";
 import styled from "styled-components";
+import { useRouter } from "next/router";
 import Image from "next/image";
 import Link from "next/link";
 import { doc, getDoc, getDocs, collection, query, where } from "firebase/firestore";
@@ -18,9 +19,7 @@ const Wrapper = styled.div`
 `;
 const TeacherContainer = styled.div`
   display: flex;
-  border-bottom: 2px solid #654116;
-  padding-bottom: 30px;
-  margin-bottom: 30px;
+  margin-bottom: 10px;
   @media screen and (max-width: 1280px) {
     flex-wrap: wrap;
     justify-content: center;
@@ -162,6 +161,9 @@ const CourseContainer = styled.div`
   justify-content: center;
 `;
 const Reviews = styled.ul`
+  border-top: 2px solid #654116;
+  margin-top: 50px;
+  padding-top: 50px;
   width: 100%;
   display: flex;
   flex-direction: column;
@@ -332,32 +334,43 @@ interface ReviewInterface {
   comments: string;
   userId: string;
 }
-export default function Reserve({
-  teacherId,
-  teacherData,
-}: {
-  teacherId: string;
-  teacherData: {
+export default function Reserve() {
+  const router = useRouter();
+  const { teacherId } = router.query;
+  const [teacherData, setTeacherData] = useState<{
     username: string;
     introduction: string;
     experience: string;
     reviews?: ReviewInterface[];
     avatar?: string;
-  };
-}) {
-  const [reviewUsersData, setReviewsUsersData] = useState<{ index: number; username: string; avatar: string }[]>([]);
+  }>();
+  const [reviewUsersData, setReviewUsersData] = useState<{ index: number; username: string; avatar: string }[]>([]);
 
   useEffect(() => {
-    if (!Array.isArray(teacherData.reviews)) return;
-    teacherData.reviews.forEach(async (review: { comments: string; score: number; userId: string }, index) => {
-      const reviewUserRef = doc(db, "users", review.userId);
-      const reviewUserSnap = await getDoc(reviewUserRef);
-      if (!reviewUserSnap.exists()) return;
-      const reviewUsername = reviewUserSnap.data().username;
-      const reviewUserAvatar = reviewUserSnap.data().photoURL;
-      setReviewsUsersData((prev) => [...prev, { index, username: reviewUsername, avatar: reviewUserAvatar }]);
-    });
-  }, [teacherData.reviews]);
+    const getTeacherData = async () => {
+      if (typeof teacherId !== "string") return;
+      const userRef = doc(db, "users", teacherId);
+      const userSnap = await getDoc(userRef);
+      if (!userSnap.exists()) return;
+      const username = userSnap.data().username as string;
+      const introduction = userSnap.data().teacher_introduction as string;
+      const experience = userSnap.data().teacher_experience as string;
+      const avatar = userSnap.data().photoURL as string;
+      const reviews = userSnap.data().reviews as ReviewInterface[];
+      setTeacherData({ username, introduction, experience, reviews, avatar });
+
+      if (!Array.isArray(reviews)) return;
+      reviews.forEach(async (review: { comments: string; score: number; userId: string }, index) => {
+        const reviewUserRef = doc(db, "users", review.userId);
+        const reviewUserSnap = await getDoc(reviewUserRef);
+        if (!reviewUserSnap.exists()) return;
+        const reviewUsername = reviewUserSnap.data().username;
+        const reviewUserAvatar = reviewUserSnap.data().photoURL;
+        setReviewUsersData((prev) => [...prev, { index, username: reviewUsername, avatar: reviewUserAvatar }]);
+      });
+    };
+    getTeacherData();
+  }, [teacherId]);
 
   return (
     <Wrapper>
@@ -464,30 +477,4 @@ export default function Reserve({
       </Reviews>
     </Wrapper>
   );
-}
-
-export async function getStaticPaths() {
-  const usersRef = collection(db, "users");
-  const queryTeachers = await getDocs(query(usersRef, where("identity", "==", "teacher")));
-  const paths: { params: { teacherId: string } }[] = [];
-  queryTeachers.forEach((data) => {
-    const { uid: teacherId } = data.data();
-    paths.push({ params: { teacherId } });
-  });
-
-  return { paths, fallback: false };
-}
-
-export async function getStaticProps({ params }: { params: { teacherId: string } }) {
-  const userRef = doc(db, "users", params.teacherId);
-  const userSnap = await getDoc(userRef);
-  if (!userSnap.exists()) return;
-  const username = userSnap.data().username as string;
-  const introduction = userSnap.data().teacher_introduction as string;
-  const experience = userSnap.data().teacher_experience as string;
-  const avatar = userSnap.data().photoURL as string;
-  const reviews = (userSnap.data().reviews as ReviewInterface[]) || null;
-  const teacherData = { username, introduction, experience, reviews, avatar };
-
-  return { props: { teacherId: params.teacherId, teacherData }, revalidate: 300 };
 }
