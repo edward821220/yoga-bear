@@ -4,7 +4,17 @@ import Image from "next/image";
 import styled from "styled-components";
 import Swal from "sweetalert2";
 import { useRecoilState } from "recoil";
-import { doc, collection, query, getDoc, getDocs, updateDoc, arrayUnion, arrayRemove } from "firebase/firestore";
+import {
+  doc,
+  collection,
+  query,
+  getDoc,
+  getDocs,
+  updateDoc,
+  arrayUnion,
+  arrayRemove,
+  deleteDoc,
+} from "firebase/firestore";
 import produce from "immer";
 import { db } from "../../../../lib/firebase";
 import { AuthContext } from "../../../contexts/authContext";
@@ -322,6 +332,29 @@ function Article({ id, articleData }: { id: string; articleData: ArticleInterfac
             <Image src={article?.authorAvatar || Avatar} alt="avatar" fill sizes="contain" />
           </UserAvatarWrapper>
           <UserName>{article?.authorName}</UserName>
+          {userData.uid === article.authorId && (
+            <IconWrapper
+              style={{ marginRight: 0, width: "20px", cursor: "pointer" }}
+              onClick={() => {
+                Swal.fire({
+                  text: `確定要刪除文章嗎？`,
+                  icon: "warning",
+                  showCancelButton: true,
+                  confirmButtonColor: "#d33",
+                  cancelButtonColor: "#3085d6",
+                  confirmButtonText: "Yes!",
+                }).then(async (result) => {
+                  if (result.isConfirmed) {
+                    const articleRef = doc(db, "posts", id);
+                    await deleteDoc(articleRef);
+                    router.push("/forum");
+                  }
+                });
+              }}
+            >
+              <Image src={Remove} alt="remove" />
+            </IconWrapper>
+          )}
         </ArticleUser>
         <Title>{article?.title}</Title>
         {article && <PostTime>{new Date(article.time).toLocaleString()}</PostTime>}
