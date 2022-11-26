@@ -420,8 +420,8 @@ export default function Reserve() {
             </CoursesWrapper>
           </>
         )}
-        <Reviews>
-          {teacherData?.reviews && (
+        {teacherData?.reviews && (
+          <Reviews>
             <ScoreContainer>
               <Average>
                 {(
@@ -452,44 +452,45 @@ export default function Reserve() {
                 <ReviewQty>{teacherData.reviews.length} 則評價</ReviewQty>
               </ReviewsInfo>
             </ScoreContainer>
-          )}
-          {teacherData &&
-            teacherData?.reviews?.map((review, reviewIndex) => (
-              <Review key={review.userId}>
-                <User>
-                  <AvatarWrapper>
-                    <Image
-                      src={
-                        reviewUsersData.find((reviewUserInfo) => reviewUserInfo.index === reviewIndex)?.avatar || Avatar
-                      }
-                      alt="avatar"
-                      width={120}
-                      height={120}
-                    />
-                  </AvatarWrapper>
-                  <UserName>
-                    {reviewUsersData.find((reviewUserInfo) => reviewUserInfo.index === reviewIndex)?.username}
-                  </UserName>
-                </User>
-                <CommentWrapper>
-                  <Score>
-                    {Array.from(
-                      {
-                        length: review.score,
-                      },
-                      (v, i) => i + 1
-                    ).map((starIndex) => (
-                      <StarWrapper key={starIndex}>
-                        <Image src={Star} alt="star" fill sizes="contain" />
-                      </StarWrapper>
-                    ))}
-                  </Score>
-                  <Class>課程：{review.class}</Class>
-                  <Comments>{review.comments}</Comments>
-                </CommentWrapper>
-              </Review>
-            ))}
-        </Reviews>
+            {teacherData &&
+              teacherData?.reviews?.map((review, reviewIndex) => (
+                <Review key={review.userId}>
+                  <User>
+                    <AvatarWrapper>
+                      <Image
+                        src={
+                          reviewUsersData.find((reviewUserInfo) => reviewUserInfo.index === reviewIndex)?.avatar ||
+                          Avatar
+                        }
+                        alt="avatar"
+                        width={120}
+                        height={120}
+                      />
+                    </AvatarWrapper>
+                    <UserName>
+                      {reviewUsersData.find((reviewUserInfo) => reviewUserInfo.index === reviewIndex)?.username}
+                    </UserName>
+                  </User>
+                  <CommentWrapper>
+                    <Score>
+                      {Array.from(
+                        {
+                          length: review.score,
+                        },
+                        (v, i) => i + 1
+                      ).map((starIndex) => (
+                        <StarWrapper key={starIndex}>
+                          <Image src={Star} alt="star" fill sizes="contain" />
+                        </StarWrapper>
+                      ))}
+                    </Score>
+                    <Class>課程：{review.class}</Class>
+                    <Comments>{review.comments}</Comments>
+                  </CommentWrapper>
+                </Review>
+              ))}
+          </Reviews>
+        )}
       </Wrapper>
     </>
   );
