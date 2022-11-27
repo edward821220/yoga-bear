@@ -35,7 +35,7 @@ function Video({ peer }: { peer: Peer.Instance }) {
 }
 
 function Group() {
-  const [peers, setPeers] = useState<{ peerID: string; peer: Peer.Instance }[]>([]);
+  const [peers, setPeers] = useState<Peer.Instance[]>([]);
   const peersRef = useRef<{ peerID: string; peer: Peer.Instance }[]>([]);
   const pusherRef = useRef<Pusher>();
   const channelRef = useRef<PresenceChannel>();
@@ -46,29 +46,6 @@ function Group() {
     const videoConstraints = {
       height: window.innerHeight / 2,
       width: window.innerWidth / 2,
-    };
-    const createPeer = (callerID: string, stream: MediaStream) => {
-      const peer = new Peer({
-        initiator: true,
-        trickle: false,
-        stream,
-      });
-      peer.on("signal", (signal) => {
-        channelRef.current?.trigger("client-sendingSignal", { callerID, signal });
-      });
-      return peer;
-    };
-    const addPeer = (incomingSignal: Peer.SignalData, callerID: string, stream: MediaStream) => {
-      const peer = new Peer({
-        initiator: false,
-        trickle: false,
-        stream,
-      });
-      peer.on("signal", (signal) => {
-        channelRef.current?.trigger("client-returningSignal", { signal, callerID });
-      });
-      peer.signal(incomingSignal);
-      return peer;
     };
 
     if (!userData.username) return;
@@ -84,34 +61,75 @@ function Group() {
     navigator.mediaDevices.getUserMedia({ video: videoConstraints, audio: true }).then((stream) => {
       if (!channelRef.current) return;
       channelRef.current.bind("pusher:subscription_succeeded", (members: Members) => {
+        console.log("我來惹");
+        if (members.count === 1) {
+          console.log("裡面看起來只有我一個人");
+        }
         if (!userVideo.current) return;
         userVideo.current.srcObject = stream;
-        const allPeers: { peerID: string; peer: Peer.Instance }[] = [];
+        const allPeers: Peer.Instance[] = [];
         /* eslint-disable @typescript-eslint/no-unsafe-argument */
         Object.values(members.members).forEach((member: any) => {
           if (member.uid === userData.uid) return;
-          const peer = createPeer(member.socketId, stream);
+          const peer = new Peer({
+            initiator: true,
+            trickle: false,
+            stream,
+          });
+          peer.on("signal", (callerSignal) => {
+            console.log("對裡面的人發出邀請");
+            channelRef.current?.trigger(`client-sendingSignal-${member.uid as string}`, {
+              callerId: userData.uid,
+              callerSignal,
+            });
+          });
           peersRef.current.push({
-            peerID: member.socketId,
+            peerID: member.uid,
             peer,
           });
-          allPeers.push({ peerID: member.socketId, peer });
+          allPeers.push(peer);
+          console.log("裡面的人");
+          console.log(allPeers);
         });
         setPeers(allPeers);
       });
-      channelRef.current.bind("client-sendingSignal", (payload: { callerID: string; signal: Peer.SignalData }) => {
-        const peer = addPeer(payload.signal, payload.callerID, stream);
-        peersRef.current.push({
-          peerID: payload.callerID,
-          peer,
-        });
-        setPeers((prev) => [...prev, { peerID: payload.callerID, peer }]);
-      });
-      channelRef.current.bind("client-returningSignal", (payload: { signal: Peer.SignalData; callerID: string }) => {
-        const item = peersRef.current.find((p) => p.peerID === payload.callerID);
-        if (!item) return;
-        item.peer.signal(payload.signal);
-      });
+
+      channelRef.current.bind(
+        `client-sendingSignal-${userData.uid}`,
+        (payload: { callerId: string; callerSignal: Peer.SignalData }) => {
+          console.log("收到新人的邀請惹！");
+          const peer = new Peer({
+            initiator: false,
+            trickle: false,
+            stream,
+          });
+          peer.on("signal", (receiverSignal) => {
+            channelRef.current?.trigger(`client-returningSignal-${payload.callerId}`, {
+              receiverSignal,
+              receiverId: userData.uid,
+              callerId: payload.callerId,
+            });
+            console.log("回覆新人訊息");
+          });
+          peer.signal(payload.callerSignal);
+          peersRef.current.push({
+            peerID: payload.callerId,
+            peer,
+          });
+          setPeers((prev) => [...prev, peer]);
+        }
+      );
+      channelRef.current.bind(
+        `client-returningSignal-${userData.uid}`,
+        (payload: { receiverSignal: Peer.SignalData; callerId: string; receiverId: string }) => {
+          console.log("裡面的人答應我了");
+          console.log(peersRef.current);
+          const item = peersRef.current.find((p) => p.peerID === payload.receiverId);
+          console.log(item);
+          if (!item) return;
+          item.peer.signal(payload.receiverSignal);
+        }
+      );
     });
     // chatChannel.bind("pusher:member_removed", memberRemoved);
     return () => {
@@ -122,8 +140,8 @@ function Group() {
   return (
     <Container>
       <StyledVideo muted ref={userVideo} autoPlay playsInline />
-      {peers.map((peer) => (
-        <Video key={peer.peerID} peer={peer.peer} />
+      {peers.map((peer, index) => (
+        <Video key={index} peer={peer} />
       ))}
     </Container>
   );

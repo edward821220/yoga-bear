@@ -13,7 +13,6 @@ export default function handler(req: NextApiRequest, res: NextApiResponse) {
   const presenceData = {
     user_id: randomString,
     user_info: {
-      socketId,
       username,
       uid,
     },
