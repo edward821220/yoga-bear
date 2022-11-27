@@ -5,17 +5,28 @@ import styled from "styled-components";
 import { AuthContext } from "../../../contexts/authContext";
 
 const Container = styled.div`
-  padding: 20px;
   display: flex;
-  height: 100vh;
-  width: 90%;
-  margin: auto;
   flex-wrap: wrap;
+  justify-content: space-between;
+  max-width: 1280px;
+  height: calc(100vh - 100px);
+  padding: 20px;
+  margin: 0 auto;
 `;
-
-const StyledVideo = styled.video`
-  height: 40%;
-  width: 50%;
+const VideoContainer = styled.div`
+  flex-basis: 45%;
+  height: 30%;
+`;
+const StyledVideo = styled.video``;
+const ButtonWrapper = styled.div``;
+const Button = styled.button`
+  background-color: ${(props) => props.theme.colors.color3};
+  color: ${(props) => props.theme.colors.color1};
+  border-radius: 5px;
+  min-width: 50px;
+  padding: 5px 10px;
+  margin-right: 10px;
+  cursor: pointer;
 `;
 
 /* eslint-disable @typescript-eslint/no-unsafe-call */
@@ -35,17 +46,20 @@ function Video({ peer }: { peer: Peer.Instance }) {
 }
 
 function Group() {
-  const [peers, setPeers] = useState<Peer.Instance[]>([]);
+  const [micActive, setMicActive] = useState(true);
+  const [cameraActive, setCameraActive] = useState(true);
+  const [peers, setPeers] = useState<{ peerID: string; peer: Peer.Instance }[]>([]);
   const peersRef = useRef<{ peerID: string; peer: Peer.Instance }[]>([]);
   const pusherRef = useRef<Pusher>();
   const channelRef = useRef<PresenceChannel>();
   const userVideo = useRef<HTMLVideoElement>(null);
+  const userStream = useRef<MediaStream>();
   const { userData } = useContext(AuthContext);
 
   useEffect(() => {
     const videoConstraints = {
-      height: window.innerHeight / 2,
-      width: window.innerWidth / 2,
+      height: 350,
+      width: 500,
     };
 
     if (!userData.username) return;
@@ -67,7 +81,8 @@ function Group() {
         }
         if (!userVideo.current) return;
         userVideo.current.srcObject = stream;
-        const allPeers: Peer.Instance[] = [];
+        userStream.current = stream;
+        const allPeers: { peerID: string; peer: Peer.Instance }[] = [];
         /* eslint-disable @typescript-eslint/no-unsafe-argument */
         Object.values(members.members).forEach((member: any) => {
           if (member.uid === userData.uid) return;
@@ -87,7 +102,10 @@ function Group() {
             peerID: member.uid,
             peer,
           });
-          allPeers.push(peer);
+          allPeers.push({
+            peerID: member.uid,
+            peer,
+          });
           console.log("裡面的人");
           console.log(allPeers);
         });
@@ -116,7 +134,13 @@ function Group() {
             peerID: payload.callerId,
             peer,
           });
-          setPeers((prev) => [...prev, peer]);
+          setPeers((prev) => [
+            ...prev,
+            {
+              peerID: payload.callerId,
+              peer,
+            },
+          ]);
         }
       );
       channelRef.current.bind(
@@ -125,23 +149,73 @@ function Group() {
           console.log("裡面的人答應我了");
           console.log(peersRef.current);
           const item = peersRef.current.find((p) => p.peerID === payload.receiverId);
-          console.log(item);
           if (!item) return;
           item.peer.signal(payload.receiverSignal);
         }
       );
     });
-    // chatChannel.bind("pusher:member_removed", memberRemoved);
+    channelRef.current.bind("pusher:member_removed", () => {
+      console.log("有人落跑惹");
+    });
     return () => {
+      peersRef.current.forEach((peer) => {
+        peer.peer.destroy();
+      });
       if (pusherRef.current) pusherRef.current.unsubscribe(`presence-group`);
+      userStream.current?.getTracks().forEach((track) => {
+        track.enabled = false; // eslint-disable-line no-param-reassign
+      });
     };
   }, [userData]);
 
+  const leaveRoom = () => {
+    if (pusherRef.current) pusherRef.current.unsubscribe(`presence-group`);
+    userStream.current?.getTracks().forEach((track) => {
+      track.enabled = false; // eslint-disable-line no-param-reassign
+    });
+    peersRef.current.forEach((peer) => {
+      peer.peer.destroy();
+    });
+  };
+  const toggleMediaStream = (type: "video" | "audio", state: boolean) => {
+    userStream.current?.getTracks().forEach((track) => {
+      if (track.kind === type) {
+        track.enabled = !state; // eslint-disable-line no-param-reassign
+      }
+    });
+  };
+
+  const toggleMic = () => {
+    toggleMediaStream("audio", micActive);
+    setMicActive((prev) => !prev);
+  };
+
+  const toggleCamera = () => {
+    toggleMediaStream("video", cameraActive);
+    setCameraActive((prev) => !prev);
+  };
+
   return (
     <Container>
-      <StyledVideo muted ref={userVideo} autoPlay playsInline />
-      {peers.map((peer, index) => (
-        <Video key={index} peer={peer} />
+      <VideoContainer>
+        <StyledVideo muted ref={userVideo} autoPlay playsInline />
+        <ButtonWrapper>
+          <Button onClick={toggleCamera} type="button">
+            {cameraActive ? "Stop Camera" : "Start Camera"}
+          </Button>
+          <Button onClick={toggleMic} type="button">
+            {micActive ? "Mute Mic" : "UnMute Mic"}
+          </Button>
+          <Button onClick={leaveRoom} type="button">
+            Leave
+          </Button>
+        </ButtonWrapper>
+      </VideoContainer>
+
+      {peers.map((peer) => (
+        <VideoContainer key={peer.peerID}>
+          <Video peer={peer.peer} />
+        </VideoContainer>
       ))}
     </Container>
   );
