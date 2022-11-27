@@ -282,7 +282,7 @@ function Forum({ posts }: { posts: PostInterface[] }) {
 
 export default Forum;
 
-export const getStaticProps = async () => {
+export const getServerSideProps = async () => {
   const q = query(collection(db, "posts"), orderBy("time", "desc"));
   const querySnapshot = await getDocs(q);
   const results: PostInterface[] = querySnapshot.docs.map((data) => {
@@ -321,6 +321,5 @@ export const getStaticProps = async () => {
     props: {
       posts: results,
     },
-    revalidate: 60,
   };
 };
