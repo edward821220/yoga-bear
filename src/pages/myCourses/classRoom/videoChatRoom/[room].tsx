@@ -34,9 +34,6 @@ const Button = styled.button`
   cursor: pointer;
 `;
 
-/* eslint-disable @typescript-eslint/no-unsafe-call */
-/* eslint-disable @typescript-eslint/no-unsafe-return */
-/* eslint-disable @typescript-eslint/no-unsafe-member-access */
 function Video({ peer }: { peer: Peer.Instance }) {
   const videoRef = useRef<HTMLVideoElement | null>(null);
 
@@ -56,6 +53,7 @@ function Group() {
   const [micActive, setMicActive] = useState(true);
   const [cameraActive, setCameraActive] = useState(true);
   const [peers, setPeers] = useState<{ peerID: string; peerName: string; peer: Peer.Instance }[]>([]);
+  const connectedRef = useRef<string[]>([]);
   const peersRef = useRef<{ peerID: string; peer: Peer.Instance }[]>([]);
   const pusherRef = useRef<Pusher>();
   const channelRef = useRef<PresenceChannel>();
@@ -86,8 +84,8 @@ function Group() {
         console.log("裡面看起來只有我一個人");
       }
       const allPeers: { peerID: string; peerName: string; peer: Peer.Instance }[] = [];
-      /* eslint-disable @typescript-eslint/no-unsafe-argument */
-      Object.values(members.members).forEach((member: any) => {
+
+      Object.values(members.members as { uid: string; username: string }[]).forEach((member) => {
         if (member.uid === userData.uid) return;
         const peer = new Peer({
           initiator: true,
@@ -97,7 +95,7 @@ function Group() {
         });
         peer.on("signal", (callerSignal) => {
           console.log("對裡面的人發出邀請");
-          channelRef.current?.trigger(`client-sendingSignal-${member.uid as string}`, {
+          channelRef.current?.trigger(`client-sendingSignal-${member.uid}`, {
             callerId: userData.uid,
             callerName: userData.username,
             callerSignal,
@@ -155,11 +153,12 @@ function Group() {
     channelRef.current.bind(
       `client-returningSignal-${userData.uid}`,
       (payload: { receiverSignal: Peer.SignalData; callerId: string; receiverId: string }) => {
+        if (connectedRef.current.includes(payload.receiverId)) return;
         console.log("裡面的人答應我了");
-        console.log(peersRef.current);
         const item = peersRef.current.find((p) => p.peerID === payload.receiverId);
         if (!item) return;
         item.peer.signal(payload.receiverSignal);
+        connectedRef.current?.push(item.peerID);
       }
     );
 
