@@ -389,11 +389,10 @@ function VideoCourses({ uid }: { uid: string }) {
             {course?.reviews?.length > 0 ? (
               <CourseScore>
                 <StarIcons>
-                  {/* eslint-disable no-unsafe-optional-chaining */}
                   {Array.from(
                     {
                       length: Math.floor(
-                        course?.reviews?.reduce((acc, cur) => acc + cur.score, 0) / course?.reviews?.length
+                        course.reviews.reduce((acc, cur) => acc + cur.score, 0) / course.reviews.length
                       ),
                     },
                     (v, i) => i + 1
@@ -402,16 +401,15 @@ function VideoCourses({ uid }: { uid: string }) {
                       <Image src={Star} alt="star" fill sizes="contain" />
                     </CourseStarWrapper>
                   ))}
-                  {(course?.reviews?.reduce((acc, cur) => acc + cur.score, 0) / course?.reviews?.length) % 1 !== 0 && (
+                  {(course.reviews.reduce((acc, cur) => acc + cur.score, 0) / course.reviews.length) % 1 !== 0 && (
                     <CourseStarWrapper>
                       <Image src={HalfStar} alt="star" fill sizes="contain" />
                     </CourseStarWrapper>
                   )}
                 </StarIcons>
                 <CourseReviewsInfo>
-                  {(course?.reviews?.reduce((acc, cur) => acc + cur.score, 0) / course?.reviews?.length || 0).toFixed(
-                    1
-                  ) || 0}
+                  {(course.reviews.reduce((acc, cur) => acc + cur.score, 0) / course.reviews.length || 0).toFixed(1) ||
+                    0}
                   分 ，{course?.reviews?.length || 0}則評論
                 </CourseReviewsInfo>
               </CourseScore>
@@ -540,7 +538,7 @@ function LaunchedVideoCourses({ uid }: { uid: string }) {
                   {Array.from(
                     {
                       length: Math.floor(
-                        course?.reviews?.reduce((acc, cur) => acc + cur.score, 0) / course?.reviews?.length
+                        course.reviews.reduce((acc, cur) => acc + cur.score, 0) / course.reviews.length
                       ),
                     },
                     (v, i) => i + 1
@@ -549,16 +547,15 @@ function LaunchedVideoCourses({ uid }: { uid: string }) {
                       <Image src={Star} alt="star" fill sizes="contain" />
                     </CourseStarWrapper>
                   ))}
-                  {(course?.reviews?.reduce((acc, cur) => acc + cur.score, 0) / course?.reviews?.length) % 1 !== 0 && (
+                  {(course.reviews.reduce((acc, cur) => acc + cur.score, 0) / course.reviews.length) % 1 !== 0 && (
                     <CourseStarWrapper>
                       <Image src={HalfStar} alt="star" fill sizes="contain" />
                     </CourseStarWrapper>
                   )}
                 </StarIcons>
                 <CourseReviewsInfo>
-                  {(course?.reviews?.reduce((acc, cur) => acc + cur.score, 0) / course?.reviews?.length || 0).toFixed(
-                    1
-                  ) || 0}
+                  {(course.reviews.reduce((acc, cur) => acc + cur.score, 0) / course.reviews.length || 0).toFixed(1) ||
+                    0}
                   分 ，{course?.reviews?.length || 0}則評論
                 </CourseReviewsInfo>
               </CourseScore>
@@ -603,6 +600,17 @@ function UploadProgressModal({ progressBar }: { progressBar: { file: string; pro
     </Modal>
   );
 }
+interface UnitInterface {
+  id: number;
+  title: string;
+  filename: string;
+  video: string;
+}
+interface ChapterInterface {
+  id: number;
+  title: string;
+  units: UnitInterface[];
+}
 function LaunchVideoCourse({ uid }: { uid: string }) {
   const router = useRouter();
   const [courseName, setCourseName] = useState("");
@@ -610,9 +618,7 @@ function LaunchVideoCourse({ uid }: { uid: string }) {
   const [introduction, setIntroduction] = useState("");
   const [coverPreview, setCoverPreview] = useState("");
   const [coursePreview, setCoursePreview] = useState("");
-  const [chapters, setChapters] = useState<
-    { id: number; title: string; units: { id: number; title: string; filename: string; video: string }[] }[]
-  >([]);
+  const [chapters, setChapters] = useState<ChapterInterface[]>([]);
   const [showMemberModal, setShowMemberModal] = useState(false);
   const [progressBar, setProgressBar] = useState<{ file: string; progress: number }>({ file: "", progress: 0 });
 
@@ -623,12 +629,9 @@ function LaunchVideoCourse({ uid }: { uid: string }) {
     let newChapters = [...chapters];
     let imageUrl = "";
     let introductionVideoUrl = "";
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    async function uploadTaskPromise(input: any, index: number) {
+    async function uploadTaskPromise(input: HTMLInputElement, index: number) {
       return new Promise((resolve, reject) => {
-        /* eslint-disable @typescript-eslint/no-unsafe-member-access */
-        /* eslint-disable @typescript-eslint/no-unsafe-argument */
-        /* eslint-disable @typescript-eslint/restrict-template-expressions */
+        if (!input.files) return;
         const file = input.files[0];
         const storageRef = ref(storage, `${courseName}/${file.name}`);
         const uploadTask = uploadBytesResumable(storageRef, file);
@@ -656,17 +659,18 @@ function LaunchVideoCourse({ uid }: { uid: string }) {
             newChapters = produce(newChapters, (draft) => {
               const targetChapter = draft.find((_, i) => i === Number(input.dataset.chapter));
               if (!targetChapter) return;
-              targetChapter.units[input.dataset.unit].video = downloadUrl;
+              if (!input.dataset.unit) return;
+              const unit = Number(input.dataset.unit);
+              targetChapter.units[unit].video = downloadUrl;
             });
             resolve(downloadUrl);
           }
         );
       });
     }
-    const fileInputs = Array.from(document.querySelectorAll("input[type=file]"));
+    const fileInputs: HTMLInputElement[] = Array.from(document.querySelectorAll("input[type=file]"));
     await Promise.all(
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
-      fileInputs.map(async (input: any, index) => {
+      fileInputs.map(async (input: HTMLInputElement, index) => {
         await uploadTaskPromise(input, index);
       })
     );
@@ -984,7 +988,6 @@ function BeTeacher({
     </LaunchForm>
   );
 }
-
 const routeTitle: Record<string, string> = {
   videoCourses: "我的影音課程（學生）",
   studentCalendar: "已預約課表（學生）",
