@@ -120,7 +120,6 @@ function Group() {
     channelRef.current.bind(
       `client-sendingSignal-${userData.uid}`,
       (payload: { callerId: string; callerName: string; callerSignal: Peer.SignalData }) => {
-        if (peersRef.current.some((peer) => peer.peerID === payload.callerId)) return;
         console.log("收到新人的邀請惹！");
         const peer = new Peer({
           initiator: false,
