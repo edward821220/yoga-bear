@@ -93,6 +93,7 @@ function Group() {
           initiator: true,
           trickle: false,
           stream: userStream.current,
+          config: { iceServers: [{ urls: "stun:stun.l.google.com:19302" }] },
         });
         peer.on("signal", (callerSignal) => {
           console.log("對裡面的人發出邀請");
