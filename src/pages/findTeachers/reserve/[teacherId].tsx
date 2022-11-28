@@ -1,5 +1,7 @@
 import { useState, useEffect } from "react";
 import styled from "styled-components";
+import { useRouter } from "next/router";
+import Head from "next/head";
 import Image from "next/image";
 import Link from "next/link";
 import { doc, getDoc, getDocs, collection, query, where } from "firebase/firestore";
@@ -9,6 +11,7 @@ import ReserveCalendar from "../../../components/calendar/reserveCalendar";
 import Avatar from "../../../../public/member.png";
 import Star from "../../../../public/star.png";
 import HalfStar from "../../../../public/star-half.png";
+import Loading from "../../../../public/loading.gif";
 
 const Wrapper = styled.div`
   background-color: ${(props) => props.theme.colors.color1};
@@ -18,9 +21,7 @@ const Wrapper = styled.div`
 `;
 const TeacherContainer = styled.div`
   display: flex;
-  border-bottom: 2px solid #654116;
-  padding-bottom: 30px;
-  margin-bottom: 30px;
+  margin-bottom: 10px;
   @media screen and (max-width: 1280px) {
     flex-wrap: wrap;
     justify-content: center;
@@ -162,6 +163,9 @@ const CourseContainer = styled.div`
   justify-content: center;
 `;
 const Reviews = styled.ul`
+  border-top: 2px solid #654116;
+  margin-top: 50px;
+  padding-top: 50px;
   width: 100%;
   display: flex;
   flex-direction: column;
@@ -332,122 +336,105 @@ interface ReviewInterface {
   comments: string;
   userId: string;
 }
-export default function Reserve({
-  teacherId,
-  teacherData,
-}: {
-  teacherId: string;
-  teacherData: {
+export default function Reserve() {
+  const router = useRouter();
+  const { teacherId } = router.query;
+  const [teacherData, setTeacherData] = useState<{
     username: string;
     introduction: string;
     experience: string;
     reviews?: ReviewInterface[];
     avatar?: string;
-  };
-}) {
-  const [reviewUsersData, setReviewsUsersData] = useState<{ index: number; username: string; avatar: string }[]>([]);
+  }>();
+  const [reviewUsersData, setReviewUsersData] = useState<{ index: number; username: string; avatar: string }[]>([]);
 
   useEffect(() => {
-    if (!Array.isArray(teacherData.reviews)) return;
-    teacherData.reviews.forEach(async (review: { comments: string; score: number; userId: string }, index) => {
-      const reviewUserRef = doc(db, "users", review.userId);
-      const reviewUserSnap = await getDoc(reviewUserRef);
-      if (!reviewUserSnap.exists()) return;
-      const reviewUsername = reviewUserSnap.data().username;
-      const reviewUserAvatar = reviewUserSnap.data().photoURL;
-      setReviewsUsersData((prev) => [...prev, { index, username: reviewUsername, avatar: reviewUserAvatar }]);
-    });
-  }, [teacherData.reviews]);
+    const getTeacherData = async () => {
+      if (typeof teacherId !== "string") return;
+      const userRef = doc(db, "users", teacherId);
+      const userSnap = await getDoc(userRef);
+      if (!userSnap.exists()) return;
+      const username = userSnap.data().username as string;
+      const introduction = userSnap.data().teacher_introduction as string;
+      const experience = userSnap.data().teacher_experience as string;
+      const avatar = userSnap.data().photoURL as string;
+      const reviews = userSnap.data().reviews as ReviewInterface[];
+      setTeacherData({ username, introduction, experience, reviews, avatar });
 
-  return (
-    <Wrapper>
-      <TeacherContainer>
-        <TeacherDetail>
-          <TeacherInfo>
-            <TeacherAvatar>
-              <Image src={teacherData?.avatar || Avatar} alt="avatar" width={120} height={120} />
-            </TeacherAvatar>
-            <TeacherName>{teacherData?.username} 老師</TeacherName>
-          </TeacherInfo>
-          <Introduction>
-            <IntroductionTitle>自我介紹</IntroductionTitle>
-            {teacherData && (
-              <IntroductionContents className="ql-editor">{parse(teacherData.introduction)}</IntroductionContents>
-            )}
-            <IntroductionTitle>老師經歷</IntroductionTitle>
-            {teacherData && (
-              <IntroductionContents className="ql-editor">{parse(teacherData.experience)}</IntroductionContents>
-            )}
-          </Introduction>
-        </TeacherDetail>
-        <CalendarWrapper>{typeof teacherId === "string" && <ReserveCalendar teacherId={teacherId} />}</CalendarWrapper>
+      if (!Array.isArray(reviews)) return;
+      reviews.forEach(async (review: { comments: string; score: number; userId: string }, index) => {
+        const reviewUserRef = doc(db, "users", review.userId);
+        const reviewUserSnap = await getDoc(reviewUserRef);
+        if (!reviewUserSnap.exists()) return;
+        const reviewUsername = reviewUserSnap.data().username;
+        const reviewUserAvatar = reviewUserSnap.data().photoURL;
+        setReviewUsersData((prev) => [...prev, { index, username: reviewUsername, avatar: reviewUserAvatar }]);
+      });
+    };
+    getTeacherData();
+  }, [teacherId]);
+
+  if (!teacherData) {
+    return (
+      <TeacherContainer style={{ justifyContent: "center", alignItems: "center" }}>
+        <Image src={Loading} alt="loading" width={100} height={100} />
       </TeacherContainer>
-      {typeof teacherId === "string" && (
-        <>
-          <IntroductionTitle style={{ paddingLeft: "10px", marginBottom: "42px" }}>老師的影音課程</IntroductionTitle>
-          <CoursesWrapper>
-            <CourseContainer>
-              <LaunchedVideoCourses uid={teacherId} />
-            </CourseContainer>
-          </CoursesWrapper>
-        </>
-      )}
-      <Reviews>
-        {teacherData?.reviews && (
-          <ScoreContainer>
-            <Average>
-              {(teacherData.reviews.reduce((acc, cur) => acc + cur.score, 0) / teacherData.reviews.length || 0).toFixed(
-                1
-              ) || 0}
-            </Average>
-            <ReviewsInfo>
-              <StarIcons>
-                {Array.from(
-                  {
-                    length: Math.floor(
-                      teacherData.reviews.reduce((acc, cur) => acc + cur.score, 0) / teacherData.reviews.length
-                    ),
-                  },
-                  (v, i) => i + 1
-                ).map((starIndex) => (
-                  <StarWrapper key={starIndex}>
-                    <Image src={Star} alt="star" fill sizes="contain" />
-                  </StarWrapper>
-                ))}
-                {(teacherData.reviews.reduce((acc, cur) => acc + cur.score, 0) / teacherData.reviews.length) % 1 !==
-                  0 && (
-                  <StarWrapper>
-                    <Image src={HalfStar} alt="star" fill sizes="contain" />
-                  </StarWrapper>
-                )}
-              </StarIcons>
-              <ReviewQty>{teacherData.reviews.length} 則評價</ReviewQty>
-            </ReviewsInfo>
-          </ScoreContainer>
+    );
+  }
+  return (
+    <>
+      <Head>
+        <title>{teacherData?.username} 老師 - Yoga Bear</title>
+      </Head>
+      <Wrapper>
+        <TeacherContainer>
+          <TeacherDetail>
+            <TeacherInfo>
+              <TeacherAvatar>
+                <Image src={teacherData?.avatar || Avatar} alt="avatar" width={120} height={120} />
+              </TeacherAvatar>
+              <TeacherName>{teacherData?.username} 老師</TeacherName>
+            </TeacherInfo>
+            <Introduction>
+              <IntroductionTitle>自我介紹</IntroductionTitle>
+              {teacherData && (
+                <IntroductionContents className="ql-editor">{parse(teacherData.introduction)}</IntroductionContents>
+              )}
+              <IntroductionTitle>老師經歷</IntroductionTitle>
+              {teacherData && (
+                <IntroductionContents className="ql-editor">{parse(teacherData.experience)}</IntroductionContents>
+              )}
+            </Introduction>
+          </TeacherDetail>
+          <CalendarWrapper>
+            {typeof teacherId === "string" && <ReserveCalendar teacherId={teacherId} />}
+          </CalendarWrapper>
+        </TeacherContainer>
+        {typeof teacherId === "string" && (
+          <>
+            <IntroductionTitle style={{ paddingLeft: "10px", marginBottom: "42px" }}>老師的影音課程</IntroductionTitle>
+            <CoursesWrapper>
+              <CourseContainer>
+                <LaunchedVideoCourses uid={teacherId} />
+              </CourseContainer>
+            </CoursesWrapper>
+          </>
         )}
-        {teacherData &&
-          teacherData?.reviews?.map((review, reviewIndex) => (
-            <Review key={review.userId}>
-              <User>
-                <AvatarWrapper>
-                  <Image
-                    src={
-                      reviewUsersData.find((reviewUserInfo) => reviewUserInfo.index === reviewIndex)?.avatar || Avatar
-                    }
-                    alt="avatar"
-                    width={120}
-                    height={120}
-                  />
-                </AvatarWrapper>
-                <UserName>
-                  {reviewUsersData.find((reviewUserInfo) => reviewUserInfo.index === reviewIndex)?.username}
-                </UserName>
-              </User>
-              <CommentWrapper>
-                <Score>
+        {teacherData?.reviews && (
+          <Reviews>
+            <ScoreContainer>
+              <Average>
+                {(
+                  teacherData.reviews.reduce((acc, cur) => acc + cur.score, 0) / teacherData.reviews.length || 0
+                ).toFixed(1) || 0}
+              </Average>
+              <ReviewsInfo>
+                <StarIcons>
                   {Array.from(
                     {
-                      length: review.score,
+                      length: Math.floor(
+                        teacherData.reviews.reduce((acc, cur) => acc + cur.score, 0) / teacherData.reviews.length
+                      ),
                     },
                     (v, i) => i + 1
                   ).map((starIndex) => (
@@ -455,39 +442,56 @@ export default function Reserve({
                       <Image src={Star} alt="star" fill sizes="contain" />
                     </StarWrapper>
                   ))}
-                </Score>
-                <Class>課程：{review.class}</Class>
-                <Comments>{review.comments}</Comments>
-              </CommentWrapper>
-            </Review>
-          ))}
-      </Reviews>
-    </Wrapper>
+                  {(teacherData.reviews.reduce((acc, cur) => acc + cur.score, 0) / teacherData.reviews.length) % 1 !==
+                    0 && (
+                    <StarWrapper>
+                      <Image src={HalfStar} alt="star" fill sizes="contain" />
+                    </StarWrapper>
+                  )}
+                </StarIcons>
+                <ReviewQty>{teacherData.reviews.length} 則評價</ReviewQty>
+              </ReviewsInfo>
+            </ScoreContainer>
+            {teacherData &&
+              teacherData?.reviews?.map((review, reviewIndex) => (
+                <Review key={review.userId}>
+                  <User>
+                    <AvatarWrapper>
+                      <Image
+                        src={
+                          reviewUsersData.find((reviewUserInfo) => reviewUserInfo.index === reviewIndex)?.avatar ||
+                          Avatar
+                        }
+                        alt="avatar"
+                        width={120}
+                        height={120}
+                      />
+                    </AvatarWrapper>
+                    <UserName>
+                      {reviewUsersData.find((reviewUserInfo) => reviewUserInfo.index === reviewIndex)?.username}
+                    </UserName>
+                  </User>
+                  <CommentWrapper>
+                    <Score>
+                      {Array.from(
+                        {
+                          length: review.score,
+                        },
+                        (v, i) => i + 1
+                      ).map((starIndex) => (
+                        <StarWrapper key={starIndex}>
+                          <Image src={Star} alt="star" fill sizes="contain" />
+                        </StarWrapper>
+                      ))}
+                    </Score>
+                    <Class>課程：{review.class}</Class>
+                    <Comments>{review.comments}</Comments>
+                  </CommentWrapper>
+                </Review>
+              ))}
+          </Reviews>
+        )}
+      </Wrapper>
+    </>
   );
-}
-
-export async function getStaticPaths() {
-  const usersRef = collection(db, "users");
-  const queryTeachers = await getDocs(query(usersRef, where("identity", "==", "teacher")));
-  const paths: { params: { teacherId: string } }[] = [];
-  queryTeachers.forEach((data) => {
-    const { uid: teacherId } = data.data();
-    paths.push({ params: { teacherId } });
-  });
-
-  return { paths, fallback: false };
-}
-
-export async function getStaticProps({ params }: { params: { teacherId: string } }) {
-  const userRef = doc(db, "users", params.teacherId);
-  const userSnap = await getDoc(userRef);
-  if (!userSnap.exists()) return;
-  const username = userSnap.data().username as string;
-  const introduction = userSnap.data().teacher_introduction as string;
-  const experience = userSnap.data().teacher_experience as string;
-  const avatar = userSnap.data().photoURL as string;
-  const reviews = (userSnap.data().reviews as ReviewInterface[]) || null;
-  const teacherData = { username, introduction, experience, reviews, avatar };
-
-  return { props: { teacherId: params.teacherId, teacherData }, revalidate: 60 };
 }

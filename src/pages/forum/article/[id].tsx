@@ -1,10 +1,22 @@
 import React, { useState, useContext } from "react";
-import { useRouter } from "next/router";
+import Head from "next/head";
 import Image from "next/image";
+import { useRouter, NextRouter } from "next/router";
 import styled from "styled-components";
 import Swal from "sweetalert2";
-import { useRecoilState } from "recoil";
-import { doc, collection, query, getDoc, getDocs, updateDoc, arrayUnion, arrayRemove } from "firebase/firestore";
+import parse from "html-react-parser";
+import { useRecoilState, SetterOrUpdater } from "recoil";
+import {
+  doc,
+  collection,
+  query,
+  getDoc,
+  getDocs,
+  updateDoc,
+  arrayUnion,
+  arrayRemove,
+  deleteDoc,
+} from "firebase/firestore";
 import produce from "immer";
 import { db } from "../../../../lib/firebase";
 import { AuthContext } from "../../../contexts/authContext";
@@ -14,7 +26,11 @@ import LikeQtyIcon from "../../../../public/like.png";
 import MessageIcon from "../../../../public/message.png";
 import LikeBlankIcon from "../../../../public/favorite-blank.png";
 import LikeIcon from "../../../../public/favorite.png";
+import Remove from "../../../../public/trash.png";
+import Save from "../../../../public/save.png";
+import Edit from "../../../../public/edit.png";
 import "react-quill/dist/quill.snow.css";
+import RichEditor from "../../../components/editor/richEditor";
 
 const Wrapper = styled.div`
   background-color: ${(props) => props.theme.colors.color1};
@@ -32,6 +48,23 @@ const Container = styled.div`
   border: 2px solid ${(props) => props.theme.colors.color2};
   border-radius: 5px;
   background-color: ${(props) => props.theme.colors.color1};
+  .quill {
+    margin: 30px 5px;
+    min-height: 400px;
+    height: 100%;
+    * {
+      border: none;
+    }
+    strong {
+      font-weight: bold;
+    }
+    em {
+      font-style: italic;
+    }
+  }
+  .ql-toolbar {
+    border-bottom: 1px solid lightgray;
+  }
 `;
 
 const ArticleUser = styled.div`
@@ -48,6 +81,7 @@ const UserAvatarWrapper = styled.div`
 `;
 const UserName = styled.p`
   font-size: 20px;
+  margin-right: auto;
 `;
 
 const Title = styled.h2`
@@ -122,6 +156,13 @@ const IconWrapper = styled.div`
   height: 24px;
   margin-right: 10px;
 `;
+const ClickIconWrapper = styled.div`
+  position: relative;
+  width: 20px;
+  height: 20px;
+  margin-left: 10px;
+  cursor: pointer;
+`;
 const ActivityQty = styled.span`
   margin-right: 20px;
   font-size: 20px;
@@ -144,12 +185,10 @@ const Message = styled.li`
   padding: 10px 20px;
 `;
 
-const MessageAuthor = styled.div`
+const MessageAuthor = styled.div<{ identity: string }>`
   display: flex;
   margin-bottom: 15px;
-`;
-const MessageAuthorTeacher = styled(MessageAuthor)`
-  cursor: pointer;
+  cursor: ${(props) => props.identity === "teacher" && "pointer"};
 `;
 
 const MessageContent = styled.p`
@@ -217,43 +256,36 @@ interface ArticleInterface {
   authorId: string;
   authorName: string;
   authorAvatar: string;
-  content: string;
+  content?: string;
   messages: MessageInterface[];
   likes: string[];
 }
 
-function Article({ id, articleData }: { id: string; articleData: ArticleInterface }) {
-  const router = useRouter();
-  const [showMemberModal, setShowMemberModal] = useRecoilState(showMemberModalState);
-  const [article, setArticle] = useState(articleData);
+interface MessagesSectionPropsInterface {
+  id: string;
+  article: ArticleInterface;
+  setArticle: React.Dispatch<React.SetStateAction<ArticleInterface>>;
+  setShowMemberModal: SetterOrUpdater<boolean>;
+  isLogin: boolean;
+  userData: {
+    uid: string;
+    email: string;
+    identity: string;
+    username: string;
+    avatar: string;
+  };
+  router: NextRouter;
+}
+function MessagesSection({
+  id,
+  article,
+  setArticle,
+  setShowMemberModal,
+  isLogin,
+  userData,
+  router,
+}: MessagesSectionPropsInterface) {
   const [inputMessage, setInputMessage] = useState("");
-  const { userData, isLogin } = useContext(AuthContext);
-
-  const handleLikeArticle = async () => {
-    if (!isLogin) {
-      Swal.fire({ title: "登入後才能按讚唷！", confirmButtonColor: "#5d7262", icon: "warning" });
-      setShowMemberModal(true);
-      return;
-    }
-    setArticle(
-      produce((draft: ArticleInterface) => {
-        draft.likes.push(userData.uid);
-      })
-    );
-    const articleRef = doc(db, "posts", id);
-    await updateDoc(articleRef, { likes: arrayUnion(userData.uid) });
-  };
-
-  const handleDislikeArticle = async () => {
-    setArticle(
-      produce((draft: ArticleInterface) => {
-        draft.likes.splice(draft.likes.indexOf(userData.uid), 1);
-      })
-    );
-    const articleRef = doc(db, "posts", id);
-    await updateDoc(articleRef, { likes: arrayRemove(userData.uid) });
-  };
-
   const handleLikeMessage = (index: number) => {
     if (!isLogin) {
       Swal.fire({ title: "登入後才能按讚唷！", confirmButtonColor: "#5d7262", icon: "warning" });
@@ -311,147 +343,258 @@ function Article({ id, articleData }: { id: string; articleData: ArticleInterfac
       })
     );
   };
-
   return (
-    <Wrapper>
-      <Container>
-        <ArticleUser>
-          <UserAvatarWrapper>
-            <Image src={article?.authorAvatar || Avatar} alt="avatar" fill sizes="contain" />
-          </UserAvatarWrapper>
-          <UserName>{article?.authorName}</UserName>
-        </ArticleUser>
-        <Title>{article?.title}</Title>
-        {article && <PostTime>{new Date(article.time).toLocaleString()}</PostTime>}
-        {article && (
-          <ArticleContainer>
-            {/* eslint-disable-next-line react/no-danger */}
-            <Content className="ql-editor" dangerouslySetInnerHTML={{ __html: article.content }} />
-            <ArticleActivity>
-              <Qty>
-                <IconWrapper>
-                  <Image src={LikeQtyIcon} alt="like" fill sizes="contain" />
-                </IconWrapper>
-                <ActivityQty>{article?.likes?.length || 0}</ActivityQty>
-                <IconWrapper>
-                  <Image src={MessageIcon} alt="like" fill sizes="contain" />
-                </IconWrapper>
-                <ActivityQty>{article?.messages?.length || 0}</ActivityQty>
-              </Qty>
-              {article.likes.includes(userData.uid) || (
-                <ClickLike onClick={handleLikeArticle}>
-                  <IconWrapper>
-                    <Image src={LikeBlankIcon} alt="like-click" fill sizes="contain" />
-                  </IconWrapper>
-                </ClickLike>
-              )}
-              {article.likes.includes(userData.uid) && (
-                <ClickLike onClick={handleDislikeArticle}>
-                  <IconWrapper>
-                    <Image src={LikeIcon} alt="like-clicked" fill sizes="contain" />
-                  </IconWrapper>
-                </ClickLike>
-              )}
-            </ArticleActivity>
-          </ArticleContainer>
-        )}
-        {article && article?.messages?.length > 0 && (
-          <MessagesContainer>
-            <Messages>
-              <MessageQty>共 {article?.messages.length} 則留言</MessageQty>
-              {Array.isArray(article.messages) &&
-                article.messages.map((message: MessageInterface, index) => (
-                  <Message key={message.authorId + new Date(message.time).toLocaleString()}>
-                    {message.identity === "student" && (
-                      <MessageAuthor>
-                        <UserAvatarWrapper>
-                          <Image src={message.authorAvatar || Avatar} alt="avatar" fill sizes="contain" />
-                        </UserAvatarWrapper>
-                        <UserName>
-                          {message.authorName} (學生)
-                          {message.authorId === article.authorId && " - 原PO"}
-                        </UserName>
-                      </MessageAuthor>
-                    )}
-                    {message.identity === "teacher" && (
-                      <MessageAuthorTeacher
+    <>
+      {article && article?.messages?.length > 0 && (
+        <MessagesContainer>
+          <Messages>
+            <MessageQty>共 {article?.messages.length} 則留言</MessageQty>
+            {Array.isArray(article.messages) &&
+              article.messages.map((message: MessageInterface, index) => (
+                <Message key={message.authorId + new Date(message.time).toLocaleString()}>
+                  <MessageAuthor
+                    identity={message.identity}
+                    onClick={() => {
+                      if (message.identity === "teacher") {
+                        router.push(`/findTeachers/reserve/${message.authorId}`);
+                      }
+                    }}
+                  >
+                    <UserAvatarWrapper>
+                      <Image src={message.authorAvatar || Avatar} alt="avatar" fill sizes="contain" />
+                    </UserAvatarWrapper>
+                    <UserName>
+                      {message.authorName} ({message.identity === "student" ? "學生" : "老師"})
+                      {message.authorId === article.authorId && " - 原PO"}
+                    </UserName>
+                    {userData.uid === message.authorId && (
+                      <ClickIconWrapper
+                        style={{ marginRight: 0, width: "20px", cursor: "pointer" }}
                         onClick={() => {
-                          router.push(`/findTeachers/reserve/${message.authorId}`);
+                          Swal.fire({
+                            text: `確定要刪除留言嗎？`,
+                            icon: "warning",
+                            showCancelButton: true,
+                            confirmButtonColor: "#d33",
+                            cancelButtonColor: "#3085d6",
+                            confirmButtonText: "Yes!",
+                          }).then((result) => {
+                            if (result.isConfirmed) {
+                              const newMessages = article.messages.filter((_, messageIndex) => messageIndex !== index);
+                              setArticle(
+                                produce((draft) => {
+                                  // eslint-disable-next-line no-param-reassign
+                                  draft.messages = newMessages;
+                                })
+                              );
+                              const articleRef = doc(db, "posts", id);
+                              updateDoc(articleRef, {
+                                messages: newMessages,
+                              });
+                            }
+                          });
                         }}
                       >
-                        <UserAvatarWrapper>
-                          <Image src={message.authorAvatar || Avatar} alt="avatar" fill sizes="contain" />
-                        </UserAvatarWrapper>
-                        <UserName>
-                          {message.authorName} (老師)
-                          {message.authorId === article.authorId && " - 原PO"}
-                        </UserName>
-                      </MessageAuthorTeacher>
+                        <Image src={Remove} alt="remove" />
+                      </ClickIconWrapper>
                     )}
-                    <MessageContent>{message.message}</MessageContent>
-                    <MessageInfo>
-                      {message?.likes?.includes(userData.uid) || (
-                        <ClickLike
-                          onClick={() => {
-                            handleLikeMessage(index);
-                          }}
-                        >
-                          <IconWrapper>
-                            <Image src={LikeBlankIcon} alt="like-click" fill sizes="contain" />
-                          </IconWrapper>
-                          <span>{message?.likes?.length || 0}</span>
-                        </ClickLike>
-                      )}
-                      {message?.likes?.includes(userData.uid) && (
-                        <ClickLike
-                          onClick={() => {
-                            handleDislikeMessage(index);
-                          }}
-                        >
-                          <IconWrapper>
-                            <Image src={LikeIcon} alt="like-clicked" fill sizes="contain" />
-                          </IconWrapper>
-                          <LikeQty>{message?.likes?.length || 0}</LikeQty>
-                        </ClickLike>
-                      )}
-                      <MessageTime>{new Date(message.time).toLocaleString()}</MessageTime>
-                      <MessageFloor>B{index + 1}</MessageFloor>
-                    </MessageInfo>
-                  </Message>
-                ))}
-            </Messages>
-          </MessagesContainer>
-        )}
-        <MessageBlock>
-          <MessageTextArea
-            value={inputMessage}
-            placeholder="留言......"
-            onChange={(e) => {
-              setInputMessage(e.target.value);
-            }}
-          />
-          <Button onClick={handleMessage}>送出</Button>
-        </MessageBlock>
-      </Container>
-    </Wrapper>
+                  </MessageAuthor>
+                  <MessageContent>{message.message}</MessageContent>
+                  <MessageInfo>
+                    {message?.likes?.includes(userData.uid) || (
+                      <ClickLike
+                        onClick={() => {
+                          handleLikeMessage(index);
+                        }}
+                      >
+                        <IconWrapper>
+                          <Image src={LikeBlankIcon} alt="like-click" fill sizes="contain" />
+                        </IconWrapper>
+                        <span>{message?.likes?.length || 0}</span>
+                      </ClickLike>
+                    )}
+                    {message?.likes?.includes(userData.uid) && (
+                      <ClickLike
+                        onClick={() => {
+                          handleDislikeMessage(index);
+                        }}
+                      >
+                        <IconWrapper>
+                          <Image src={LikeIcon} alt="like-clicked" fill sizes="contain" />
+                        </IconWrapper>
+                        <LikeQty>{message?.likes?.length || 0}</LikeQty>
+                      </ClickLike>
+                    )}
+                    <MessageTime>{new Date(message.time).toLocaleString()}</MessageTime>
+                    <MessageFloor>B{index + 1}</MessageFloor>
+                  </MessageInfo>
+                </Message>
+              ))}
+          </Messages>
+        </MessagesContainer>
+      )}
+      <MessageBlock>
+        <MessageTextArea
+          value={inputMessage}
+          placeholder="留言......"
+          onChange={(e) => {
+            setInputMessage(e.target.value);
+          }}
+        />
+        <Button onClick={handleMessage}>送出</Button>
+      </MessageBlock>
+    </>
+  );
+}
+
+function Article({ id, articleData }: { id: string; articleData: ArticleInterface }) {
+  const { time, title, authorId, authorName, authorAvatar, content: articleContent, messages, likes } = articleData;
+  const router = useRouter();
+  const [showMemberModal, setShowMemberModal] = useRecoilState(showMemberModalState);
+  const [article, setArticle] = useState({ time, title, authorId, authorName, authorAvatar, messages, likes });
+  const [content, setContent] = useState<string>(articleContent || "");
+  const [isEditState, setIsEditState] = useState(false);
+  const { userData, isLogin } = useContext(AuthContext);
+
+  const handleLikeArticle = async () => {
+    if (!isLogin) {
+      Swal.fire({ title: "登入後才能按讚唷！", confirmButtonColor: "#5d7262", icon: "warning" });
+      setShowMemberModal(true);
+      return;
+    }
+    setArticle(
+      produce((draft: ArticleInterface) => {
+        draft.likes.push(userData.uid);
+      })
+    );
+    const articleRef = doc(db, "posts", id);
+    await updateDoc(articleRef, { likes: arrayUnion(userData.uid) });
+  };
+
+  const handleDislikeArticle = async () => {
+    setArticle(
+      produce((draft: ArticleInterface) => {
+        draft.likes.splice(draft.likes.indexOf(userData.uid), 1);
+      })
+    );
+    const articleRef = doc(db, "posts", id);
+    await updateDoc(articleRef, { likes: arrayRemove(userData.uid) });
+  };
+
+  return (
+    <>
+      <Head>
+        <title>{article.title} - Yoga Bear</title>
+      </Head>
+      <Wrapper>
+        <Container>
+          <ArticleUser>
+            <UserAvatarWrapper>
+              <Image src={article?.authorAvatar || Avatar} alt="avatar" fill sizes="contain" />
+            </UserAvatarWrapper>
+            <UserName>{article?.authorName}</UserName>
+            {userData.uid === article.authorId && (
+              <>
+                {isEditState || (
+                  <ClickIconWrapper
+                    onClick={() => {
+                      setIsEditState(true);
+                    }}
+                  >
+                    <Image src={Edit} alt="edit" />
+                  </ClickIconWrapper>
+                )}
+                {isEditState && (
+                  <ClickIconWrapper
+                    onClick={async () => {
+                      const postRef = doc(db, "posts", id);
+                      await updateDoc(postRef, {
+                        content,
+                      });
+                      setIsEditState(false);
+                    }}
+                  >
+                    <Image src={Save} alt="save" />
+                  </ClickIconWrapper>
+                )}
+                <ClickIconWrapper
+                  onClick={() => {
+                    Swal.fire({
+                      text: `確定要刪除文章嗎？`,
+                      icon: "warning",
+                      showCancelButton: true,
+                      confirmButtonColor: "#d33",
+                      cancelButtonColor: "#3085d6",
+                      confirmButtonText: "Yes!",
+                    }).then(async (result) => {
+                      if (result.isConfirmed) {
+                        const articleRef = doc(db, "posts", id);
+                        await deleteDoc(articleRef);
+                        router.push("/forum");
+                      }
+                    });
+                  }}
+                >
+                  <Image src={Remove} alt="remove" />
+                </ClickIconWrapper>
+              </>
+            )}
+          </ArticleUser>
+          <Title>{article?.title}</Title>
+          {article && <PostTime>{new Date(article.time).toLocaleString()}</PostTime>}
+          {isEditState && <RichEditor content={content} setContent={setContent} />}
+          {article && !isEditState && (
+            <ArticleContainer>
+              {/* eslint-disable-next-line react/no-danger */}
+              {typeof content === "string" && <Content className="ql-editor">{parse(content)}</Content>}
+              <ArticleActivity>
+                <Qty>
+                  <IconWrapper>
+                    <Image src={LikeQtyIcon} alt="like" fill sizes="contain" />
+                  </IconWrapper>
+                  <ActivityQty>{article?.likes?.length || 0}</ActivityQty>
+                  <IconWrapper>
+                    <Image src={MessageIcon} alt="like" fill sizes="contain" />
+                  </IconWrapper>
+                  <ActivityQty>{article?.messages?.length || 0}</ActivityQty>
+                </Qty>
+                {article?.likes?.includes(userData.uid) || (
+                  <ClickLike onClick={handleLikeArticle}>
+                    <IconWrapper>
+                      <Image src={LikeBlankIcon} alt="like-click" fill sizes="contain" />
+                    </IconWrapper>
+                  </ClickLike>
+                )}
+                {article?.likes?.includes(userData.uid) && (
+                  <ClickLike onClick={handleDislikeArticle}>
+                    <IconWrapper>
+                      <Image src={LikeIcon} alt="like-clicked" fill sizes="contain" />
+                    </IconWrapper>
+                  </ClickLike>
+                )}
+              </ArticleActivity>
+            </ArticleContainer>
+          )}
+          {!isEditState && (
+            <MessagesSection
+              id={id}
+              article={article}
+              setArticle={setArticle}
+              setShowMemberModal={setShowMemberModal}
+              isLogin={isLogin}
+              userData={userData}
+              router={router}
+            />
+          )}
+        </Container>
+      </Wrapper>
+    </>
   );
 }
 
 export default Article;
 
-export async function getStaticPaths() {
-  const articlesRef = collection(db, "posts");
-  const queryArticles = await getDocs(query(articlesRef));
-  const paths: { params: { id: string } }[] = [];
-  queryArticles.forEach((data) => {
-    const { id } = data.data();
-    paths.push({ params: { id } });
-  });
-
-  return { paths, fallback: false };
-}
-
-export async function getStaticProps({ params }: { params: { id: string } }) {
+export async function getServerSideProps({ params }: { params: { id: string } }) {
   const docRef = doc(db, "posts", params.id);
   const docSnap = await getDoc(docRef);
   if (!docSnap.exists()) return;
@@ -485,5 +628,5 @@ export async function getStaticProps({ params }: { params: { id: string } }) {
     likes: docSnap.data().likes || [],
   };
 
-  return { props: { id: params.id, articleData }, revalidate: 60 };
+  return { props: { id: params.id, articleData } };
 }

@@ -1,3 +1,4 @@
+import { useState } from "react";
 import Head from "next/head";
 import styled from "styled-components";
 import Image from "next/image";
@@ -66,6 +67,8 @@ const Banner = styled.div`
   height: auto;
   max-height: 400px;
   overflow: hidden;
+  opacity: 0.85;
+  filter: brightness(85%);
 `;
 const BannerImage = styled(Image)`
   height: auto;
@@ -77,6 +80,84 @@ const BannerImage = styled(Image)`
   @media screen and (max-width: 388px) {
     transform: translate(0, 0);
   }
+`;
+const SloganContainer = styled.div`
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  z-index: 999;
+`;
+const Slogan = styled.h1`
+  font-size: 28px;
+  font-weight: bold;
+  margin-bottom: 10px;
+  color: #000;
+  text-shadow: gray 0.1em 0.1em 0.2em;
+  @media screen and (max-width: 900px) {
+    font-size: 24px;
+  }
+  @media screen and (max-width: 660px) {
+    font-size: 20px;
+  }
+  @media screen and (max-width: 500px) {
+    font-size: 18px;
+    margin-bottom: 5px;
+  }
+`;
+const SubSlogan = styled.h2`
+  font-size: 22px;
+  margin-bottom: 20px;
+  color: #fff;
+  text-shadow: black 0.1em 0.1em 0.2em;
+  @media screen and (max-width: 900px) {
+    font-size: 18px;
+  }
+  @media screen and (max-width: 660px) {
+    font-size: 16px;
+  }
+  @media screen and (max-width: 500px) {
+    font-size: 14px;
+    margin-bottom: 10px;
+  }
+`;
+const SearchBox = styled.form`
+  border: 1px solid lightgray;
+  box-shadow: 0 0 5px #00000098;
+  border-radius: 5px;
+  margin-bottom: 10px;
+  min-width: 320px;
+  @media screen and (max-width: 500px) {
+    min-width: 280px;
+  }
+`;
+const SearchInput = styled.input`
+  font-size: 18px;
+  padding: 10px;
+  width: 100%;
+  height: 40px;
+  border: none;
+  &:focus {
+    outline: none;
+  }
+  @media screen and (max-width: 650px) {
+    font-size: 14px;
+    height: 28px;
+  }
+`;
+const SearchLabel = styled.label`
+  margin-right: 10px;
+  color: #000;
+  text-shadow: #fff 0.1em 0.1em 0.2em;
+  @media screen and (max-width: 650px) {
+    font-size: 14px;
+  }
+  @media screen and (max-width: 450px) {
+    font-size: 12px;
+  }
+`;
+const SearchRadio = styled.input`
+  margin-right: 5px;
 `;
 const Container = styled.div`
   max-width: 1280px;
@@ -184,6 +265,7 @@ interface TeachersListInterface {
   avatar: string;
   name: string;
 }
+
 export default function Home({
   coursesList,
   teachersList,
@@ -192,7 +274,8 @@ export default function Home({
   teachersList: TeachersListInterface[];
 }) {
   const router = useRouter();
-
+  const [keywords, setKeywords] = useState("");
+  const [category, setCategory] = useState("course");
   return (
     <>
       <Head>
@@ -201,6 +284,47 @@ export default function Home({
       <Wrapper>
         <Banner>
           <BannerImage src={BannerPic} alt="banner" />
+          <SloganContainer>
+            <Slogan>瑜伽練習者的好夥伴</Slogan>
+            <SubSlogan>讓 Yoga Bear 幫你找到適合自己的老師！</SubSlogan>
+            <SearchBox
+              onSubmit={(e: React.FormEvent<HTMLFormElement>) => {
+                e.preventDefault();
+                if (category === "course") router.push(`/videoCourses?keywords=${keywords}`);
+                if (category === "teacher") router.push(`/findTeachers?keywords=${keywords}`);
+              }}
+            >
+              <SearchInput
+                placeholder={category === "course" ? "你想學什麼呢？" : "你想找哪個老師呢？"}
+                value={keywords}
+                onChange={(e) => {
+                  setKeywords(e.target.value);
+                }}
+              />
+            </SearchBox>
+            <SearchLabel>
+              <SearchRadio
+                type="radio"
+                value="course"
+                name="category"
+                onChange={(e) => {
+                  setCategory(e.target.value);
+                }}
+              />
+              找課程
+            </SearchLabel>
+            <SearchLabel>
+              <SearchRadio
+                type="radio"
+                value="teacher"
+                name="category"
+                onChange={(e) => {
+                  setCategory(e.target.value);
+                }}
+              />
+              找老師
+            </SearchLabel>
+          </SloganContainer>
         </Banner>
         <Container>
           <Title>四個愛上 Yoga Bear 的理由</Title>
@@ -298,7 +422,7 @@ export default function Home({
               </SwiperSlide>
             ))}
           </Swiper>
-          <Title>六個開始練瑜伽的理由</Title>
+          <Title>六個開始練瑜伽的動機</Title>
           <Reasons>
             <Reason>
               <ReasonIcon

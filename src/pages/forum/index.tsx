@@ -3,6 +3,7 @@ import React, { useContext } from "react";
 import styled from "styled-components";
 import Swal from "sweetalert2";
 import parse from "html-react-parser";
+import Head from "next/head";
 import { useRouter } from "next/router";
 import { useRecoilState } from "recoil";
 import { collection, doc, getDoc, getDocs, query, orderBy } from "firebase/firestore";
@@ -205,78 +206,83 @@ function Forum({ posts }: { posts: PostInterface[] }) {
   const { isLogin } = useContext(AuthContext);
 
   return (
-    <Wrapper>
-      <Banner>
-        <BannerImage src={BannerPic} alt="banner" />
-      </Banner>
-      <Container>
-        <Main>
-          <Articles>
-            {posts.map((article) => (
-              <Article
-                key={article.id}
-                onClick={() => {
-                  router.push(`/forum/article/${article.id}`);
-                }}
-              >
-                <ArticleUser>
-                  <UserAvatarWrapper>
-                    <Image src={article.authorAvatar || Avatar} alt="avatar" fill sizes="contain" />
-                  </UserAvatarWrapper>
-                  <UserName>{article.authorName}</UserName>
-                </ArticleUser>
-                <ArticleInfo>
-                  <ArticleText>
-                    <ArticleTitle>{article.title}</ArticleTitle>
-                    {article.preview && <ArticlePreview>{parse(article?.preview)}</ArticlePreview>}
-                  </ArticleText>
-                  {article.picPreview && <PicPreview>{parse(article?.picPreview)}</PicPreview>}
-                </ArticleInfo>
-                <OtherInfos>
-                  <ArticleActivity>
-                    <IconWrapper>
-                      <Image src={LikeIcon} alt="like" fill sizes="contain" />
-                    </IconWrapper>
-                    <ActivityQty>{article.likesQty}</ActivityQty>
-                    <IconWrapper>
-                      <Image src={MessageIcon} alt="like" fill sizes="contain" />
-                    </IconWrapper>
-                    <ActivityQty>{article.messagesQty}</ActivityQty>
-                  </ArticleActivity>
-                  <ArticleTime>{article.time}</ArticleTime>
-                </OtherInfos>
-              </Article>
-            ))}
-          </Articles>
-        </Main>
-        <Aside>
-          <AsideTitle>問答園地</AsideTitle>
-          <AsideContent>
-            給熱愛瑜伽、對瑜伽有興趣的同好們，有瑜伽相關的任何問題都非常歡迎大家發問唷～ 希望大家可以有個舒適的空間！
-            <br />
-            記得遵守板規規範， 祝大家在瑜伽的路上開開心心，體驗瑜伽帶來的美好～
-          </AsideContent>
-          <Button
-            onClick={() => {
-              if (!isLogin) {
-                Swal.fire({ title: "登入後才能發問唷！", confirmButtonColor: "#5d7262", icon: "warning" });
-                setShowMemberModal(true);
-                return;
-              }
-              router.push("/forum/post");
-            }}
-          >
-            我想問問題
-          </Button>
-        </Aside>
-      </Container>
-    </Wrapper>
+    <>
+      <Head>
+        <title>問答園地 - Yoga Bear</title>
+      </Head>
+      <Wrapper>
+        <Banner>
+          <BannerImage src={BannerPic} alt="banner" />
+        </Banner>
+        <Container>
+          <Main>
+            <Articles>
+              {posts.map((article) => (
+                <Article
+                  key={article.id}
+                  onClick={() => {
+                    router.push(`/forum/article/${article.id}`);
+                  }}
+                >
+                  <ArticleUser>
+                    <UserAvatarWrapper>
+                      <Image src={article.authorAvatar || Avatar} alt="avatar" fill sizes="contain" />
+                    </UserAvatarWrapper>
+                    <UserName>{article.authorName}</UserName>
+                  </ArticleUser>
+                  <ArticleInfo>
+                    <ArticleText>
+                      <ArticleTitle>{article.title}</ArticleTitle>
+                      {article.preview && <ArticlePreview>{parse(article?.preview)}</ArticlePreview>}
+                    </ArticleText>
+                    {article.picPreview && <PicPreview>{parse(article?.picPreview)}</PicPreview>}
+                  </ArticleInfo>
+                  <OtherInfos>
+                    <ArticleActivity>
+                      <IconWrapper>
+                        <Image src={LikeIcon} alt="like" fill sizes="contain" />
+                      </IconWrapper>
+                      <ActivityQty>{article.likesQty}</ActivityQty>
+                      <IconWrapper>
+                        <Image src={MessageIcon} alt="like" fill sizes="contain" />
+                      </IconWrapper>
+                      <ActivityQty>{article.messagesQty}</ActivityQty>
+                    </ArticleActivity>
+                    <ArticleTime>{article.time}</ArticleTime>
+                  </OtherInfos>
+                </Article>
+              ))}
+            </Articles>
+          </Main>
+          <Aside>
+            <AsideTitle>問答園地</AsideTitle>
+            <AsideContent>
+              給熱愛瑜伽、對瑜伽有興趣的同好們，有瑜伽相關的任何問題都非常歡迎大家發問唷～ 希望大家可以有個舒適的空間！
+              <br />
+              記得遵守板規規範， 祝大家在瑜伽的路上開開心心，體驗瑜伽帶來的美好～
+            </AsideContent>
+            <Button
+              onClick={() => {
+                if (!isLogin) {
+                  Swal.fire({ title: "登入後才能發問唷！", confirmButtonColor: "#5d7262", icon: "warning" });
+                  setShowMemberModal(true);
+                  return;
+                }
+                router.push("/forum/post");
+              }}
+            >
+              我想問問題
+            </Button>
+          </Aside>
+        </Container>
+      </Wrapper>
+    </>
   );
 }
 
 export default Forum;
 
-export const getStaticProps = async () => {
+export const getServerSideProps = async () => {
   const q = query(collection(db, "posts"), orderBy("time", "desc"));
   const querySnapshot = await getDocs(q);
   const results: PostInterface[] = querySnapshot.docs.map((data) => {
@@ -315,6 +321,5 @@ export const getStaticProps = async () => {
     props: {
       posts: results,
     },
-    revalidate: 60,
   };
 };

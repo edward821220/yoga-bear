@@ -2,6 +2,7 @@ import React, { useContext, useEffect, useState } from "react";
 import styled from "styled-components";
 import Swal from "sweetalert2";
 import produce from "immer";
+import Head from "next/head";
 import Link from "next/link";
 import Image from "next/image";
 import { useRouter } from "next/router";
@@ -10,7 +11,7 @@ import { collection, doc, setDoc, getDoc, updateDoc, arrayUnion, getDocs, query,
 import { AuthContext } from "../../contexts/authContext";
 import { storage, db } from "../../../lib/firebase";
 import Modal from "../../components/modal";
-import Editor from "../../components/editor";
+import Editor from "../../components/editor/editor";
 import ToggleButton from "../../components/toggleButton";
 import Bear from "../../../public/bear.png";
 import Trash from "../../../public/trash.png";
@@ -379,8 +380,8 @@ function VideoCourses({ uid }: { uid: string }) {
       {courses?.map((course, courseIndex) => (
         <Course key={course.id}>
           <CourseCover>
-            <Link href={`/myCourses/classRoom/videoRoom/${course.id}`}>
-              <Image src={course.cover} alt="cover" fill />
+            <Link href={`/myCourses/classRoom/videoCourseRoom/${course.id}`}>
+              <Image src={course.cover} alt="cover" fill sizes="contain" />
             </Link>
           </CourseCover>
           <CourseInfos>
@@ -388,11 +389,10 @@ function VideoCourses({ uid }: { uid: string }) {
             {course?.reviews?.length > 0 ? (
               <CourseScore>
                 <StarIcons>
-                  {/* eslint-disable no-unsafe-optional-chaining */}
                   {Array.from(
                     {
                       length: Math.floor(
-                        course?.reviews?.reduce((acc, cur) => acc + cur.score, 0) / course?.reviews?.length
+                        course.reviews.reduce((acc, cur) => acc + cur.score, 0) / course.reviews.length
                       ),
                     },
                     (v, i) => i + 1
@@ -401,16 +401,15 @@ function VideoCourses({ uid }: { uid: string }) {
                       <Image src={Star} alt="star" fill sizes="contain" />
                     </CourseStarWrapper>
                   ))}
-                  {(course?.reviews?.reduce((acc, cur) => acc + cur.score, 0) / course?.reviews?.length) % 1 !== 0 && (
+                  {(course.reviews.reduce((acc, cur) => acc + cur.score, 0) / course.reviews.length) % 1 !== 0 && (
                     <CourseStarWrapper>
                       <Image src={HalfStar} alt="star" fill sizes="contain" />
                     </CourseStarWrapper>
                   )}
                 </StarIcons>
                 <CourseReviewsInfo>
-                  {(course?.reviews?.reduce((acc, cur) => acc + cur.score, 0) / course?.reviews?.length || 0).toFixed(
-                    1
-                  ) || 0}
+                  {(course.reviews.reduce((acc, cur) => acc + cur.score, 0) / course.reviews.length || 0).toFixed(1) ||
+                    0}
                   分 ，{course?.reviews?.length || 0}則評論
                 </CourseReviewsInfo>
               </CourseScore>
@@ -527,7 +526,7 @@ function LaunchedVideoCourses({ uid }: { uid: string }) {
       {courses?.map((course) => (
         <Course key={course.name}>
           <CourseCover>
-            <Link href={`/myCourses/classRoom/videoRoom/${course.id}`}>
+            <Link href={`/myCourses/classRoom/videoCourseRoom/${course.id}`}>
               <Image src={course.cover} alt="cover" fill sizes="cover" />
             </Link>
           </CourseCover>
@@ -539,7 +538,7 @@ function LaunchedVideoCourses({ uid }: { uid: string }) {
                   {Array.from(
                     {
                       length: Math.floor(
-                        course?.reviews?.reduce((acc, cur) => acc + cur.score, 0) / course?.reviews?.length
+                        course.reviews.reduce((acc, cur) => acc + cur.score, 0) / course.reviews.length
                       ),
                     },
                     (v, i) => i + 1
@@ -548,16 +547,15 @@ function LaunchedVideoCourses({ uid }: { uid: string }) {
                       <Image src={Star} alt="star" fill sizes="contain" />
                     </CourseStarWrapper>
                   ))}
-                  {(course?.reviews?.reduce((acc, cur) => acc + cur.score, 0) / course?.reviews?.length) % 1 !== 0 && (
+                  {(course.reviews.reduce((acc, cur) => acc + cur.score, 0) / course.reviews.length) % 1 !== 0 && (
                     <CourseStarWrapper>
                       <Image src={HalfStar} alt="star" fill sizes="contain" />
                     </CourseStarWrapper>
                   )}
                 </StarIcons>
                 <CourseReviewsInfo>
-                  {(course?.reviews?.reduce((acc, cur) => acc + cur.score, 0) / course?.reviews?.length || 0).toFixed(
-                    1
-                  ) || 0}
+                  {(course.reviews.reduce((acc, cur) => acc + cur.score, 0) / course.reviews.length || 0).toFixed(1) ||
+                    0}
                   分 ，{course?.reviews?.length || 0}則評論
                 </CourseReviewsInfo>
               </CourseScore>
@@ -602,6 +600,17 @@ function UploadProgressModal({ progressBar }: { progressBar: { file: string; pro
     </Modal>
   );
 }
+interface UnitInterface {
+  id: number;
+  title: string;
+  filename: string;
+  video: string;
+}
+interface ChapterInterface {
+  id: number;
+  title: string;
+  units: UnitInterface[];
+}
 function LaunchVideoCourse({ uid }: { uid: string }) {
   const router = useRouter();
   const [courseName, setCourseName] = useState("");
@@ -609,9 +618,7 @@ function LaunchVideoCourse({ uid }: { uid: string }) {
   const [introduction, setIntroduction] = useState("");
   const [coverPreview, setCoverPreview] = useState("");
   const [coursePreview, setCoursePreview] = useState("");
-  const [chapters, setChapters] = useState<
-    { id: number; title: string; units: { id: number; title: string; filename: string; video: string }[] }[]
-  >([]);
+  const [chapters, setChapters] = useState<ChapterInterface[]>([]);
   const [showMemberModal, setShowMemberModal] = useState(false);
   const [progressBar, setProgressBar] = useState<{ file: string; progress: number }>({ file: "", progress: 0 });
 
@@ -622,12 +629,9 @@ function LaunchVideoCourse({ uid }: { uid: string }) {
     let newChapters = [...chapters];
     let imageUrl = "";
     let introductionVideoUrl = "";
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    async function uploadTaskPromise(input: any, index: number) {
+    async function uploadTaskPromise(input: HTMLInputElement, index: number) {
       return new Promise((resolve, reject) => {
-        /* eslint-disable @typescript-eslint/no-unsafe-member-access */
-        /* eslint-disable @typescript-eslint/no-unsafe-argument */
-        /* eslint-disable @typescript-eslint/restrict-template-expressions */
+        if (!input.files) return;
         const file = input.files[0];
         const storageRef = ref(storage, `${courseName}/${file.name}`);
         const uploadTask = uploadBytesResumable(storageRef, file);
@@ -655,17 +659,18 @@ function LaunchVideoCourse({ uid }: { uid: string }) {
             newChapters = produce(newChapters, (draft) => {
               const targetChapter = draft.find((_, i) => i === Number(input.dataset.chapter));
               if (!targetChapter) return;
-              targetChapter.units[input.dataset.unit].video = downloadUrl;
+              if (!input.dataset.unit) return;
+              const unit = Number(input.dataset.unit);
+              targetChapter.units[unit].video = downloadUrl;
             });
             resolve(downloadUrl);
           }
         );
       });
     }
-    const fileInputs = Array.from(document.querySelectorAll("input[type=file]"));
+    const fileInputs: HTMLInputElement[] = Array.from(document.querySelectorAll("input[type=file]"));
     await Promise.all(
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
-      fileInputs.map(async (input: any, index) => {
+      fileInputs.map(async (input: HTMLInputElement, index) => {
         await uploadTaskPromise(input, index);
       })
     );
@@ -983,6 +988,15 @@ function BeTeacher({
     </LaunchForm>
   );
 }
+const routeTitle: Record<string, string> = {
+  videoCourses: "我的影音課程（學生）",
+  studentCalendar: "已預約課表（學生）",
+  beTeacher: "我要當老師（學生）",
+  launchedVideoCourses: "已上架影音課（老師）",
+  launchVideoCourse: "影音課程上架（老師）",
+  teacherCalendar: "排課行事曆（老師）",
+};
+
 function MyCourses() {
   const router = useRouter();
   const { category } = router.query;
@@ -999,74 +1013,77 @@ function MyCourses() {
   }, [category]);
 
   return (
-    <Wrapper>
-      <Bar>
-        {userData.identity === "teacher" && (
-          <BarSection>
-            <BarTitle>學生</BarTitle>
-            <ToggleButtonLabel
-              onChange={(e: React.FormEvent<HTMLLabelElement>) => {
-                const target = e.target as HTMLInputElement;
-                const check = target.checked;
-                setTeacherAuthority(check);
-                if (teacherAuthority === false) {
-                  router.push("/myCourses/launchedVideoCourses");
-                } else {
-                  router.push("/myCourses/videoCourses");
-                }
-              }}
-            >
-              <ToggleButton state={teacherAuthority} />
-            </ToggleButtonLabel>
-            <BarTitle>老師</BarTitle>
-          </BarSection>
-        )}
-        {userData.identity && !teacherAuthority && (
-          <BarSection>
-            <BarLink active={typeof category === "string" && category === "videoCourses"}>
-              <Link href="/myCourses/videoCourses">我的影音課程</Link>
-            </BarLink>
-            <BarLink active={typeof category === "string" && category === "studentCalendar"}>
-              <Link href="/myCourses/studentCalendar">已預約課表</Link>
-            </BarLink>
-            {userData.identity === "student" && (
-              <BarLink active={typeof category === "string" && category === "beTeacher"}>
-                <Link href="/myCourses/beTeacher">我要當老師</Link>
+    <>
+      <Head>{typeof category === "string" && <title>{routeTitle[category]} - Yoga Bear</title>}</Head>
+      <Wrapper>
+        <Bar>
+          {userData.identity === "teacher" && (
+            <BarSection>
+              <BarTitle>學生</BarTitle>
+              <ToggleButtonLabel
+                onChange={(e: React.FormEvent<HTMLLabelElement>) => {
+                  const target = e.target as HTMLInputElement;
+                  const check = target.checked;
+                  setTeacherAuthority(check);
+                  if (teacherAuthority === false) {
+                    router.push("/myCourses/launchedVideoCourses");
+                  } else {
+                    router.push("/myCourses/videoCourses");
+                  }
+                }}
+              >
+                <ToggleButton state={teacherAuthority} />
+              </ToggleButtonLabel>
+              <BarTitle>老師</BarTitle>
+            </BarSection>
+          )}
+          {userData.identity && !teacherAuthority && (
+            <BarSection>
+              <BarLink active={typeof category === "string" && category === "videoCourses"}>
+                <Link href="/myCourses/videoCourses">我的影音課程</Link>
               </BarLink>
-            )}
-          </BarSection>
-        )}
-        {userData.identity === "teacher" && teacherAuthority && (
-          <BarSection>
-            <BarLink active={typeof category === "string" && category === "launchedVideoCourses"}>
-              <Link href="/myCourses/launchedVideoCourses">已上架影音課</Link>
-            </BarLink>
-            <BarLink active={typeof category === "string" && category === "launchVideoCourse"}>
-              <Link href="/myCourses/launchVideoCourse">影音課程上架</Link>
-            </BarLink>
-            <BarLink active={typeof category === "string" && category === "teacherCalendar"}>
-              <Link href="/myCourses/teacherCalendar">排課行事曆</Link>
-            </BarLink>
-          </BarSection>
-        )}
-      </Bar>
-      <Main>
-        {category === "videoCourses" && <VideoCourses uid={userData.uid} />}
-        {category === "launchVideoCourse" && <LaunchVideoCourse uid={userData.uid} />}
-        {category === "launchedVideoCourses" && <LaunchedVideoCourses uid={userData.uid} />}
-        {category === "teacherCalendar" && (
-          <CalendarWrapper>
-            <TeacherCalendar uid={userData.uid} name={userData.username} />
-          </CalendarWrapper>
-        )}
-        {category === "studentCalendar" && (
-          <CalendarWrapper>
-            <StudentCalendar userData={userData} />
-          </CalendarWrapper>
-        )}
-        {category === "beTeacher" && <BeTeacher uid={userData.uid} setUserData={setUserData} />}
-      </Main>
-    </Wrapper>
+              <BarLink active={typeof category === "string" && category === "studentCalendar"}>
+                <Link href="/myCourses/studentCalendar">已預約課表</Link>
+              </BarLink>
+              {userData.identity === "student" && (
+                <BarLink active={typeof category === "string" && category === "beTeacher"}>
+                  <Link href="/myCourses/beTeacher">我要當老師</Link>
+                </BarLink>
+              )}
+            </BarSection>
+          )}
+          {userData.identity === "teacher" && teacherAuthority && (
+            <BarSection>
+              <BarLink active={typeof category === "string" && category === "launchedVideoCourses"}>
+                <Link href="/myCourses/launchedVideoCourses">已上架影音課</Link>
+              </BarLink>
+              <BarLink active={typeof category === "string" && category === "launchVideoCourse"}>
+                <Link href="/myCourses/launchVideoCourse">影音課程上架</Link>
+              </BarLink>
+              <BarLink active={typeof category === "string" && category === "teacherCalendar"}>
+                <Link href="/myCourses/teacherCalendar">排課行事曆</Link>
+              </BarLink>
+            </BarSection>
+          )}
+        </Bar>
+        <Main>
+          {category === "videoCourses" && <VideoCourses uid={userData.uid} />}
+          {category === "launchVideoCourse" && <LaunchVideoCourse uid={userData.uid} />}
+          {category === "launchedVideoCourses" && <LaunchedVideoCourses uid={userData.uid} />}
+          {category === "teacherCalendar" && (
+            <CalendarWrapper>
+              <TeacherCalendar uid={userData.uid} name={userData.username} />
+            </CalendarWrapper>
+          )}
+          {category === "studentCalendar" && (
+            <CalendarWrapper>
+              <StudentCalendar userData={userData} />
+            </CalendarWrapper>
+          )}
+          {category === "beTeacher" && <BeTeacher uid={userData.uid} setUserData={setUserData} />}
+        </Main>
+      </Wrapper>
+    </>
   );
 }
 

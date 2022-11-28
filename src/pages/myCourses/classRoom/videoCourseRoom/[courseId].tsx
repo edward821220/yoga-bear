@@ -4,6 +4,7 @@ import { doc, collection, query, getDoc, getDocs } from "firebase/firestore";
 import { useRouter } from "next/router";
 import styled from "styled-components";
 import Swal from "sweetalert2";
+import parse from "html-react-parser";
 import { FullScreen, useFullScreenHandle } from "react-full-screen";
 import { db } from "../../../../../lib/firebase";
 import { AuthContext } from "../../../../contexts/authContext";
@@ -731,7 +732,7 @@ function CourseDetail({ courseData, teacherData, reviewsUsersData }: CourseDetai
   return (
     <CourseDetailContainer>
       <SubTitle>課程特色</SubTitle>
-      <Introduction className="ql-editor" dangerouslySetInnerHTML={{ __html: courseData.introduction }} />
+      <Introduction className="ql-editor">{parse(courseData.introduction)}</Introduction>
       <SubTitle>關於老師</SubTitle>
       <About>
         <TeacherInfo
@@ -744,7 +745,7 @@ function CourseDetail({ courseData, teacherData, reviewsUsersData }: CourseDetai
           </TeacherWrapper>
           <TeacherName>{teacherData.teacherName}</TeacherName>
         </TeacherInfo>
-        <Introduction className="ql-editor" dangerouslySetInnerHTML={{ __html: teacherData.teacherExperience }} />
+        <Introduction className="ql-editor">{parse(teacherData.teacherExperience)}</Introduction>
       </About>
       <SubTitle>課程評價</SubTitle>
       <ScoreContainer>
@@ -833,14 +834,14 @@ function VideoRoom({ courseId, courseData }: { courseId: string; courseData: Cou
       if (docSnap.exists()) {
         const courses = docSnap.data().boughtCourses as string[];
         setBoughtCourses(courses);
-        if (!courses.includes(courseId)) {
+        if (!courses.includes(courseId) && userData.uid !== courseData.teacherId) {
           Swal.fire({ text: "您沒有購買此課程唷！", confirmButtonColor: "#5d7262", icon: "warning" });
           router.push("/");
         }
       }
     };
     getBoughtCourses();
-  }, [userData.uid, courseId, router]);
+  }, [userData.uid, courseId, router, courseData.teacherId]);
 
   useEffect(() => {
     const getCourseInfo = async () => {
@@ -895,7 +896,9 @@ function VideoRoom({ courseId, courseData }: { courseId: string; courseData: Cou
     <Wrapper>
       <CourseContainer backgroundImage={courseData?.cover || ""}>
         <Title>{courseData?.name}</Title>
-        {typeof courseId === "string" && boughtCourses && boughtCourses.includes(courseId) ? (
+        {typeof courseId === "string" &&
+        boughtCourses &&
+        (boughtCourses.includes(courseId) || courseData.teacherId === userData.uid) ? (
           <CourseRoom>
             <VideoPlayer
               handleSwitch={handleSwitch}

@@ -1,10 +1,11 @@
 import React, { useState } from "react";
 import styled from "styled-components";
 import parse from "html-react-parser";
+import Head from "next/head";
 import Link from "next/link";
 import Image from "next/image";
 import { useRouter } from "next/router";
-import { collection, getDocs, query, where } from "firebase/firestore";
+import { collection, getDocs, query as storeQuery, where } from "firebase/firestore";
 import produce from "immer";
 import { db } from "../../../lib/firebase";
 import StarIcon from "../../../public/star.png";
@@ -15,7 +16,6 @@ const Wrapper = styled.div`
   min-height: calc(100vh - 100px);
   display: flex;
   flex-direction: column;
-  justify-content: center;
   align-items: center;
   padding: 40px;
 `;
@@ -62,6 +62,7 @@ const TeachersList = styled.ul`
   display: flex;
   flex-wrap: wrap;
   width: 66%;
+  min-width: 844px;
   @media screen and (max-width: 1280px) {
     min-width: 800px;
   }
@@ -254,116 +255,122 @@ function FindTeachers({ results }: { results: TeacherInterface[] }) {
   };
 
   return (
-    <Wrapper>
-      <Container>
-        <Bar>
-          <BarSection>
-            <BarTitle>目前排序</BarTitle>
-            <BarLink
-              selectSort={selectSort === "comment"}
-              onClick={() => {
-                handleSort("comment");
-              }}
-            >
-              評論多優先
-            </BarLink>
-            <BarLink
-              selectSort={selectSort === "score"}
-              onClick={() => {
-                handleSort("score");
-              }}
-            >
-              評價高優先
-            </BarLink>
-            <BarLink
-              selectSort={selectSort === "new"}
-              onClick={() => {
-                handleSort("new");
-              }}
-            >
-              新老師優先
-            </BarLink>
-          </BarSection>
-        </Bar>
-        <TeachersList>
-          {teachersList.map((teacher) => (
-            <Teacher key={teacher.uid}>
-              <Link href={`/findTeachers/reserve/${teacher.uid}`}>
-                <TeacherAvatar avatar={teacher.avatar} />
-              </Link>
-              <TeacherInfo>
-                <TeacherName>{teacher.name}</TeacherName>
-                <TeacherIntroduction showMore={showMore === teacher.uid}>
-                  {parse(
-                    `${teacher.introduction}<p style='margin:10px 0; color:#654116'>老師經歷</p>${teacher.experience}`
-                  )}
-                </TeacherIntroduction>
-                <ShowMoreButton
-                  onClick={() => {
-                    if (showMore === teacher.uid) {
-                      setShowMore("");
-                    } else {
-                      setShowMore(teacher.uid);
-                    }
-                  }}
-                >
-                  Show more
-                </ShowMoreButton>
-                {teacher?.reviews?.length > 0 ? (
-                  <TeacherScore>
-                    <StarIcons>
-                      {Array.from(
-                        {
-                          length: Math.floor(
-                            teacher.reviews.reduce((acc, cur) => acc + cur.score, 0) / teacher.reviews.length
-                          ),
-                        },
-                        (v, i) => i + 1
-                      ).map((starIndex) => (
-                        <StarWrapper key={starIndex}>
-                          <Image src={StarIcon} alt="star" fill sizes="contain" />
-                        </StarWrapper>
-                      ))}
-                      {(teacher.reviews.reduce((acc, cur) => acc + cur.score, 0) / teacher.reviews.length) % 1 !==
-                        0 && (
-                        <StarWrapper>
-                          <Image src={HalfStar} alt="star" fill sizes="contain" />
-                        </StarWrapper>
-                      )}
-                    </StarIcons>
-                    <TeacherReviewsInfo>
-                      {(teacher.reviews.reduce((acc, cur) => acc + cur.score, 0) / teacher.reviews.length || 0).toFixed(
-                        1
-                      ) || 0}
-                      分 ，{teacher?.reviews?.length || 0}則評論
-                    </TeacherReviewsInfo>
-                  </TeacherScore>
-                ) : (
-                  <TeacherReviewsInfo>目前無評價</TeacherReviewsInfo>
-                )}
-              </TeacherInfo>
-              <Button
+    <>
+      <Head>
+        <title>預約老師 - Yoga Bear</title>
+      </Head>
+      <Wrapper>
+        <Container>
+          <Bar>
+            <BarSection>
+              <BarTitle>目前排序</BarTitle>
+              <BarLink
+                selectSort={selectSort === "comment"}
                 onClick={() => {
-                  router.push(`/findTeachers/reserve/${teacher.uid}`);
+                  handleSort("comment");
                 }}
               >
-                立刻預約
-              </Button>
-            </Teacher>
-          ))}
-        </TeachersList>
-      </Container>
-    </Wrapper>
+                評論多優先
+              </BarLink>
+              <BarLink
+                selectSort={selectSort === "score"}
+                onClick={() => {
+                  handleSort("score");
+                }}
+              >
+                評價高優先
+              </BarLink>
+              <BarLink
+                selectSort={selectSort === "new"}
+                onClick={() => {
+                  handleSort("new");
+                }}
+              >
+                新老師優先
+              </BarLink>
+            </BarSection>
+          </Bar>
+          <TeachersList>
+            {teachersList.map((teacher) => (
+              <Teacher key={teacher.uid}>
+                <Link href={`/findTeachers/reserve/${teacher.uid}`}>
+                  <TeacherAvatar avatar={teacher.avatar} />
+                </Link>
+                <TeacherInfo>
+                  <TeacherName>{teacher.name}</TeacherName>
+                  <TeacherIntroduction showMore={showMore === teacher.uid}>
+                    {parse(
+                      `${teacher.introduction}<p style='margin:10px 0; color:#654116'>老師經歷</p>${teacher.experience}`
+                    )}
+                  </TeacherIntroduction>
+                  <ShowMoreButton
+                    onClick={() => {
+                      if (showMore === teacher.uid) {
+                        setShowMore("");
+                      } else {
+                        setShowMore(teacher.uid);
+                      }
+                    }}
+                  >
+                    Show more
+                  </ShowMoreButton>
+                  {teacher?.reviews?.length > 0 ? (
+                    <TeacherScore>
+                      <StarIcons>
+                        {Array.from(
+                          {
+                            length: Math.floor(
+                              teacher.reviews.reduce((acc, cur) => acc + cur.score, 0) / teacher.reviews.length
+                            ),
+                          },
+                          (v, i) => i + 1
+                        ).map((starIndex) => (
+                          <StarWrapper key={starIndex}>
+                            <Image src={StarIcon} alt="star" fill sizes="contain" />
+                          </StarWrapper>
+                        ))}
+                        {(teacher.reviews.reduce((acc, cur) => acc + cur.score, 0) / teacher.reviews.length) % 1 !==
+                          0 && (
+                          <StarWrapper>
+                            <Image src={HalfStar} alt="star" fill sizes="contain" />
+                          </StarWrapper>
+                        )}
+                      </StarIcons>
+                      <TeacherReviewsInfo>
+                        {(
+                          teacher.reviews.reduce((acc, cur) => acc + cur.score, 0) / teacher.reviews.length || 0
+                        ).toFixed(1) || 0}
+                        分 ，{teacher?.reviews?.length || 0}則評論
+                      </TeacherReviewsInfo>
+                    </TeacherScore>
+                  ) : (
+                    <TeacherReviewsInfo>目前無評價</TeacherReviewsInfo>
+                  )}
+                </TeacherInfo>
+                <Button
+                  onClick={() => {
+                    router.push(`/findTeachers/reserve/${teacher.uid}`);
+                  }}
+                >
+                  立刻預約
+                </Button>
+              </Teacher>
+            ))}
+          </TeachersList>
+        </Container>
+      </Wrapper>
+    </>
   );
 }
 
 export default FindTeachers;
 
-export const getStaticProps = async () => {
+export const getServerSideProps = async ({ query }: { query: { keywords: string } }) => {
+  const { keywords }: { keywords: string } = query;
   const usersRef = collection(db, "users");
-  const teachersQuery = query(usersRef, where("identity", "==", "teacher"));
+  const teachersQuery = storeQuery(usersRef, where("identity", "==", "teacher"));
   const querySnapshot = await getDocs(teachersQuery);
-  const results: {
+  let results: {
     name: string;
     uid: string;
     reviews: { score: number }[] | null;
@@ -384,6 +391,10 @@ export const getStaticProps = async () => {
     });
   });
 
+  if (keywords) {
+    results = results.filter((teacher) => teacher.name.toLowerCase().includes(keywords.toLowerCase()));
+  }
+
   results.sort((a, b) => {
     const reviewsQtyA = a?.reviews?.length || 0;
     const reviewsQtyB = b?.reviews?.length || 0;
@@ -400,6 +411,5 @@ export const getStaticProps = async () => {
     props: {
       results,
     },
-    revalidate: 60,
   };
 };

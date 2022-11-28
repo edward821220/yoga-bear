@@ -2,6 +2,8 @@ import React, { useState, useEffect, useContext } from "react";
 import { getDoc, doc, updateDoc, arrayRemove, arrayUnion } from "firebase/firestore";
 import styled from "styled-components";
 import Swal from "sweetalert2";
+import emailjs from "@emailjs/browser";
+import Head from "next/head";
 import Image from "next/image";
 import { useRecoilState } from "recoil";
 import { useRouter } from "next/router";
@@ -228,6 +230,12 @@ function Cart() {
           });
           Swal.fire({ text: "購買成功！可以去上課囉～", confirmButtonColor: "#5d7262", icon: "success" });
           setOrderQty(0);
+          const templateParams = {
+            email: userData.email,
+            name: userData.username,
+            price: subtotal,
+          };
+          emailjs.send("service_b8k8uuv", "template_8utvv8h", templateParams, "ZY0JeIuS-PmILJZtR");
           router.push("/myCourses/videoCourses");
         }
       }
@@ -235,76 +243,81 @@ function Cart() {
   };
 
   return (
-    <Wrapper>
-      <Container>
-        <CartContainer>
-          <CartItems>
-            <CartItem>
-              <ItemInfo>課程名稱</ItemInfo>
-              <ItemPrice>價格</ItemPrice>
-              <ItemRemove>刪除</ItemRemove>
-            </CartItem>
-            {cartItems?.map((item) => (
-              <CartItem key={item.id}>
-                <ItemInfo>
-                  <CoverWrapper>
-                    <Image src={item.cover} alt="cover" fill />
-                  </CoverWrapper>
-                  <ItemName>{item.name}</ItemName>
-                </ItemInfo>
-                <ItemPrice>{item.price}</ItemPrice>
-                <ItemRemove>
-                  <RemoveIconWrapper
-                    onClick={() => {
-                      Swal.fire({
-                        text: `確定要刪除嗎？`,
-                        icon: "warning",
-                        showCancelButton: true,
-                        confirmButtonColor: "#d33",
-                        cancelButtonColor: "#3085d6",
-                        confirmButtonText: "Yes!",
-                      }).then((result) => {
-                        if (result.isConfirmed) {
-                          setCartItems(cartItems?.filter((removeItem) => item.id !== removeItem.id));
-                          setOrderQty(orderQty - 1);
-                          const docRef = doc(db, "users", uid);
-                          updateDoc(docRef, {
-                            cartItems: arrayRemove({
-                              cover: item.cover,
-                              name: item.name,
-                              price: item.price,
-                              id: item.id,
-                            }),
-                          });
-                        }
-                      });
-                    }}
-                  >
-                    <Image src={RemoveIcon} alt="remove" fill sizes="contain" />
-                  </RemoveIconWrapper>
-                </ItemRemove>
+    <>
+      <Head>
+        <title>購物車 - Yoga Bear</title>
+      </Head>
+      <Wrapper>
+        <Container>
+          <CartContainer>
+            <CartItems>
+              <CartItem>
+                <ItemInfo>課程名稱</ItemInfo>
+                <ItemPrice>價格</ItemPrice>
+                <ItemRemove>刪除</ItemRemove>
               </CartItem>
-            ))}
-          </CartItems>
-          <OrderDetails>
-            <DetailsTitle>訂單明細</DetailsTitle>
-            {cartItems?.map((item) => (
-              <DetailItems key={item.id}>
-                <DetailItem>{item.name}</DetailItem>
-                <DetailItem>NT. {item.price}</DetailItem>
-              </DetailItems>
-            ))}
-            <Total>
-              <DetailItem>總計</DetailItem>
-              <DetailItem>NT. {subtotal}</DetailItem>
-            </Total>
-            <Button type="button" onClick={handleCheckout}>
-              結帳去
-            </Button>
-          </OrderDetails>
-        </CartContainer>
-      </Container>
-    </Wrapper>
+              {cartItems?.map((item) => (
+                <CartItem key={item.id}>
+                  <ItemInfo>
+                    <CoverWrapper>
+                      <Image src={item.cover} alt="cover" fill />
+                    </CoverWrapper>
+                    <ItemName>{item.name}</ItemName>
+                  </ItemInfo>
+                  <ItemPrice>{item.price}</ItemPrice>
+                  <ItemRemove>
+                    <RemoveIconWrapper
+                      onClick={() => {
+                        Swal.fire({
+                          text: `確定要刪除嗎？`,
+                          icon: "warning",
+                          showCancelButton: true,
+                          confirmButtonColor: "#d33",
+                          cancelButtonColor: "#3085d6",
+                          confirmButtonText: "Yes!",
+                        }).then((result) => {
+                          if (result.isConfirmed) {
+                            setCartItems(cartItems?.filter((removeItem) => item.id !== removeItem.id));
+                            setOrderQty(orderQty - 1);
+                            const docRef = doc(db, "users", uid);
+                            updateDoc(docRef, {
+                              cartItems: arrayRemove({
+                                cover: item.cover,
+                                name: item.name,
+                                price: item.price,
+                                id: item.id,
+                              }),
+                            });
+                          }
+                        });
+                      }}
+                    >
+                      <Image src={RemoveIcon} alt="remove" fill sizes="contain" />
+                    </RemoveIconWrapper>
+                  </ItemRemove>
+                </CartItem>
+              ))}
+            </CartItems>
+            <OrderDetails>
+              <DetailsTitle>訂單明細</DetailsTitle>
+              {cartItems?.map((item) => (
+                <DetailItems key={item.id}>
+                  <DetailItem>{item.name}</DetailItem>
+                  <DetailItem>NT. {item.price}</DetailItem>
+                </DetailItems>
+              ))}
+              <Total>
+                <DetailItem>總計</DetailItem>
+                <DetailItem>NT. {subtotal}</DetailItem>
+              </Total>
+              <Button type="button" onClick={handleCheckout}>
+                結帳去
+              </Button>
+            </OrderDetails>
+          </CartContainer>
+        </Container>
+      </Wrapper>
+    </>
   );
 }
 

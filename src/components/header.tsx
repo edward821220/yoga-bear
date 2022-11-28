@@ -9,7 +9,7 @@ import { useRecoilState, SetterOrUpdater } from "recoil";
 import { getDoc, doc, updateDoc } from "firebase/firestore";
 import { ref, uploadBytesResumable, getDownloadURL } from "firebase/storage";
 import Modal from "./modal";
-import Editor from "./editor";
+import Editor from "./editor/editor";
 import { AuthContext } from "../contexts/authContext";
 import { orderQtyState, bearMoneyState, showMemberModalState } from "../../lib/recoil";
 import { db, storage } from "../../lib/firebase";
@@ -288,7 +288,7 @@ const RadioLabel = styled.label`
 const RadioInput = styled.input`
   margin-left: 5px;
 `;
-const FileLable = styled.label`
+const FileLabel = styled.label`
   display: flex;
   justify-content: center;
   align-items: center;
@@ -436,7 +436,7 @@ function MemberModal({
   const router = useRouter();
   const [isUploading, setIsUploading] = useState(false);
   const [errorMessage, setErrorMessage] = useState("");
-  const [loginData, setloginData] = useState<Record<string, string>>({
+  const [loginData, setLoginData] = useState<Record<string, string>>({
     email: "",
     password: "",
   });
@@ -518,7 +518,7 @@ function MemberModal({
     if (!target.files) return;
     const file = target?.files[0];
     const options = {
-      maxSizeMB: 1,
+      maxSizeMB: 0.3,
       maxWidthOrHeight: 1920,
       useWebWorker: true,
     };
@@ -568,7 +568,7 @@ function MemberModal({
                 value={loginData[item.key]}
                 required
                 onChange={(e: React.ChangeEvent<HTMLInputElement>) => {
-                  setloginData({
+                  setLoginData({
                     ...loginData,
                     [item.key]: e.target.value,
                   });
@@ -679,10 +679,10 @@ function MemberModal({
           </Avatar>
           <MemberInfo>用戶名稱：{userData.username}</MemberInfo>
           <MemberInfo>用戶身份：{userData.identity === "teacher" ? "老師" : "學生"}</MemberInfo>
-          <FileLable onChange={handleUploadAvatar}>
+          <FileLabel onChange={handleUploadAvatar}>
             頭像上傳
             <FileInput type="file" accept="image/*" />
-          </FileLable>
+          </FileLabel>
           <Button
             type="button"
             onClick={() => {
@@ -832,7 +832,7 @@ function Header() {
         </MenuIconWrapper>
         <HeaderLinks showMenu={showMenu}>
           <HeaderLink>
-            <Link href="/videoCourses">影音課程</Link>
+            <Link href="/videoCourses">探索課程</Link>
           </HeaderLink>
           <HeaderLink>
             <Link href="/findTeachers">預約老師</Link>

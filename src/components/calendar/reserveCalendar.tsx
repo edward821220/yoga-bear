@@ -3,6 +3,7 @@ import styled from "styled-components";
 import Paper from "@mui/material/Paper";
 import Image from "next/image";
 import Swal from "sweetalert2";
+import emailjs from "@emailjs/browser";
 import { ViewState, EditingState, IntegratedEditing, AppointmentModel } from "@devexpress/dx-react-scheduler";
 import {
   Scheduler,
@@ -162,6 +163,15 @@ function Header({ appointmentData, ...restProps }: AppointmentTooltip.HeaderProp
                     bearMoney: bearMoney - price,
                   });
                   Swal.fire("您已預約成功！", "請到我的課程查看課表", "success");
+                  const templateParams = {
+                    email: userData.email,
+                    name: userData.username,
+                    class: appointmentData.title,
+                    price,
+                    start: appointmentData.startDate,
+                    end: appointmentData.endDate,
+                  };
+                  emailjs.send("service_b8k8uuv", "template_yhdbjcn", templateParams, "ZY0JeIuS-PmILJZtR");
                 }
               });
             }}
