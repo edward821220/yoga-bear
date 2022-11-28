@@ -14,10 +14,14 @@ const Container = styled.div`
   margin: 0 auto;
 `;
 const VideoContainer = styled.div`
-  flex-basis: 45%;
-  height: 30%;
+  width: 45%;
+  height: auto;
+  margin-bottom: 20px;
 `;
 const StyledVideo = styled.video``;
+const User = styled.p`
+  text-align: center;
+`;
 const ButtonWrapper = styled.div``;
 const Button = styled.button`
   background-color: ${(props) => props.theme.colors.color3};
@@ -48,7 +52,7 @@ function Video({ peer }: { peer: Peer.Instance }) {
 function Group() {
   const [micActive, setMicActive] = useState(true);
   const [cameraActive, setCameraActive] = useState(true);
-  const [peers, setPeers] = useState<{ peerID: string; peer: Peer.Instance }[]>([]);
+  const [peers, setPeers] = useState<{ peerID: string; peerName: string; peer: Peer.Instance }[]>([]);
   const peersRef = useRef<{ peerID: string; peer: Peer.Instance }[]>([]);
   const pusherRef = useRef<Pusher>();
   const channelRef = useRef<PresenceChannel>();
@@ -57,12 +61,7 @@ function Group() {
   const { userData } = useContext(AuthContext);
 
   useEffect(() => {
-    const videoConstraints = {
-      height: 350,
-      width: 500,
-    };
-
-    if (!userData.username) return;
+    if (!userData.uid) return;
     pusherRef.current = new Pusher(process.env.NEXT_PUBLIC_PUSHER_KEY as string, {
       cluster: process.env.NEXT_PUBLIC_PUSHER_CLUSTER,
       authEndpoint: "/api/pusher/auth",
@@ -72,7 +71,7 @@ function Group() {
     });
     channelRef.current = pusherRef.current.subscribe(`presence-group`) as PresenceChannel;
 
-    navigator.mediaDevices.getUserMedia({ video: videoConstraints, audio: true }).then((stream) => {
+    navigator.mediaDevices.getUserMedia({ video: true, audio: true }).then((stream) => {
       if (!channelRef.current) return;
       channelRef.current.bind("pusher:subscription_succeeded", (members: Members) => {
         console.log("我來惹");
@@ -82,7 +81,7 @@ function Group() {
         if (!userVideo.current) return;
         userVideo.current.srcObject = stream;
         userStream.current = stream;
-        const allPeers: { peerID: string; peer: Peer.Instance }[] = [];
+        const allPeers: { peerID: string; peerName: string; peer: Peer.Instance }[] = [];
         /* eslint-disable @typescript-eslint/no-unsafe-argument */
         Object.values(members.members).forEach((member: any) => {
           if (member.uid === userData.uid) return;
@@ -95,6 +94,7 @@ function Group() {
             console.log("對裡面的人發出邀請");
             channelRef.current?.trigger(`client-sendingSignal-${member.uid as string}`, {
               callerId: userData.uid,
+              callerName: userData.username,
               callerSignal,
             });
           });
@@ -104,6 +104,7 @@ function Group() {
           });
           allPeers.push({
             peerID: member.uid,
+            peerName: member.username,
             peer,
           });
           console.log("裡面的人");
@@ -114,7 +115,7 @@ function Group() {
 
       channelRef.current.bind(
         `client-sendingSignal-${userData.uid}`,
-        (payload: { callerId: string; callerSignal: Peer.SignalData }) => {
+        (payload: { callerId: string; callerName: string; callerSignal: Peer.SignalData }) => {
           console.log("收到新人的邀請惹！");
           const peer = new Peer({
             initiator: false,
@@ -138,6 +139,7 @@ function Group() {
             ...prev,
             {
               peerID: payload.callerId,
+              peerName: payload.callerName,
               peer,
             },
           ]);
@@ -216,6 +218,7 @@ function Group() {
       {peers.map((peer) => (
         <VideoContainer key={peer.peerID}>
           <Video peer={peer.peer} />
+          <User>{peer.peerName}</User>
         </VideoContainer>
       ))}
     </Container>
