@@ -832,7 +832,7 @@ function Header() {
         </MenuIconWrapper>
         <HeaderLinks showMenu={showMenu}>
           <HeaderLink>
-            <Link href="/videoCourses">影音課程</Link>
+            <Link href="/videoCourses">探索課程</Link>
           </HeaderLink>
           <HeaderLink>
             <Link href="/findTeachers">預約老師</Link>

@@ -64,8 +64,7 @@ function Group() {
   const { userData } = useContext(AuthContext);
 
   useEffect(() => {
-    if (!userData.uid) return;
-    if (typeof room !== "string") return;
+    if (!userData.uid || typeof room !== "string") return;
     navigator.mediaDevices.getUserMedia({ video: true, audio: true }).then((stream) => {
       if (!userVideo.current) return;
       userVideo.current.srcObject = stream;
@@ -81,7 +80,6 @@ function Group() {
     });
     channelRef.current = pusherRef.current.subscribe(`presence-${room}`) as PresenceChannel;
 
-    if (!channelRef.current) return;
     channelRef.current.bind("pusher:subscription_succeeded", (members: Members) => {
       console.log("我來惹");
       if (members.count === 1) {
@@ -122,6 +120,7 @@ function Group() {
     channelRef.current.bind(
       `client-sendingSignal-${userData.uid}`,
       (payload: { callerId: string; callerName: string; callerSignal: Peer.SignalData }) => {
+        if (peersRef.current.some((peer) => peer.peerID === payload.callerId)) return;
         console.log("收到新人的邀請惹！");
         const peer = new Peer({
           initiator: false,
