@@ -953,7 +953,7 @@ function CourseInfo({ courseId, courseData }: { courseId: string; courseData: Co
               type="button"
               onClick={() => {
                 if (typeof courseId !== "string") return;
-                router.push(`/myCourses/classRoom/videoRoom/${courseId}`);
+                router.push(`/myCourses/classRoom/videoCourseRoom/${courseId}`);
               }}
             >
               前往課程

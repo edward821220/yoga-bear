@@ -19,16 +19,21 @@ const LearningModeData = [
   {
     text: "一對一視訊課",
     id: 1,
+    color: "#AEBDCA",
+  },
+  {
+    text: "一對多視訊課",
+    id: 2,
     color: "#153462",
   },
   {
     text: "一對一實體課",
-    id: 2,
+    id: 3,
     color: "#7FB77E",
   },
   {
     text: "一對多實體課",
-    id: 3,
+    id: 4,
     color: "#4FA095",
   },
 ];
