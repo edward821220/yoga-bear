@@ -856,7 +856,7 @@ function Header() {
           </HeaderLink>
           {userData.identity === "teacher" && (
             <HeaderLinkTeacher>
-              <Link href="/myCourses/classRoom/group">老師開課</Link>
+              <Link href="/myCourses/launchVideoCourse">老師開課</Link>
             </HeaderLinkTeacher>
           )}
         </HeaderLinks>

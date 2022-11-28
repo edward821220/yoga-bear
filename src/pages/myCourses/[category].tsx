@@ -380,8 +380,8 @@ function VideoCourses({ uid }: { uid: string }) {
       {courses?.map((course, courseIndex) => (
         <Course key={course.id}>
           <CourseCover>
-            <Link href={`/myCourses/classRoom/videoRoom/${course.id}`}>
-              <Image src={course.cover} alt="cover" fill />
+            <Link href={`/myCourses/classRoom/videoCourseRoom/${course.id}`}>
+              <Image src={course.cover} alt="cover" fill sizes="contain" />
             </Link>
           </CourseCover>
           <CourseInfos>
@@ -528,7 +528,7 @@ function LaunchedVideoCourses({ uid }: { uid: string }) {
       {courses?.map((course) => (
         <Course key={course.name}>
           <CourseCover>
-            <Link href={`/myCourses/classRoom/videoRoom/${course.id}`}>
+            <Link href={`/myCourses/classRoom/videoCourseRoom/${course.id}`}>
               <Image src={course.cover} alt="cover" fill sizes="cover" />
             </Link>
           </CourseCover>

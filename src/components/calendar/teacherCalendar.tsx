@@ -148,7 +148,7 @@ function Header({ appointmentData, ...restProps }: AppointmentTooltip.HeaderProp
             width={30}
             onClick={() => {
               if (!appointmentData || typeof appointmentData.id !== "string") return;
-              router.push(`/myCourses/classRoom/teacherRoom/${appointmentData.id}`);
+              router.push(`/myCourses/classRoom/videoChatRoom/${appointmentData.id}`);
             }}
           />
         </RoomButtonWrapper>

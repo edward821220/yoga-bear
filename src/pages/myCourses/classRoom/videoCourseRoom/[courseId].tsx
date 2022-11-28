@@ -834,14 +834,14 @@ function VideoRoom({ courseId, courseData }: { courseId: string; courseData: Cou
       if (docSnap.exists()) {
         const courses = docSnap.data().boughtCourses as string[];
         setBoughtCourses(courses);
-        if (!courses.includes(courseId)) {
+        if (!courses.includes(courseId) && userData.uid !== courseData.teacherId) {
           Swal.fire({ text: "您沒有購買此課程唷！", confirmButtonColor: "#5d7262", icon: "warning" });
           router.push("/");
         }
       }
     };
     getBoughtCourses();
-  }, [userData.uid, courseId, router]);
+  }, [userData.uid, courseId, router, courseData.teacherId]);
 
   useEffect(() => {
     const getCourseInfo = async () => {
@@ -896,7 +896,9 @@ function VideoRoom({ courseId, courseData }: { courseId: string; courseData: Cou
     <Wrapper>
       <CourseContainer backgroundImage={courseData?.cover || ""}>
         <Title>{courseData?.name}</Title>
-        {typeof courseId === "string" && boughtCourses && boughtCourses.includes(courseId) ? (
+        {typeof courseId === "string" &&
+        boughtCourses &&
+        (boughtCourses.includes(courseId) || courseData.teacherId === userData.uid) ? (
           <CourseRoom>
             <VideoPlayer
               handleSwitch={handleSwitch}
