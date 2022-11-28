@@ -158,6 +158,7 @@ function Group() {
       console.log("有人落跑惹");
     });
     return () => {
+      console.log("hi");
       peersRef.current.forEach((peer) => {
         peer.peer.destroy();
       });

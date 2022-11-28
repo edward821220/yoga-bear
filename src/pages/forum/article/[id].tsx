@@ -594,19 +594,7 @@ function Article({ id, articleData }: { id: string; articleData: ArticleInterfac
 
 export default Article;
 
-export async function getStaticPaths() {
-  const articlesRef = collection(db, "posts");
-  const queryArticles = await getDocs(query(articlesRef));
-  const paths: { params: { id: string } }[] = [];
-  queryArticles.forEach((data) => {
-    const { id } = data.data();
-    paths.push({ params: { id } });
-  });
-
-  return { paths, fallback: false };
-}
-
-export async function getStaticProps({ params }: { params: { id: string } }) {
+export async function getServerSideProps({ params }: { params: { id: string } }) {
   const docRef = doc(db, "posts", params.id);
   const docSnap = await getDoc(docRef);
   if (!docSnap.exists()) return;
@@ -640,5 +628,5 @@ export async function getStaticProps({ params }: { params: { id: string } }) {
     likes: docSnap.data().likes || [],
   };
 
-  return { props: { id: params.id, articleData }, revalidate: 60 };
+  return { props: { id: params.id, articleData } };
 }
