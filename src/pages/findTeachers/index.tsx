@@ -1,4 +1,4 @@
-import React, { useState, useContext } from "react";
+import React, { useState, useEffect, useContext } from "react";
 import styled from "styled-components";
 import parse from "html-react-parser";
 import Swal from "sweetalert2";
@@ -10,7 +10,7 @@ import produce from "immer";
 import { useRecoilState } from "recoil";
 import { db } from "../../../lib/firebase";
 import { AuthContext } from "../../contexts/authContext";
-import { bearMoneyState, showMemberModalState } from "../../../lib/recoil";
+import { showMemberModalState } from "../../../lib/recoil";
 import StarIcon from "../../../public/star.png";
 import HalfStar from "../../../public/star-half.png";
 
@@ -197,11 +197,58 @@ interface TeacherInterface {
 
 function FindTeachers({ results }: { results: TeacherInterface[] }) {
   const router = useRouter();
+  const { keywords } = router.query;
   const { isLogin } = useContext(AuthContext);
   const [showMemberModal, setShowMemberModal] = useRecoilState(showMemberModalState);
   const [teachersList, setTeachersList] = useState(results);
   const [showMore, setShowMore] = useState<string>();
   const [selectSort, setSelectSort] = useState("comment");
+
+  useEffect(() => {
+    const getTeachersList = async () => {
+      const usersRef = collection(db, "users");
+      const teachersQuery = storeQuery(usersRef, where("identity", "==", "teacher"));
+      const querySnapshot = await getDocs(teachersQuery);
+      let newResults: {
+        name: string;
+        uid: string;
+        reviews: { score: number }[];
+        avatar: string;
+        introduction: string;
+        experience: string;
+        beTeacherTime: number;
+      }[] = [];
+      querySnapshot.forEach((data) => {
+        newResults.push({
+          uid: data.data().uid,
+          name: data.data().username,
+          reviews: data.data().reviews,
+          avatar: data.data().photoURL,
+          introduction: data.data().teacher_introduction,
+          experience: data.data().teacher_experience,
+          beTeacherTime: data.data().beTeacherTime,
+        });
+      });
+      if (typeof keywords === "string") {
+        newResults = newResults.filter((teacher) => teacher.name.toLowerCase().includes(keywords.toLowerCase()));
+      }
+      setTeachersList(
+        newResults.sort((a, b) => {
+          const reviewsQtyA = a?.reviews?.length || 0;
+          const reviewsQtyB = b?.reviews?.length || 0;
+          if (reviewsQtyA < reviewsQtyB) {
+            return 1;
+          }
+          if (reviewsQtyA > reviewsQtyB) {
+            return -1;
+          }
+          return 0;
+        })
+      );
+      setSelectSort("comment");
+    };
+    getTeachersList();
+  }, [keywords]);
 
   const handleSort = (sort: string) => {
     if (sort === "comment") {

@@ -1,5 +1,6 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import styled from "styled-components";
+import { useRouter } from "next/router";
 import Head from "next/head";
 import Link from "next/link";
 import Image from "next/image";
@@ -154,8 +155,52 @@ interface CourseInterface {
 }
 
 function VideoCourses({ results }: { results: CourseInterface[] }) {
+  const router = useRouter();
+  const { keywords } = router.query;
   const [coursesList, setCoursesList] = useState(results);
   const [selectSort, setSelectSort] = useState("comment");
+
+  useEffect(() => {
+    const getCoursesList = async () => {
+      const videoCoursesRef = collection(db, "video_courses");
+      const querySnapshot = await getDocs(videoCoursesRef);
+      let newResults: {
+        name: string;
+        id: string;
+        price: string;
+        cover: string;
+        reviews: { score: number; comments: string }[];
+        launchTime: number;
+      }[] = [];
+      querySnapshot.forEach((data) => {
+        newResults.push({
+          id: data.data().id,
+          name: data.data().name,
+          price: data.data().price,
+          cover: data.data().cover,
+          reviews: data.data().reviews,
+          launchTime: data.data().launchTime,
+        });
+      });
+      if (typeof keywords === "string") {
+        newResults = newResults.filter((course) => course.name.includes(keywords));
+      }
+      setCoursesList(
+        newResults.sort((a, b) => {
+          const reviewsQtyA = a?.reviews?.length || 0;
+          const reviewsQtyB = b?.reviews?.length || 0;
+          if (reviewsQtyA < reviewsQtyB) {
+            return 1;
+          }
+          if (reviewsQtyA > reviewsQtyB) {
+            return -1;
+          }
+          return 0;
+        })
+      );
+    };
+    getCoursesList();
+  }, [keywords]);
 
   const handleSort = (sort: string) => {
     if (sort === "comment") {
