@@ -228,7 +228,9 @@ const AvatarWrapper = styled.div`
 const UserName = styled.p`
   text-align: center;
 `;
-const CommentWrapper = styled.div``;
+const CommentWrapper = styled.div`
+  max-width: 80%;
+`;
 const Score = styled.div`
   margin-bottom: 10px;
   display: flex;
@@ -245,6 +247,7 @@ const StarWrapper = styled.div`
 `;
 const Comments = styled.p`
   font-size: 18px;
+  word-wrap: break-word;
   @media screen and (max-width: 780px) {
     font-size: 16px;
   }
