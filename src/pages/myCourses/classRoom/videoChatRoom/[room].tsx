@@ -19,7 +19,9 @@ const VideoContainer = styled.div`
   height: auto;
   margin-bottom: 20px;
 `;
-const StyledVideo = styled.video``;
+const StyledVideo = styled.video`
+  transform: scaleX(-1);
+`;
 const User = styled.p`
   text-align: center;
 `;
@@ -36,7 +38,6 @@ const Button = styled.button`
 
 function Video({ peer }: { peer: Peer.Instance }) {
   const videoRef = useRef<HTMLVideoElement | null>(null);
-
   useEffect(() => {
     peer.on("stream", (stream) => {
       if (!videoRef.current) return;
