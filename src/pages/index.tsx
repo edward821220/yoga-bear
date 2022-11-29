@@ -310,6 +310,7 @@ export default function Home({
                 onChange={(e) => {
                   setCategory(e.target.value);
                 }}
+                defaultChecked
               />
               找課程
             </SearchLabel>

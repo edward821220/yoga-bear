@@ -51,6 +51,7 @@ export default function App({ Component, pageProps }: AppProps) {
       <Head>
         <meta name="viewport" content="viewport-fit=cover" />
         <meta name="viewport" content="initial-scale=1.0, width=device-width" key="viewport" />
+        <link rel="shortcut icon" href="/member.png" />
       </Head>
       <Reset />
       <GlobalStyle />

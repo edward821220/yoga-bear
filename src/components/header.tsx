@@ -64,7 +64,7 @@ const HeaderLinks = styled.ul<{ showMenu: boolean }>`
     align-items: center;
     flex-direction: column;
     position: absolute;
-    transform: translatex(-28px);
+    transform: translateX(-28px);
     background-color: ${(props) => props.theme.colors.color4};
     padding: 5px 0;
   }
@@ -105,12 +105,6 @@ const HeaderLinkTeacher = styled(HeaderLink)`
 const MyCoursesLink = styled.span`
   color: ${(props) => props.theme.colors.color2};
   cursor: pointer;
-  @media screen and (max-width: 1024px) {
-    margin-right: 10px;
-  }
-  @media screen and (max-width: 788px) {
-    margin-right: 0;
-  }
 `;
 
 const Member = styled.ul`
@@ -831,16 +825,32 @@ function Header() {
           <Image src={MenuIcon} alt="menu" />
         </MenuIconWrapper>
         <HeaderLinks showMenu={showMenu}>
-          <HeaderLink>
+          <HeaderLink
+            onClick={() => {
+              setShowMenu(false);
+            }}
+          >
             <Link href="/videoCourses">探索課程</Link>
           </HeaderLink>
-          <HeaderLink>
+          <HeaderLink
+            onClick={() => {
+              setShowMenu(false);
+            }}
+          >
             <Link href="/findTeachers">預約老師</Link>
           </HeaderLink>
-          <HeaderLink>
+          <HeaderLink
+            onClick={() => {
+              setShowMenu(false);
+            }}
+          >
             <Link href="/forum">問答園地</Link>
           </HeaderLink>
-          <HeaderLink>
+          <HeaderLink
+            onClick={() => {
+              setShowMenu(false);
+            }}
+          >
             <MyCoursesLink
               onClick={() => {
                 if (!isLogin) {
