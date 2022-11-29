@@ -6,18 +6,9 @@ import styled from "styled-components";
 import Swal from "sweetalert2";
 import parse from "html-react-parser";
 import { useRecoilState, SetterOrUpdater } from "recoil";
-import {
-  doc,
-  collection,
-  query,
-  getDoc,
-  getDocs,
-  updateDoc,
-  arrayUnion,
-  arrayRemove,
-  deleteDoc,
-} from "firebase/firestore";
+import { doc, getDoc, updateDoc, arrayUnion, arrayRemove, deleteDoc } from "firebase/firestore";
 import produce from "immer";
+import Editor from "../../../components/editor/editor";
 import { db } from "../../../../lib/firebase";
 import { AuthContext } from "../../../contexts/authContext";
 import { showMemberModalState } from "../../../../lib/recoil";
@@ -71,13 +62,14 @@ const ArticleUser = styled.div`
   display: flex;
   margin: 20px 25px;
 `;
-const UserAvatarWrapper = styled.div`
+const UserAvatarWrapper = styled.div<{ identity?: string }>`
   position: relative;
   width: 30px;
   height: 30px;
   margin-right: 10px;
   border-radius: 50%;
   overflow: hidden;
+  cursor: ${(props) => props.identity === "teacher" && "pointer"};
 `;
 const UserName = styled.p`
   font-size: 20px;
@@ -88,6 +80,7 @@ const Title = styled.h2`
   font-size: 30px;
   font-weight: bold;
   margin: 20px 25px;
+  word-wrap: break-word;
 `;
 const PostTime = styled.p`
   margin: 10px 25px;
@@ -98,6 +91,7 @@ const ArticleContainer = styled.div`
 `;
 const Content = styled.div`
   margin-bottom: 20px;
+  word-wrap: break-word;
   ol {
     display: block;
     list-style-type: decimal;
@@ -173,7 +167,9 @@ const MessagesContainer = styled.div`
   padding: 10px 0px;
   width: 100%;
 `;
-const Messages = styled.ul``;
+const Messages = styled.ul`
+  max-width: 100%;
+`;
 const MessageQty = styled.p`
   padding: 5px 5px 10px 20px;
   border-bottom: 1px solid #e7daca;
@@ -183,16 +179,18 @@ const Message = styled.li`
   border-bottom: 1px solid #e7daca;
   margin: 0px 10px 10px 10px;
   padding: 10px 20px;
+  max-width: 100%;
 `;
 
-const MessageAuthor = styled.div<{ identity: string }>`
+const MessageAuthor = styled.div`
   display: flex;
   margin-bottom: 15px;
-  cursor: ${(props) => props.identity === "teacher" && "pointer"};
 `;
 
-const MessageContent = styled.p`
+const MessageContent = styled.div`
   margin-bottom: 20px;
+  max-width: 100%;
+  word-wrap: break-word;
 `;
 const MessageInfo = styled.div`
   display: flex;
@@ -214,20 +212,28 @@ const MessageBlock = styled.div`
   align-items: center;
   width: 100%;
   padding: 5px;
-`;
-const MessageTextArea = styled.textarea`
-  resize: none;
-  flex-basis: 90%;
-  height: 60px;
-  border-radius: 5px;
-  border: none;
-  &:focus {
-    outline: none;
+  .quill {
+    flex-basis: 90%;
+    max-width: 90%;
+    min-height: 0;
+    height: 60px;
+    border-radius: 5px;
+    border: none;
+    margin: 0;
+    &:focus {
+      outline: none;
+    }
+    @media screen and (max-width: 555px) {
+      flex-basis: 80%;
+    }
+    .ql-editor {
+      padding: 0;
+      max-width: 100%;
+      overflow-x: hidden;
+    }
   }
-  @media screen and (max-width: 555px) {
-    flex-basis: 80%;
-  }
 `;
+
 const Button = styled.button`
   flex-basis: 8%;
   background-color: ${(props) => props.theme.colors.color3};
@@ -352,15 +358,15 @@ function MessagesSection({
             {Array.isArray(article.messages) &&
               article.messages.map((message: MessageInterface, index) => (
                 <Message key={message.authorId + new Date(message.time).toLocaleString()}>
-                  <MessageAuthor
-                    identity={message.identity}
-                    onClick={() => {
-                      if (message.identity === "teacher") {
-                        router.push(`/findTeachers/reserve/${message.authorId}`);
-                      }
-                    }}
-                  >
-                    <UserAvatarWrapper>
+                  <MessageAuthor>
+                    <UserAvatarWrapper
+                      identity={message.identity}
+                      onClick={() => {
+                        if (message.identity === "teacher") {
+                          router.push(`/findTeachers/reserve/${message.authorId}`);
+                        }
+                      }}
+                    >
                       <Image src={message.authorAvatar || Avatar} alt="avatar" fill sizes="contain" />
                     </UserAvatarWrapper>
                     <UserName>
@@ -399,7 +405,7 @@ function MessagesSection({
                       </ClickIconWrapper>
                     )}
                   </MessageAuthor>
-                  <MessageContent>{message.message}</MessageContent>
+                  <MessageContent>{parse(message.message)}</MessageContent>
                   <MessageInfo>
                     {message?.likes?.includes(userData.uid) || (
                       <ClickLike
@@ -434,13 +440,7 @@ function MessagesSection({
         </MessagesContainer>
       )}
       <MessageBlock>
-        <MessageTextArea
-          value={inputMessage}
-          placeholder="留言......"
-          onChange={(e) => {
-            setInputMessage(e.target.value);
-          }}
-        />
+        <Editor content={inputMessage} setContent={setInputMessage} style={{}} placeholder="留言......" />
         <Button onClick={handleMessage}>送出</Button>
       </MessageBlock>
     </>

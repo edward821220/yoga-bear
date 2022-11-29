@@ -126,6 +126,7 @@ const UserName = styled.span`
 `;
 const ArticleInfo = styled.div`
   display: flex;
+  max-width: 746px;
 `;
 const ArticleText = styled.div`
   flex-basis: 75%;
@@ -150,6 +151,7 @@ const ArticleTitle = styled.h4`
   margin-bottom: 10px;
   width: 100%;
   overflow: hidden;
+  word-wrap: break-word;
 `;
 const ArticlePreview = styled.div`
   line-height: 20px;
