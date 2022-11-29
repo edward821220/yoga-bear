@@ -1,13 +1,16 @@
-import React, { useState } from "react";
+import React, { useState, useContext } from "react";
 import styled from "styled-components";
 import parse from "html-react-parser";
+import Swal from "sweetalert2";
 import Head from "next/head";
-import Link from "next/link";
 import Image from "next/image";
 import { useRouter } from "next/router";
 import { collection, getDocs, query as storeQuery, where } from "firebase/firestore";
 import produce from "immer";
+import { useRecoilState } from "recoil";
 import { db } from "../../../lib/firebase";
+import { AuthContext } from "../../contexts/authContext";
+import { bearMoneyState, showMemberModalState } from "../../../lib/recoil";
 import StarIcon from "../../../public/star.png";
 import HalfStar from "../../../public/star-half.png";
 
@@ -93,6 +96,7 @@ const TeacherAvatar = styled.div<{ avatar: string }>`
   width: 80px;
   height: 80px;
   border-radius: 50%;
+  cursor: pointer;
   @media screen and (max-width: 588px) {
     width: 66px;
     height: 66px;
@@ -193,6 +197,8 @@ interface TeacherInterface {
 
 function FindTeachers({ results }: { results: TeacherInterface[] }) {
   const router = useRouter();
+  const { isLogin } = useContext(AuthContext);
+  const [showMemberModal, setShowMemberModal] = useRecoilState(showMemberModalState);
   const [teachersList, setTeachersList] = useState(results);
   const [showMore, setShowMore] = useState<string>();
   const [selectSort, setSelectSort] = useState("comment");
@@ -293,9 +299,17 @@ function FindTeachers({ results }: { results: TeacherInterface[] }) {
           <TeachersList>
             {teachersList.map((teacher) => (
               <Teacher key={teacher.uid}>
-                <Link href={`/findTeachers/reserve/${teacher.uid}`}>
-                  <TeacherAvatar avatar={teacher.avatar} />
-                </Link>
+                <TeacherAvatar
+                  avatar={teacher.avatar}
+                  onClick={() => {
+                    if (!isLogin) {
+                      Swal.fire({ title: "您還沒登入唷！", confirmButtonColor: "#5d7262", icon: "warning" });
+                      setShowMemberModal(true);
+                      return;
+                    }
+                    router.push(`/findTeachers/reserve/${teacher.uid}`);
+                  }}
+                />
                 <TeacherInfo>
                   <TeacherName>{teacher.name}</TeacherName>
                   <TeacherIntroduction showMore={showMore === teacher.uid}>
@@ -349,6 +363,11 @@ function FindTeachers({ results }: { results: TeacherInterface[] }) {
                 </TeacherInfo>
                 <Button
                   onClick={() => {
+                    if (!isLogin) {
+                      Swal.fire({ title: "您還沒登入唷！", confirmButtonColor: "#5d7262", icon: "warning" });
+                      setShowMemberModal(true);
+                      return;
+                    }
                     router.push(`/findTeachers/reserve/${teacher.uid}`);
                   }}
                 >

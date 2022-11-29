@@ -22,7 +22,7 @@ import { collection, getDocs, query, where, doc, updateDoc, arrayUnion, getDoc }
 import { useRecoilState } from "recoil";
 import { db } from "../../../lib/firebase";
 import { AuthContext } from "../../contexts/authContext";
-import { bearMoneyState, showMemberModalState } from "../../../lib/recoil";
+import { bearMoneyState } from "../../../lib/recoil";
 import resources from "./resources";
 import ReserveButton from "../../../public/reserve.png";
 
@@ -98,9 +98,8 @@ function BasicLayout({ onFieldChange, appointmentData, ...restProps }: Appointme
 }
 
 function Header({ appointmentData, ...restProps }: AppointmentTooltip.HeaderProps) {
-  const { userData, isLogin } = useContext(AuthContext);
+  const { userData } = useContext(AuthContext);
   const { email } = userData;
-  const [showMemberModal, setShowMemberModal] = useRecoilState(showMemberModalState);
   const [bearMoney, setBearMoney] = useRecoilState(bearMoneyState);
   const isEnded = Date.now() > Date.parse(appointmentData?.endDate as string);
   const maximum = Number(appointmentData?.maximum) || 1;
@@ -113,11 +112,6 @@ function Header({ appointmentData, ...restProps }: AppointmentTooltip.HeaderProp
             alt="reserve-btn"
             width={36}
             onClick={() => {
-              if (!isLogin) {
-                Swal.fire({ title: "您還沒登入唷！", confirmButtonColor: "#5d7262", icon: "warning" });
-                setShowMemberModal(true);
-                return;
-              }
               if (!appointmentData) return;
               const price = Number(appointmentData.price as string) || 0;
               Swal.fire({
