@@ -1,5 +1,6 @@
 import React, { useState, useRef, useEffect, useContext } from "react";
 import Pusher, { Members, PresenceChannel } from "pusher-js";
+import Head from "next/head";
 import { useRouter } from "next/router";
 import Peer from "simple-peer";
 import styled from "styled-components";
@@ -209,29 +210,34 @@ function Group() {
   };
 
   return (
-    <Container>
-      <VideoContainer>
-        <StyledVideo muted ref={userVideo} autoPlay playsInline />
-        <ButtonWrapper>
-          <Button onClick={toggleCamera} type="button">
-            {cameraActive ? "Stop Camera" : "Start Camera"}
-          </Button>
-          <Button onClick={toggleMic} type="button">
-            {micActive ? "Mute Mic" : "UnMute Mic"}
-          </Button>
-          <Button onClick={leaveRoom} type="button">
-            Leave
-          </Button>
-        </ButtonWrapper>
-      </VideoContainer>
-
-      {peers.map((peer) => (
-        <VideoContainer key={peer.peerID}>
-          <Video peer={peer.peer} />
-          <User>{peer.peerName}</User>
+    <>
+      <Head>
+        <title>視訊課教室 - Yoga Bear</title>
+      </Head>
+      <Container>
+        <VideoContainer>
+          <StyledVideo muted ref={userVideo} autoPlay playsInline />
+          <ButtonWrapper>
+            <Button onClick={toggleCamera} type="button">
+              {cameraActive ? "Stop Camera" : "Start Camera"}
+            </Button>
+            <Button onClick={toggleMic} type="button">
+              {micActive ? "Mute Mic" : "UnMute Mic"}
+            </Button>
+            <Button onClick={leaveRoom} type="button">
+              Leave
+            </Button>
+          </ButtonWrapper>
         </VideoContainer>
-      ))}
-    </Container>
+
+        {peers.map((peer) => (
+          <VideoContainer key={peer.peerID}>
+            <Video peer={peer.peer} />
+            <User>{peer.peerName}</User>
+          </VideoContainer>
+        ))}
+      </Container>
+    </>
   );
 }
 

@@ -233,7 +233,7 @@ function VideoCourses({ results }: { results: CourseInterface[] }) {
   return (
     <>
       <Head>
-        <title>影音課程 - Yoga Bear</title>
+        <title>探索課程 - Yoga Bear</title>
       </Head>
       <Wrapper>
         <Container>
