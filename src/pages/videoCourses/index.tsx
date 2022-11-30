@@ -275,6 +275,13 @@ function VideoCourses({ results }: { results: CourseInterface[] }) {
       setSelectSort(sort);
     }
   };
+  if (results.length === 0)
+    return (
+      <Wrapper>
+        <Container>找不到您搜尋的課程，請重新查詢唷！</Container>
+      </Wrapper>
+    );
+
   return (
     <>
       <Head>
