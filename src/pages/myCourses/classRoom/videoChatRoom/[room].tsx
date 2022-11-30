@@ -121,7 +121,8 @@ function Group() {
     channelRef.current.bind(
       `client-sendingSignal-${userData.uid}`,
       (payload: { callerId: string; callerName: string; callerSignal: Peer.SignalData }) => {
-        if (peersRef.current.find((peer) => peer.peerID === payload.callerId)) return;
+        const newPeersRef = peersRef.current.filter((peer) => peer.peerID !== payload.callerId);
+        const newPeers = peers.filter((peer) => peer.peerID !== payload.callerId);
         console.log("收到新人的邀請惹！");
         const peer = new Peer({
           initiator: false,
@@ -137,12 +138,13 @@ function Group() {
           console.log("回覆新人訊息");
         });
         peer.signal(payload.callerSignal);
-        peersRef.current.push({
+        newPeersRef.push({
           peerID: payload.callerId,
           peer,
         });
-        setPeers((prev) => [
-          ...prev,
+        peersRef.current = newPeersRef;
+        setPeers([
+          ...newPeers,
           {
             peerID: payload.callerId,
             peerName: payload.callerName,
