@@ -16,7 +16,7 @@ const Container = styled.div`
   margin: 0 auto;
 `;
 const VideoContainer = styled.div`
-  width: 45%;
+  width: 48%;
   height: auto;
   margin-bottom: 20px;
   @media screen and (max-width: 688px) {
