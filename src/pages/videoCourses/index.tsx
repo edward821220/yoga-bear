@@ -340,11 +340,10 @@ function VideoCourses({ results }: { results: CourseInterface[] }) {
                   {course?.reviews?.length > 0 ? (
                     <CourseScore>
                       <StarIcons>
-                        {/* eslint-disable no-unsafe-optional-chaining */}
                         {Array.from(
                           {
                             length: Math.floor(
-                              course?.reviews?.reduce((acc, cur) => acc + cur.score, 0) / course?.reviews?.length
+                              course.reviews.reduce((acc, cur) => acc + cur.score, 0) / course.reviews.length
                             ),
                           },
                           (v, i) => i + 1
@@ -353,7 +352,7 @@ function VideoCourses({ results }: { results: CourseInterface[] }) {
                             <Image src={StarIcon} alt="star" fill sizes="contain" />
                           </StarWrapper>
                         ))}
-                        {(course?.reviews?.reduce((acc, cur) => acc + cur.score, 0) / course?.reviews?.length) % 1 !==
+                        {(course.reviews.reduce((acc, cur) => acc + cur.score, 0) / course.reviews.length) % 1 !==
                           0 && (
                           <StarWrapper>
                             <Image src={HalfStar} alt="star" fill sizes="contain" />
@@ -361,9 +360,9 @@ function VideoCourses({ results }: { results: CourseInterface[] }) {
                         )}
                       </StarIcons>
                       <CourseReviewsInfo>
-                        {(
-                          course?.reviews?.reduce((acc, cur) => acc + cur.score, 0) / course?.reviews?.length || 0
-                        ).toFixed(1) || 0}
+                        {(course.reviews.reduce((acc, cur) => acc + cur.score, 0) / course.reviews.length || 0).toFixed(
+                          1
+                        ) || 0}
                         分 ，{course?.reviews?.length || 0}則評論
                       </CourseReviewsInfo>
                     </CourseScore>

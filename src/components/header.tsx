@@ -734,9 +734,9 @@ function PaymentModal({ setShowPaymentModal, bearMoney, setBearMoney, userId }: 
   return (
     <Modal handleClose={handleClose}>
       <Form onSubmit={handleSubmit}>
-        <FormTitle>儲值熊幣(1:1 NTD)</FormTitle>
+        <FormTitle>儲值熊幣</FormTitle>
         <Label>
-          <LabelText>儲值金額</LabelText>
+          <LabelText>儲值金額(1:1 NTD)</LabelText>
           <FormInput
             value={paymentData.money}
             required

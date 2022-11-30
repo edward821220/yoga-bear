@@ -901,8 +901,8 @@ function CourseInfo({ courseId, courseData }: { courseId: string; courseData: Co
     Swal.fire({ title: "已加入購物車！", confirmButtonColor: "#5d7262", icon: "success" });
     const docSnap = await getDoc(userRef);
     if (docSnap.exists()) {
-      // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
-      const qty: number = docSnap.data()?.cartItems?.length;
+      const cartItems = docSnap.data().cartItems as [];
+      const qty = cartItems.length;
       setOrderQty(qty);
     }
   };

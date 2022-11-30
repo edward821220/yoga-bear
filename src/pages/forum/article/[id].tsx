@@ -557,7 +557,6 @@ function Article({ id, articleData }: { id: string; articleData: ArticleInterfac
           {isEditState && <RichEditor content={content} setContent={setContent} />}
           {article && !isEditState && (
             <ArticleContainer>
-              {/* eslint-disable-next-line react/no-danger */}
               {typeof content === "string" && <Content className="ql-editor">{parse(content)}</Content>}
               <ArticleActivity>
                 <Qty>

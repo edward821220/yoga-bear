@@ -43,8 +43,8 @@ const ReserveButtonWrapper = styled.div`
 `;
 
 function TextEditor(props: AppointmentForm.TextEditorProps) {
-  // eslint-disable-next-line react/destructuring-assignment
-  if (props.type === "multilineTextEditor") {
+  const { type } = props;
+  if (type === "multilineTextEditor") {
     return null;
   }
   return <AppointmentForm.TextEditor {...props} />;
@@ -52,7 +52,12 @@ function TextEditor(props: AppointmentForm.TextEditorProps) {
 
 function BasicLayout({ onFieldChange, appointmentData, ...restProps }: AppointmentForm.BasicLayoutProps) {
   return (
-    <AppointmentForm.BasicLayout appointmentData={appointmentData} onFieldChange={onFieldChange} {...restProps}>
+    <AppointmentForm.BasicLayout
+      appointmentData={appointmentData}
+      onFieldChange={onFieldChange}
+      {...restProps}
+      readOnly
+    >
       <AppointmentForm.Label text="課程人數" type="titleLabel" />
       <AppointmentForm.TextEditor
         value={Number(appointmentData.maximum) || 1}
@@ -186,15 +191,16 @@ function ReserveCalendar({ teacherId }: { teacherId: string }) {
       const courseQuery = query(courseRef, where("teacherId", "==", teacherId));
       const querySnapshot = await getDocs(courseQuery);
       const results: AppointmentModel[] = [];
-      /* eslint-disable @typescript-eslint/no-unsafe-member-access */
+
       querySnapshot.forEach((data) => {
+        const startDate = data.data().startDate as { seconds: number };
+        const endDate = data.data().endDate as { seconds: number };
         results.push({
           ...data.data(),
-          startDate: new Date(data.data().startDate.seconds * 1000),
-          endDate: new Date(data.data().endDate.seconds * 1000),
+          startDate: new Date(startDate.seconds * 1000),
+          endDate: new Date(endDate.seconds * 1000),
         });
       });
-      /* eslint-enable @typescript-eslint/no-unsafe-member-access */
       setAppointments(results);
     };
     getRooms();
