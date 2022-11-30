@@ -341,6 +341,7 @@ const TeacherInfo = styled.div`
   cursor: pointer;
 `;
 const TeacherWrapper = styled.div`
+  position: relative;
   display: flex;
   justify-content: center;
   align-items: center;
@@ -402,6 +403,7 @@ const User = styled.div`
   }
 `;
 const AvatarWrapper = styled.div`
+  position: relative;
   display: flex;
   justify-content: center;
   align-items: center;
@@ -745,7 +747,7 @@ function CourseDetail({ courseData, teacherData, reviewsUsersData }: CourseDetai
           }}
         >
           <TeacherWrapper>
-            <Image src={teacherData.teacherAvatar} alt="avatar" width={120} height={120} />
+            <Image src={teacherData.teacherAvatar} alt="avatar" fill sizes="contain " style={{ objectFit: "cover" }} />
           </TeacherWrapper>
           <TeacherName>{teacherData.teacherName}</TeacherName>
         </TeacherInfo>
@@ -791,8 +793,9 @@ function CourseDetail({ courseData, teacherData, reviewsUsersData }: CourseDetai
                       reviewsUsersData.find((reviewUserData) => reviewUserData.index === reviewIndex)?.avatar || Avatar
                     }
                     alt="avatar"
-                    width={120}
-                    height={120}
+                    fill
+                    sizes="contain"
+                    style={{ objectFit: "cover" }}
                   />
                 </AvatarWrapper>
                 <UserName>

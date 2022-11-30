@@ -42,6 +42,7 @@ const TeacherInfo = styled.div`
   margin-bottom: 20px;
 `;
 const TeacherAvatar = styled.div`
+  position: relative;
   width: 66px;
   height: 66px;
   border-radius: 50%;
@@ -212,6 +213,7 @@ const User = styled.div`
   margin-right: 80px;
 `;
 const AvatarWrapper = styled.div`
+  position: relative;
   display: flex;
   justify-content: center;
   align-items: center;
@@ -394,7 +396,13 @@ export default function Reserve() {
           <TeacherDetail>
             <TeacherInfo>
               <TeacherAvatar>
-                <Image src={teacherData?.avatar || Avatar} alt="avatar" width={120} height={120} />
+                <Image
+                  src={teacherData?.avatar || Avatar}
+                  alt="avatar"
+                  fill
+                  sizes="contain"
+                  style={{ objectFit: "cover" }}
+                />
               </TeacherAvatar>
               <TeacherName>{teacherData?.username} 老師</TeacherName>
             </TeacherInfo>
@@ -466,8 +474,9 @@ export default function Reserve() {
                           Avatar
                         }
                         alt="avatar"
-                        width={120}
-                        height={120}
+                        fill
+                        sizes="contain"
+                        style={{ objectFit: "cover" }}
                       />
                     </AvatarWrapper>
                     <UserName>

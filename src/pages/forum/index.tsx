@@ -228,7 +228,13 @@ function Forum({ posts }: { posts: PostInterface[] }) {
                 >
                   <ArticleUser>
                     <UserAvatarWrapper>
-                      <Image src={article.authorAvatar || Avatar} alt="avatar" fill sizes="contain" />
+                      <Image
+                        src={article.authorAvatar || Avatar}
+                        alt="avatar"
+                        fill
+                        sizes="contain"
+                        style={{ objectFit: "cover" }}
+                      />
                     </UserAvatarWrapper>
                     <UserName>{article.authorName}</UserName>
                   </ArticleUser>

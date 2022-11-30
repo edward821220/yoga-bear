@@ -367,7 +367,13 @@ function MessagesSection({
                         }
                       }}
                     >
-                      <Image src={message.authorAvatar || Avatar} alt="avatar" fill sizes="contain" />
+                      <Image
+                        src={message.authorAvatar || Avatar}
+                        alt="avatar"
+                        fill
+                        sizes="contain"
+                        style={{ objectFit: "cover" }}
+                      />
                     </UserAvatarWrapper>
                     <UserName>
                       {message.authorName} ({message.identity === "student" ? "學生" : "老師"})
@@ -490,7 +496,13 @@ function Article({ id, articleData }: { id: string; articleData: ArticleInterfac
         <Container>
           <ArticleUser>
             <UserAvatarWrapper>
-              <Image src={article?.authorAvatar || Avatar} alt="avatar" fill sizes="contain" />
+              <Image
+                src={article?.authorAvatar || Avatar}
+                alt="avatar"
+                fill
+                sizes="contain"
+                style={{ objectFit: "cover" }}
+              />
             </UserAvatarWrapper>
             <UserName>{article?.authorName}</UserName>
             {userData.uid === article.authorId && (

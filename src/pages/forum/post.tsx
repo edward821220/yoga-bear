@@ -151,7 +151,7 @@ function Post() {
         <Container>
           <ArticleUser>
             <UserAvatarWrapper>
-              <Image src={userData.avatar} alt="avatar" fill sizes="contain" />
+              <Image src={userData.avatar} alt="avatar" fill sizes="contain" style={{ objectFit: "cover" }} />
             </UserAvatarWrapper>
             <UserName>{userData.username}</UserName>
           </ArticleUser>

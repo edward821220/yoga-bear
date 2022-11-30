@@ -564,7 +564,7 @@ export default function Home({
                   }}
                 >
                   <AvatarWrapper>
-                    <Image src={teacher.avatar} alt="avatar" fill sizes="contain" />
+                    <Image src={teacher.avatar} alt="avatar" fill sizes="contain" style={{ objectFit: "cover" }} />
                   </AvatarWrapper>
                   <Info>{teacher.name}</Info>
                 </Course>
