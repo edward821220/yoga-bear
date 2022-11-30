@@ -601,6 +601,7 @@ function MemberModal({
               type="radio"
               value="student"
               name="identity"
+              defaultChecked
               onChange={(e) => {
                 setSignupData({ ...signupData, identity: e.target.value });
               }}
