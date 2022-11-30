@@ -4,6 +4,7 @@ import Image from "next/image";
 import styled from "styled-components";
 import Swal from "sweetalert2";
 import imageCompression from "browser-image-compression";
+import InputMask from "react-input-mask";
 import { useRouter } from "next/router";
 import { useRecoilState, SetterOrUpdater } from "recoil";
 import { getDoc, doc, updateDoc } from "firebase/firestore";
@@ -273,6 +274,12 @@ const FormInput = styled.input`
   width: 200px;
   padding-left: 5px;
 `;
+const PaymentInputMask = styled(InputMask)`
+  margin-bottom: 10px;
+  height: 30px;
+  width: 200px;
+  padding-left: 5px;
+`;
 
 const RadioLabel = styled.label`
   display: flex;
@@ -370,25 +377,7 @@ const signupForm = [
   },
 ];
 
-const paymentForm = [
-  {
-    key: "money",
-    title: "儲值金額",
-    type: "number",
-    placeholder: "請輸入需要儲值多少熊幣",
-    min: 100,
-    max: 10000,
-    step: 50,
-  },
-  { key: "cardNumber", title: "信用卡號", type: "text", placeholder: "OOOO-OOOO-OOOO-OOOO" },
-  { key: "expiration", title: "到期日", type: "text", placeholder: "OO/OO" },
-  { key: "cvv", title: "安全碼", type: "text", placeholder: "OOO" },
-];
-
 const isValidEmail = /^[\w-.]+@([\w-]+\.)+[\w-]{2,4}$/g;
-const isValidCardNumber = /^\d{4}-\d{4}-\d{4}-\d{4}$/;
-const isValidExpiration = /^\d{2}\/\d{2}$/;
-const isValidCCV = /\d{3}$/;
 
 interface MemberModalProps {
   setOrderQty: SetterOrUpdater<number>;
@@ -699,6 +688,10 @@ function MemberModal({
   );
 }
 
+const isValidCardNumber = /^\d{4}-\d{4}-\d{4}-\d{4}$/;
+const isValidExpiration = /^\d{2}\/\d{2}$/;
+const isValidCVV = /^[0-9]{3}$/;
+
 interface PaymentModalProps {
   setShowPaymentModal: Dispatch<SetStateAction<boolean>>;
   bearMoney: number;
@@ -726,8 +719,8 @@ function PaymentModal({ setShowPaymentModal, bearMoney, setBearMoney, userId }: 
       Swal.fire({ title: "請輸入正確的信用卡期限", confirmButtonColor: "#5d7262" });
       return;
     }
-    if (!paymentData.cvv.match(isValidCCV)) {
-      Swal.fire({ title: "請輸入正確的信用卡號碼", confirmButtonColor: "#5d7262" });
+    if (!paymentData.cvv.match(isValidCVV)) {
+      Swal.fire({ title: "請輸入正確的安全碼", confirmButtonColor: "#5d7262" });
       return;
     }
     setBearMoney((prev) => prev + Number(paymentData.money));
@@ -742,41 +735,54 @@ function PaymentModal({ setShowPaymentModal, bearMoney, setBearMoney, userId }: 
     <Modal handleClose={handleClose}>
       <Form onSubmit={handleSubmit}>
         <FormTitle>儲值熊幣(1:1 NTD)</FormTitle>
-        {paymentForm.map((item) => {
-          if (item.type === "number") {
-            return (
-              <Label key={item.key}>
-                <LabelText>{item.title}</LabelText>
-                <FormInput
-                  placeholder={item.placeholder}
-                  type={item.type}
-                  value={paymentData[item.key]}
-                  min={item.min}
-                  max={item.max}
-                  step={item.step}
-                  required
-                  onChange={(e: React.ChangeEvent<HTMLInputElement>) => {
-                    setPaymentData({ ...paymentData, [item.key]: e.target.value });
-                  }}
-                />
-              </Label>
-            );
-          }
-          return (
-            <Label key={item.key}>
-              <LabelText>{item.title}</LabelText>
-              <FormInput
-                placeholder={item.placeholder}
-                type={item.type}
-                value={paymentData[item.key]}
-                required
-                onChange={(e: React.ChangeEvent<HTMLInputElement>) => {
-                  setPaymentData({ ...paymentData, [item.key]: e.target.value });
-                }}
-              />
-            </Label>
-          );
-        })}
+        <Label>
+          <LabelText>儲值金額</LabelText>
+          <FormInput
+            value={paymentData.money}
+            required
+            onChange={(e: React.ChangeEvent<HTMLInputElement>) => {
+              const isNumber = /^[0-9\s]*$/;
+              if (!isNumber.test(e.target.value)) return;
+              setPaymentData({ ...paymentData, money: e.target.value });
+            }}
+          />
+        </Label>
+        <Label>
+          <LabelText>信用卡號</LabelText>
+          <PaymentInputMask
+            mask="9999-9999-9999-9999"
+            maskChar=" "
+            value={paymentData.cardNumber}
+            required
+            onChange={(e: React.ChangeEvent<HTMLInputElement>) => {
+              setPaymentData({ ...paymentData, cardNumber: e.target.value });
+            }}
+          />
+        </Label>
+        <Label>
+          <LabelText>到期日</LabelText>
+          <PaymentInputMask
+            mask="99/99"
+            maskChar=" "
+            value={paymentData.expiration}
+            required
+            onChange={(e: React.ChangeEvent<HTMLInputElement>) => {
+              setPaymentData({ ...paymentData, expiration: e.target.value });
+            }}
+          />
+        </Label>
+        <Label>
+          <LabelText>安全碼</LabelText>
+          <PaymentInputMask
+            mask="999"
+            maskChar=" "
+            value={paymentData.cvv}
+            required
+            onChange={(e: React.ChangeEvent<HTMLInputElement>) => {
+              setPaymentData({ ...paymentData, cvv: e.target.value });
+            }}
+          />
+        </Label>
         <Button type="submit">確定加值</Button>
         <Image src={MoneyBear} alt="money-bear" width={100} height={100} />
       </Form>
@@ -799,8 +805,8 @@ function Header() {
       const docRef = doc(db, "users", userData.uid);
       const docSnap = await getDoc(docRef);
       if (docSnap.exists()) {
-        // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
-        const qty: number = docSnap.data()?.cartItems?.length;
+        const cartItems = docSnap.data().cartItems as [];
+        const qty = cartItems.length;
         const money: number = docSnap.data()?.bearMoney;
         setOrderQty(qty);
         setBearMoney(money || 0);
