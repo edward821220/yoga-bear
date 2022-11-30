@@ -19,9 +19,17 @@ const VideoContainer = styled.div`
   width: 45%;
   height: auto;
   margin-bottom: 20px;
+  @media screen and (max-width: 688px) {
+    width: 100%;
+  }
 `;
 const StyledVideo = styled.video`
+  max-width: 100%;
   transform: scaleX(-1);
+  margin-bottom: 10px;
+  border: 1px solid lightgray;
+  border-radius: 5px;
+  box-shadow: 0 0 5px #00000050;
 `;
 const User = styled.p`
   text-align: center;
@@ -56,7 +64,7 @@ function Group() {
   const [cameraActive, setCameraActive] = useState(true);
   const [peers, setPeers] = useState<{ peerID: string; peerName: string; peer: Peer.Instance }[]>([]);
   const connectedRef = useRef<string[]>([]);
-  const peersRef = useRef<{ peerID: string; peer: Peer.Instance }[]>([]);
+  const peersRef = useRef<{ peerID: string; peerName: string; peer: Peer.Instance }[]>([]);
   const pusherRef = useRef<Pusher>();
   const channelRef = useRef<PresenceChannel>();
   const userVideo = useRef<HTMLVideoElement>(null);
@@ -105,6 +113,7 @@ function Group() {
         });
         peersRef.current.push({
           peerID: member.uid,
+          peerName: member.username,
           peer,
         });
         allPeers.push({
@@ -121,8 +130,7 @@ function Group() {
     channelRef.current.bind(
       `client-sendingSignal-${userData.uid}`,
       (payload: { callerId: string; callerName: string; callerSignal: Peer.SignalData }) => {
-        const newPeersRef = peersRef.current.filter((peer) => peer.peerID !== payload.callerId);
-        const newPeers = peers.filter((peer) => peer.peerID !== payload.callerId);
+        peersRef.current = peersRef.current.filter((peer) => peer.peerID !== payload.callerId);
         console.log("收到新人的邀請惹！");
         const peer = new Peer({
           initiator: false,
@@ -138,19 +146,12 @@ function Group() {
           console.log("回覆新人訊息");
         });
         peer.signal(payload.callerSignal);
-        newPeersRef.push({
+        peersRef.current.push({
           peerID: payload.callerId,
+          peerName: payload.callerName,
           peer,
         });
-        peersRef.current = newPeersRef;
-        setPeers([
-          ...newPeers,
-          {
-            peerID: payload.callerId,
-            peerName: payload.callerName,
-            peer,
-          },
-        ]);
+        setPeers(peersRef.current);
       }
     );
 
