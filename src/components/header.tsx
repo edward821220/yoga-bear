@@ -471,14 +471,18 @@ function MemberModal({
       setErrorMessage("請再次確認密碼是否輸入一致");
       return;
     }
-    const res: string = await signup(signupData.email, signupData.password, signupData.identity, signupData.username);
-    if (res.includes("Error")) {
-      setErrorMessage(res);
+    if (signupData.identity === "teacher" && (!teacherExperience.trim() || !teacherIntroduction.trim())) {
+      Swal.fire({ text: "請輸入自我介紹及教學經歷", confirmButtonColor: "#5d7262", icon: "warning" });
       return;
     }
-    const uid = res;
     const target = e.target as HTMLInputElement;
     const fileInput = target.querySelector("input[type=file]") as HTMLInputElement;
+    if (fileInput?.files?.length === 0) {
+      Swal.fire({ text: "您的證照沒上傳唷～請確認後再送出", confirmButtonColor: "#5d7262", icon: "warning" });
+      return;
+    }
+    const res: string = await signup(signupData.email, signupData.password, signupData.identity, signupData.username);
+    const uid = res;
     if (fileInput?.files) {
       const file = fileInput?.files[0];
       const storageRef = ref(storage, `certificate/${userData.uid}-${file.name}`);
@@ -649,7 +653,6 @@ function MemberModal({
                 <LabelInputFile
                   type="file"
                   accept="image/*, application/pdf"
-                  required
                   onChange={(e) => {
                     if (!e.target.files) return;
                     setCertificatePreview(e.target.files[0].name);

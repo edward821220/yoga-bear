@@ -669,6 +669,10 @@ function LaunchVideoCourse({ uid }: { uid: string }) {
       });
     }
     const fileInputs: HTMLInputElement[] = Array.from(document.querySelectorAll("input[type=file]"));
+    if (fileInputs.some((fileInput) => fileInput.files?.length === 0)) {
+      Swal.fire({ text: "您有檔案沒上傳唷～請確認後再送出", confirmButtonColor: "#5d7262", icon: "error" });
+      return;
+    }
     await Promise.all(
       fileInputs.map(async (input: HTMLInputElement, index) => {
         await uploadTaskPromise(input, index);
@@ -729,7 +733,6 @@ function LaunchVideoCourse({ uid }: { uid: string }) {
           <LaunchFormLabelInputFile
             type="file"
             accept="image/*"
-            required
             onChange={(e) => {
               if (!e.target.files) return;
               setCoverPreview(URL.createObjectURL(e.target.files[0]));
@@ -744,7 +747,6 @@ function LaunchVideoCourse({ uid }: { uid: string }) {
           <LaunchFormLabelInputFile
             type="file"
             accept="video/mp4,video/x-m4v,video/*"
-            required
             onChange={(e) => {
               if (!e.target.files) return;
               setCoursePreview(e.target.files[0].name);
@@ -913,9 +915,10 @@ function BeTeacher({
 
   const handleSubmit = (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
-    if (!teacherIntroduction.trim() || !teacherExperience.trim())
+    if (!teacherIntroduction.trim() || !teacherExperience.trim()) {
       Swal.fire({ text: "請輸入自我介紹及教學經歷", confirmButtonColor: "#5d7262", icon: "warning" });
-
+      return;
+    }
     const target = e.target as HTMLInputElement;
     const fileInput = target.querySelector("input[type=file]") as HTMLInputElement;
     if (fileInput.files) {
