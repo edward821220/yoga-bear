@@ -73,6 +73,56 @@ function Group() {
 
   useEffect(() => {
     if (!userData.uid || typeof room !== "string") return;
+
+    const inviteAllPeers = (members: Members) => {
+      Object.values(members.members as { uid: string; username: string }[]).forEach((member) => {
+        if (member.uid === userData.uid) return;
+        const peer = new Peer({
+          initiator: true,
+          trickle: false,
+          stream: userStream.current,
+          config: { iceServers: [{ urls: "stun:stun.l.google.com:19302" }] },
+        });
+        peer.on("signal", (callerSignal) => {
+          channelRef.current?.trigger(`client-sendingSignal-${member.uid}`, {
+            callerId: userData.uid,
+            callerName: userData.username,
+            callerSignal,
+          });
+        });
+        peersRef.current.push({
+          peerID: member.uid,
+          peerName: member.username,
+          peer,
+        });
+      });
+      setPeers(peersRef.current);
+    };
+
+    const addNewComingPeer = (callerData: { callerId: string; callerName: string; callerSignal: Peer.SignalData }) => {
+      peersRef.current = peersRef.current.filter((peer) => peer.peerID !== callerData.callerId);
+      const peer = new Peer({
+        initiator: false,
+        trickle: false,
+        stream: userStream.current,
+      });
+      peer.on("signal", (receiverSignal) => {
+        channelRef.current?.trigger(`client-returningSignal-${callerData.callerId}`, {
+          receiverSignal,
+          receiverId: userData.uid,
+          callerId: callerData.callerId,
+        });
+        console.log("回覆新人訊息");
+      });
+      peer.signal(callerData.callerSignal);
+      peersRef.current.push({
+        peerID: callerData.callerId,
+        peerName: callerData.callerName,
+        peer,
+      });
+      setPeers(peersRef.current);
+    };
+
     navigator.mediaDevices.getUserMedia({ video: true, audio: true }).then((stream) => {
       if (!userVideo.current) return;
       userVideo.current.srcObject = stream;
@@ -86,72 +136,20 @@ function Group() {
         params: { username: userData.username, uid: userData.uid },
       },
     });
+
     channelRef.current = pusherRef.current.subscribe(`presence-${room}`) as PresenceChannel;
 
     channelRef.current.bind("pusher:subscription_succeeded", (members: Members) => {
-      console.log("我來惹");
-      if (members.count === 1) {
-        console.log("裡面看起來只有我一個人");
-      }
-      const allPeers: { peerID: string; peerName: string; peer: Peer.Instance }[] = [];
-
-      Object.values(members.members as { uid: string; username: string }[]).forEach((member) => {
-        if (member.uid === userData.uid) return;
-        const peer = new Peer({
-          initiator: true,
-          trickle: false,
-          stream: userStream.current,
-          config: { iceServers: [{ urls: "stun:stun.l.google.com:19302" }] },
-        });
-        peer.on("signal", (callerSignal) => {
-          console.log("對裡面的人發出邀請");
-          channelRef.current?.trigger(`client-sendingSignal-${member.uid}`, {
-            callerId: userData.uid,
-            callerName: userData.username,
-            callerSignal,
-          });
-        });
-        peersRef.current.push({
-          peerID: member.uid,
-          peerName: member.username,
-          peer,
-        });
-        allPeers.push({
-          peerID: member.uid,
-          peerName: member.username,
-          peer,
-        });
-        console.log("裡面的人");
-        console.log(allPeers);
-      });
-      setPeers(allPeers);
+      if (members.count === 1) return;
+      console.log("我來惹，對裡面的人發個邀請");
+      inviteAllPeers(members);
     });
 
     channelRef.current.bind(
       `client-sendingSignal-${userData.uid}`,
-      (payload: { callerId: string; callerName: string; callerSignal: Peer.SignalData }) => {
-        peersRef.current = peersRef.current.filter((peer) => peer.peerID !== payload.callerId);
+      (callerData: { callerId: string; callerName: string; callerSignal: Peer.SignalData }) => {
         console.log("收到新人的邀請惹！");
-        const peer = new Peer({
-          initiator: false,
-          trickle: false,
-          stream: userStream.current,
-        });
-        peer.on("signal", (receiverSignal) => {
-          channelRef.current?.trigger(`client-returningSignal-${payload.callerId}`, {
-            receiverSignal,
-            receiverId: userData.uid,
-            callerId: payload.callerId,
-          });
-          console.log("回覆新人訊息");
-        });
-        peer.signal(payload.callerSignal);
-        peersRef.current.push({
-          peerID: payload.callerId,
-          peerName: payload.callerName,
-          peer,
-        });
-        setPeers(peersRef.current);
+        addNewComingPeer(callerData);
       }
     );
 
@@ -167,16 +165,14 @@ function Group() {
       }
     );
 
-    channelRef.current.bind("client-leave", (uid: string) => {
-      console.log("有人落跑惹");
-      const leavePeer = peersRef.current.find((peer) => peer.peerID === uid);
-      leavePeer?.peer.destroy();
+    channelRef.current.bind("pusher:member_removed", (member: { info: { uid: string } }) => {
+      const { uid } = member.info;
+      console.log("有人落跑!");
       peersRef.current = peersRef.current.filter((peer) => peer.peerID !== uid);
-      setPeers((prev) => prev.filter((peer) => peer.peerID !== uid));
+      setPeers(peersRef.current);
     });
 
     return () => {
-      channelRef.current?.trigger("client-leave", userData.uid);
       userStream.current?.getTracks().forEach((track) => {
         track.stop();
       });
