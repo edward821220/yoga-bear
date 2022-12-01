@@ -998,5 +998,5 @@ export async function getStaticProps({ params }: { params: { courseId: string } 
   const reviews = docSnap.data().reviews as ReviewInterface[];
   const courseData = { id, name, chapters, introduction, introductionVideo, teacherId, cover, price, reviews };
 
-  return { props: { courseId: params.courseId, courseData }, revalidate: 1800 };
+  return { props: { courseId: params.courseId, courseData }, revalidate: 180 };
 }

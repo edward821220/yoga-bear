@@ -608,6 +608,6 @@ export const getStaticProps = async () => {
       coursesList,
       teachersList,
     },
-    revalidate: 1800,
+    revalidate: 180,
   };
 };
