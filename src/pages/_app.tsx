@@ -4,6 +4,7 @@ import { createGlobalStyle, DefaultTheme, ThemeProvider } from "styled-component
 import { Reset } from "styled-reset";
 import React from "react";
 import { RecoilRoot } from "recoil";
+import ErrorBoundary from "../components/errorBoundary";
 import Header from "../components/header";
 import { AuthContextProvider } from "../contexts/authContext";
 
@@ -55,14 +56,16 @@ export default function App({ Component, pageProps }: AppProps) {
       </Head>
       <Reset />
       <GlobalStyle />
-      <AuthContextProvider>
-        <RecoilRoot>
-          <ThemeProvider theme={theme}>
-            <Header />
-            <Component {...pageProps} />
-          </ThemeProvider>
-        </RecoilRoot>
-      </AuthContextProvider>
+      <ErrorBoundary>
+        <AuthContextProvider>
+          <RecoilRoot>
+            <ThemeProvider theme={theme}>
+              <Header />
+              <Component {...pageProps} />
+            </ThemeProvider>
+          </RecoilRoot>
+        </AuthContextProvider>
+      </ErrorBoundary>
     </>
   );
 }
