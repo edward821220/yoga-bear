@@ -444,7 +444,7 @@ function MemberModal({
     const res = await login(loginData.email, loginData.password);
     if (typeof res !== "string") return;
     if (res !== "登入成功") {
-      setErrorMessage(res);
+      setErrorMessage("帳號或密碼錯誤唷！");
       return;
     }
     handleClose();
@@ -452,6 +452,10 @@ function MemberModal({
   };
   const handleSignup = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
+    if (!signupData.username.trim()) {
+      setErrorMessage("請輸入用戶名");
+      return;
+    }
     if (!signupData.email.match(isValidEmail)) {
       setErrorMessage("請輸入正確的電子郵件格式");
       return;
@@ -471,6 +475,10 @@ function MemberModal({
       return;
     }
     const res: string = await signup(signupData.email, signupData.password, signupData.identity, signupData.username);
+    if (res === "Firebase: Error (auth/email-already-in-use).") {
+      setErrorMessage("帳號已經有人使用囉！");
+      return;
+    }
     const uid = res;
     if (fileInput?.files) {
       const file = fileInput?.files[0];
