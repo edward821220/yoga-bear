@@ -72,13 +72,10 @@ function RichEditor({
           },
           async () => {
             const downloadUrl = await getDownloadURL(uploadTask.snapshot.ref);
-            /* eslint-disable @typescript-eslint/no-unsafe-member-access */
-            /* eslint-disable @typescript-eslint/no-unsafe-call */
             const quillEditor = quillRef?.current?.editor;
             const range = quillRef?.current?.selection;
             if (!range) return;
             const { index } = range;
-            // eslint-disable-next-line @typescript-eslint/restrict-plus-operands
             quillEditor?.insertEmbed(index + 1, "image", downloadUrl);
           }
         );
