@@ -1,6 +1,5 @@
 import { useState, useEffect } from "react";
 import styled from "styled-components";
-import { useRouter } from "next/router";
 import Head from "next/head";
 import Image from "next/image";
 import Link from "next/link";
@@ -11,7 +10,6 @@ import ReserveCalendar from "../../../components/calendar/reserveCalendar";
 import Avatar from "../../../../public/member.png";
 import Star from "../../../../public/star.png";
 import HalfStar from "../../../../public/star-half.png";
-import Loading from "../../../../public/loading.gif";
 
 const Wrapper = styled.div`
   background-color: ${(props) => props.theme.colors.color1};
@@ -344,51 +342,28 @@ interface ReviewInterface {
   comments: string;
   userId: string;
 }
-export default function Reserve() {
-  const router = useRouter();
-  const { teacherId } = router.query;
-  const [teacherData, setTeacherData] = useState<{
-    username: string;
-    introduction: string;
-    experience: string;
-    reviews?: ReviewInterface[];
-    avatar?: string;
-  }>();
+interface TeacherDataInterface {
+  username: string;
+  introduction: string;
+  experience: string;
+  reviews?: ReviewInterface[];
+  avatar?: string;
+}
+export default function Reserve({ teacherId, teacherData }: { teacherId: string; teacherData: TeacherDataInterface }) {
   const [reviewUsersData, setReviewUsersData] = useState<{ index: number; username: string; avatar: string }[]>([]);
 
   useEffect(() => {
-    const getTeacherData = async () => {
-      if (typeof teacherId !== "string") return;
-      const userRef = doc(db, "users", teacherId);
-      const userSnap = await getDoc(userRef);
-      if (!userSnap.exists()) return;
-      const username = userSnap.data().username as string;
-      const introduction = userSnap.data().teacher_introduction as string;
-      const experience = userSnap.data().teacher_experience as string;
-      const avatar = userSnap.data().photoURL as string;
-      const reviews = userSnap.data().reviews as ReviewInterface[];
-      setTeacherData({ username, introduction, experience, reviews, avatar });
+    if (!Array.isArray(teacherData.reviews)) return;
+    teacherData.reviews.forEach(async (review: { comments: string; score: number; userId: string }, index) => {
+      const reviewUserRef = doc(db, "users", review.userId);
+      const reviewUserSnap = await getDoc(reviewUserRef);
+      if (!reviewUserSnap.exists()) return;
+      const reviewUsername = reviewUserSnap.data().username as string;
+      const reviewUserAvatar = reviewUserSnap.data().photoURL as string;
+      setReviewUsersData((prev) => [...prev, { index, username: reviewUsername, avatar: reviewUserAvatar }]);
+    });
+  }, [teacherData.reviews]);
 
-      if (!Array.isArray(reviews)) return;
-      reviews.forEach(async (review: { comments: string; score: number; userId: string }, index) => {
-        const reviewUserRef = doc(db, "users", review.userId);
-        const reviewUserSnap = await getDoc(reviewUserRef);
-        if (!reviewUserSnap.exists()) return;
-        const reviewUsername = reviewUserSnap.data().username as string;
-        const reviewUserAvatar = reviewUserSnap.data().photoURL as string;
-        setReviewUsersData((prev) => [...prev, { index, username: reviewUsername, avatar: reviewUserAvatar }]);
-      });
-    };
-    getTeacherData();
-  }, [teacherId]);
-
-  if (!teacherData) {
-    return (
-      <TeacherContainer style={{ justifyContent: "center", alignItems: "center" }}>
-        <Image src={Loading} alt="loading" width={100} height={100} />
-      </TeacherContainer>
-    );
-  }
   return (
     <>
       <Head>
@@ -509,4 +484,30 @@ export default function Reserve() {
       </Wrapper>
     </>
   );
+}
+
+export async function getStaticPaths() {
+  const usersRef = collection(db, "users");
+  const queryTeachers = await getDocs(query(usersRef, where("identity", "==", "teacher")));
+  const paths: { params: { teacherId: string } }[] = [];
+  queryTeachers.forEach((data) => {
+    const teacherId = data.data().uid as string;
+    paths.push({ params: { teacherId } });
+  });
+
+  return { paths, fallback: false };
+}
+
+export async function getStaticProps({ params }: { params: { teacherId: string } }) {
+  const userRef = doc(db, "users", params.teacherId);
+  const userSnap = await getDoc(userRef);
+  if (!userSnap.exists()) return;
+  const username = userSnap.data().username as string;
+  const introduction = userSnap.data().teacher_introduction as string;
+  const experience = userSnap.data().teacher_experience as string;
+  const avatar = userSnap.data().photoURL as string;
+  const reviews = (userSnap.data().reviews as ReviewInterface[]) || null;
+  const teacherData = { username, introduction, experience, reviews, avatar };
+
+  return { props: { teacherId: params.teacherId, teacherData }, revalidate: 120 };
 }
