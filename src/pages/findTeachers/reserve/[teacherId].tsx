@@ -276,7 +276,10 @@ function LaunchedVideoCourses({ uid }: { uid: string }) {
       const teachersQuery = query(usersRef, where("teacher_id", "==", uid));
       const querySnapshot = await getDocs(teachersQuery);
       const launchedVideoCourses = querySnapshot.docs.map((course) => {
-        const { name, cover, id, reviews } = course.data();
+        const name = course.data().name as string;
+        const cover = course.data().cover as string;
+        const id = course.data().id as string;
+        const reviews = course.data().reviews as { userId: string; score: number; comments: string }[];
         return { name, cover, id, reviews };
       });
       setCourses(launchedVideoCourses);
@@ -371,8 +374,8 @@ export default function Reserve() {
         const reviewUserRef = doc(db, "users", review.userId);
         const reviewUserSnap = await getDoc(reviewUserRef);
         if (!reviewUserSnap.exists()) return;
-        const reviewUsername = reviewUserSnap.data().username;
-        const reviewUserAvatar = reviewUserSnap.data().photoURL;
+        const reviewUsername = reviewUserSnap.data().username as string;
+        const reviewUserAvatar = reviewUserSnap.data().photoURL as string;
         setReviewUsersData((prev) => [...prev, { index, username: reviewUsername, avatar: reviewUserAvatar }]);
       });
     };

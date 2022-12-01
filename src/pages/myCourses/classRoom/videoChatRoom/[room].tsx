@@ -112,7 +112,6 @@ function Group() {
           receiverId: userData.uid,
           callerId: callerData.callerId,
         });
-        console.log("回覆新人訊息");
       });
       peer.signal(callerData.callerSignal);
       peersRef.current.push({
@@ -141,14 +140,12 @@ function Group() {
 
     channelRef.current.bind("pusher:subscription_succeeded", (members: Members) => {
       if (members.count === 1) return;
-      console.log("我來惹，對裡面的人發個邀請");
       inviteAllPeers(members);
     });
 
     channelRef.current.bind(
       `client-sendingSignal-${userData.uid}`,
       (callerData: { callerId: string; callerName: string; callerSignal: Peer.SignalData }) => {
-        console.log("收到新人的邀請惹！");
         addNewComingPeer(callerData);
       }
     );
@@ -157,7 +154,6 @@ function Group() {
       `client-returningSignal-${userData.uid}`,
       (payload: { receiverSignal: Peer.SignalData; callerId: string; receiverId: string }) => {
         if (connectedRef.current.includes(payload.receiverId)) return;
-        console.log("裡面的人答應我了");
         const item = peersRef.current.find((p) => p.peerID === payload.receiverId);
         if (!item) return;
         item.peer.signal(payload.receiverSignal);
@@ -167,7 +163,6 @@ function Group() {
 
     channelRef.current.bind("pusher:member_removed", (member: { info: { uid: string } }) => {
       const { uid } = member.info;
-      console.log("有人落跑!");
       const leavePeer = peersRef.current.find((peer) => peer.peerID === uid);
       leavePeer?.peer.destroy();
       peersRef.current = peersRef.current.filter((peer) => peer.peerID !== uid);

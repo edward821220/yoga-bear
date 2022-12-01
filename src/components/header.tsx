@@ -21,7 +21,7 @@ import MoneyIcon from "../../public/newMoney.png";
 import PlusMoneyIcon from "../../public/add.png";
 import MoneyBear from "../../public/money.png";
 import Loading from "../../public/loading.gif";
-import MenuIcon from "../../public/menu.svg";
+import MenuIcon from "../../public/menu.png";
 
 const Wrapper = styled.header`
   display: flex;
@@ -816,7 +816,7 @@ function Header() {
       if (docSnap.exists()) {
         const cartItems = docSnap.data().cartItems as [];
         const qty = cartItems.length;
-        const money: number = docSnap.data()?.bearMoney;
+        const money = docSnap.data()?.bearMoney as number;
         setOrderQty(qty);
         setBearMoney(money || 0);
       }

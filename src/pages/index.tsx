@@ -586,7 +586,10 @@ export const getStaticProps = async () => {
   const queryCourses = await getDocs(query(coursesRef, where("price", "<", 2000), limit(9)));
   const coursesList: CoursesListInterface[] = [];
   queryCourses.forEach((data) => {
-    const { id, cover, name, price } = data.data();
+    const id = data.data().id as string;
+    const cover = data.data().cover as string;
+    const name = data.data().name as string;
+    const price = data.data().price as number;
     coursesList.push({ id, cover, name, price });
   });
 
@@ -594,7 +597,9 @@ export const getStaticProps = async () => {
   const queryTeachers = await getDocs(query(usersRef, where("identity", "==", "teacher"), limit(15)));
   const teachersList: TeachersListInterface[] = [];
   queryTeachers.forEach((data) => {
-    const { uid: id, photoURL: avatar, username: name } = data.data();
+    const id = data.data().uid as string;
+    const avatar = data.data().photoURL as string;
+    const name = data.data().username as string;
     teachersList.push({ id, avatar, name });
   });
 

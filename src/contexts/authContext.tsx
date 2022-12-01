@@ -36,9 +36,9 @@ export function AuthContextProvider({ children }: { children: React.ReactNode })
         setIsLogin(true);
         const res = await getDoc(doc(db, "users", user.uid));
         const data = res.data();
-        const identity = data?.identity;
-        const username = data?.username;
-        const avatar = data?.photoURL;
+        const identity = data?.identity as string;
+        const username = data?.username as string;
+        const avatar = data?.photoURL as string;
         setUserData({ uid, email, identity, username, avatar });
       }
     });
@@ -85,9 +85,9 @@ export function AuthContextProvider({ children }: { children: React.ReactNode })
       setUserData({
         uid: user.uid,
         email: user.email,
-        identity: data.identity,
-        username: data.username,
-        avatar: data.photoURL,
+        identity: data.identity as string,
+        username: data.username as string,
+        avatar: data.photoURL as string,
       });
       setIsLogin(true);
       return "登入成功";

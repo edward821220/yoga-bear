@@ -311,7 +311,7 @@ const StarWrapper = styled.div`
   }
 `;
 
-interface Review {
+interface ReviewInterface {
   userId: string;
   score: number;
   comments: string;
@@ -336,23 +336,27 @@ function VideoCourses({ uid }: { uid: string }) {
       const docSnap = await getDoc(docRef);
       let myVideoCourses: string[] = [];
       if (docSnap.exists() && docSnap) {
-        myVideoCourses = await docSnap.data().boughtCourses;
+        myVideoCourses = (await docSnap.data().boughtCourses) as string[];
       }
       if (!myVideoCourses) {
         setCourses([]);
         return;
       }
-      const results: { name: string; cover: string; id: string; reviews: Review[] }[] = [];
+      const results: { name: string; cover: string; id: string; reviews: ReviewInterface[] }[] = [];
       await Promise.all(
         myVideoCourses.map(async (id: string) => {
           const videoDocRef = doc(db, "video_courses", id);
           const data = await getDoc(videoDocRef);
           if (data.exists() && data) {
+            const courseId = data.data().id as string;
+            const name = data.data().name as string;
+            const cover = data.data().cover as string;
+            const reviews = data.data().reviews as ReviewInterface[];
             results.push({
-              id: data.data().id,
-              name: data.data().name,
-              cover: data.data().cover,
-              reviews: data.data().reviews,
+              id: courseId,
+              name,
+              cover,
+              reviews,
             });
           }
         })
@@ -506,7 +510,10 @@ function LaunchedVideoCourses({ uid }: { uid: string }) {
       const teachersQuery = query(usersRef, where("teacher_id", "==", uid));
       const querySnapshot = await getDocs(teachersQuery);
       const launchedVideoCourses = querySnapshot.docs.map((course) => {
-        const { name, cover, id, reviews } = course.data();
+        const name = course.data().name as string;
+        const cover = course.data().cover as string;
+        const id = course.data().id as string;
+        const reviews = course.data().reviews as ReviewInterface[];
         return { name, cover, id, reviews };
       });
       setCourses(launchedVideoCourses);

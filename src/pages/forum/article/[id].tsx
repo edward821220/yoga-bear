@@ -456,6 +456,7 @@ function MessagesSection({
 function Article({ id, articleData }: { id: string; articleData: ArticleInterface }) {
   const { time, title, authorId, authorName, authorAvatar, content: articleContent, messages, likes } = articleData;
   const router = useRouter();
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
   const [showMemberModal, setShowMemberModal] = useRecoilState(showMemberModalState);
   const [article, setArticle] = useState({ time, title, authorId, authorName, authorAvatar, messages, likes });
   const [content, setContent] = useState<string>(articleContent || "");
@@ -609,7 +610,7 @@ export async function getServerSideProps({ params }: { params: { id: string } })
   const docRef = doc(db, "posts", params.id);
   const docSnap = await getDoc(docRef);
   if (!docSnap.exists()) return;
-  const authorId: string = docSnap.data().author;
+  const authorId = docSnap.data().author as string;
   const userRef = doc(db, "users", authorId);
   const userSnap = await getDoc(userRef);
   if (!userSnap.exists()) return;
@@ -621,22 +622,26 @@ export async function getServerSideProps({ params }: { params: { id: string } })
         const messageAuthorRef = doc(db, "users", messageAuthorId);
         const messageAuthorSnap = await getDoc(messageAuthorRef);
         if (messageAuthorSnap.exists()) {
-          messages[index].authorName = messageAuthorSnap.data().username;
-          messages[index].authorAvatar = messageAuthorSnap.data().photoURL || "";
-          messages[index].identity = messageAuthorSnap.data().identity;
+          const authorName = messageAuthorSnap.data().username as string;
+          const authorAvatar = messageAuthorSnap.data().photoURL as string;
+          const identity = messageAuthorSnap.data().identity as string;
+          messages[index].authorName = authorName;
+          messages[index].authorAvatar = authorAvatar || "";
+          messages[index].identity = identity;
         }
       })
     );
   }
+
   const articleData: ArticleInterface = {
-    time: docSnap.data().time,
-    title: docSnap.data().title,
-    authorId: docSnap.data().author,
-    content: docSnap.data().content,
+    time: docSnap.data().time as string,
+    title: docSnap.data().title as string,
+    authorId: docSnap.data().author as string,
+    content: docSnap.data().content as string,
     messages: messages || [],
-    authorName: userSnap.data().username,
-    authorAvatar: userSnap.data().photoURL,
-    likes: docSnap.data().likes || [],
+    authorName: userSnap.data().username as string,
+    authorAvatar: userSnap.data().photoURL as string,
+    likes: (docSnap.data().likes as string[]) || [],
   };
 
   return { props: { id: params.id, articleData } };

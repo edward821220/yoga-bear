@@ -148,7 +148,7 @@ const StarWrapper = styled.div`
 interface CourseInterface {
   name: string;
   id: string;
-  price: string;
+  price: number;
   cover: string;
   reviews: { score: number; comments: string }[];
   launchTime: number;
@@ -167,19 +167,25 @@ function VideoCourses({ results }: { results: CourseInterface[] }) {
       let newResults: {
         name: string;
         id: string;
-        price: string;
+        price: number;
         cover: string;
         reviews: { score: number; comments: string }[];
         launchTime: number;
       }[] = [];
       querySnapshot.forEach((data) => {
+        const id = data.data().id as string;
+        const name = data.data().name as string;
+        const price = data.data().price as number;
+        const cover = data.data().cover as string;
+        const reviews = data.data().reviews as { score: number; comments: string }[];
+        const launchTime = data.data().launchTime as number;
         newResults.push({
-          id: data.data().id,
-          name: data.data().name,
-          price: data.data().price,
-          cover: data.data().cover,
-          reviews: data.data().reviews,
-          launchTime: data.data().launchTime,
+          id,
+          name,
+          price,
+          cover,
+          reviews,
+          launchTime,
         });
       });
       if (typeof keywords === "string") {
@@ -388,19 +394,25 @@ export const getServerSideProps = async ({ query }: { query: { keywords: string 
   let results: {
     name: string;
     id: string;
-    price: string;
+    price: number;
     cover: string;
     reviews: { score: number; comments: string }[];
     launchTime: number;
   }[] = [];
   querySnapshot.forEach((data) => {
+    const id = data.data().id as string;
+    const name = data.data().name as string;
+    const price = data.data().price as number;
+    const cover = data.data().cover as string;
+    const reviews = data.data().reviews as { score: number; comments: string }[];
+    const launchTime = data.data().launchTime as number;
     results.push({
-      id: data.data().id,
-      name: data.data().name,
-      price: data.data().price,
-      cover: data.data().cover,
-      reviews: data.data().reviews,
-      launchTime: data.data().launchTime,
+      id,
+      name,
+      price,
+      cover,
+      reviews,
+      launchTime,
     });
   });
 

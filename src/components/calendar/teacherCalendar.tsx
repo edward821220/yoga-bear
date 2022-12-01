@@ -30,7 +30,6 @@ import { collection, doc, setDoc, updateDoc, deleteDoc, getDocs, query, where } 
 import styled from "styled-components";
 import { useRouter } from "next/router";
 import { db } from "../../../lib/firebase";
-
 import RoomButton from "../../../public/room.png";
 import resources from "./resources";
 
@@ -79,7 +78,7 @@ function BasicLayout({ onFieldChange, appointmentData, ...restProps }: Appointme
     <AppointmentForm.BasicLayout appointmentData={appointmentData} onFieldChange={onFieldChange} {...restProps}>
       <AppointmentForm.Label text="課程人數" type="titleLabel" />
       <AppointmentForm.TextEditor
-        value={appointmentData.maximum}
+        value={appointmentData.maximum as string}
         onValueChange={onMaximumChange}
         placeholder="請輸入人數上限"
         type="ordinaryTextEditor"
@@ -87,7 +86,7 @@ function BasicLayout({ onFieldChange, appointmentData, ...restProps }: Appointme
       />
       <AppointmentForm.Label text="課程價格" type="titleLabel" />
       <AppointmentForm.TextEditor
-        value={appointmentData.price}
+        value={appointmentData.price as string}
         onValueChange={onPriceChange}
         placeholder="請輸入課程價格"
         type="ordinaryTextEditor"
@@ -95,7 +94,7 @@ function BasicLayout({ onFieldChange, appointmentData, ...restProps }: Appointme
       />
       <AppointmentForm.Label text="課程說明" type="titleLabel" />
       <AppointmentForm.TextEditor
-        value={appointmentData.description}
+        value={appointmentData.description as string}
         onValueChange={onDescriptionChange}
         placeholder="請輸入課程內容（若是實體課請填寫上課地點）"
         type="ordinaryTextEditor"
@@ -103,7 +102,7 @@ function BasicLayout({ onFieldChange, appointmentData, ...restProps }: Appointme
       />
       <AppointmentForm.Label text="注意事項" type="titleLabel" />
       <AppointmentForm.TextEditor
-        value={appointmentData.precaution}
+        value={appointmentData.precaution as string}
         onValueChange={onPrecautionChange}
         placeholder="請輸入注意事項"
         type="ordinaryTextEditor"
@@ -185,10 +184,10 @@ export default function TeacherCalendar({ uid, name }: { uid: string; name: stri
   const commitChanges = ({ added, changed, deleted }: ChangeSet): void => {
     if (added) {
       const newRoomRef = doc(collection(db, "rooms"));
-      setAppointments([...appointments, { id: newRoomRef.id, startDate: added.startDate, ...added }]);
+      setAppointments([...appointments, { id: newRoomRef.id, startDate: added.startDate as number, ...added }]);
       setDoc(newRoomRef, {
         id: newRoomRef.id,
-        startDate: added.startDate,
+        startDate: added.startDate as number,
         teacherId: uid,
         teacherName: name,
         ...added,

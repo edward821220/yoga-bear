@@ -724,17 +724,26 @@ function VideoPlayer({ introductionVideo }: { introductionVideo: string | undefi
     </FullScreen>
   );
 }
-
+interface ChapterInterface {
+  id: number;
+  title: string;
+  units: { id: number; title: string; video: string }[];
+}
+interface ReviewInterface {
+  comments: string;
+  score: number;
+  userId: string;
+}
 interface CourseDataInterface {
   id: string;
   name: string;
-  chapters: { id: number; title: string; units: { id: number; title: string; video: string }[] }[];
+  chapters: ChapterInterface[];
   introduction: string;
   introductionVideo: string;
   teacherId: string;
   cover: string;
   price: string;
-  reviews: { comments: string; score: number; userId: string }[];
+  reviews: ReviewInterface[];
 }
 
 interface CourseDetailProps {
@@ -841,8 +850,10 @@ function CourseInfo({ courseId, courseData }: { courseId: string; courseData: Co
   const [teacherData, setTeacherData] = useState<Record<string, string>>();
   const [reviewsUsersData, setReviewsUsersData] = useState<{ index: number; username: string; avatar: string }[]>([]);
   const { isLogin, userData } = useContext(AuthContext);
+  /* eslint-disable @typescript-eslint/no-unused-vars */
   const [orderQty, setOrderQty] = useRecoilState(orderQtyState);
   const [showMemberModal, setShowMemberModal] = useRecoilState(showMemberModalState);
+  /* eslint-enable @typescript-eslint/no-unused-vars */
 
   useEffect(() => {
     const getBoughtCourses = async () => {
@@ -874,8 +885,8 @@ function CourseInfo({ courseId, courseData }: { courseId: string; courseData: Co
         const userRef = doc(db, "users", review.userId);
         const userSnap = await getDoc(userRef);
         if (!userSnap.exists()) return;
-        const { username } = userSnap.data();
-        const avatar = userSnap.data().photoURL;
+        const username = userSnap.data().username as string;
+        const avatar = userSnap.data().photoURL as string;
         setReviewsUsersData((prev) => [...prev, { index, username, avatar }]);
       });
     };
@@ -981,7 +992,7 @@ export async function getStaticPaths() {
   const queryCourses = await getDocs(query(coursesRef));
   const paths: { params: { courseId: string } }[] = [];
   queryCourses.forEach((data) => {
-    const { id: courseId } = data.data();
+    const courseId = data.data().id as string;
     paths.push({ params: { courseId } });
   });
 
@@ -992,17 +1003,15 @@ export async function getStaticProps({ params }: { params: { courseId: string } 
   const docRef = doc(db, "video_courses", params.courseId);
   const docSnap = await getDoc(docRef);
   if (!docSnap.exists()) return;
-  const {
-    id,
-    name,
-    chapters,
-    introduction,
-    introductionVideo,
-    teacher_id: teacherId,
-    cover,
-    price,
-    reviews,
-  } = docSnap.data();
+  const id = docSnap.data().id as string;
+  const name = docSnap.data().name as string;
+  const chapters = docSnap.data().chapters as ChapterInterface[];
+  const introduction = docSnap.data().introduction as string;
+  const introductionVideo = docSnap.data().introductionVideo as string;
+  const teacherId = docSnap.data().teacher_id as string;
+  const cover = docSnap.data().cover as string;
+  const price = docSnap.data().price as number;
+  const reviews = docSnap.data().reviews as ReviewInterface[];
   const courseData = { id, name, chapters, introduction, introductionVideo, teacherId, cover, price, reviews };
 
   return { props: { courseId: params.courseId, courseData }, revalidate: 1800 };

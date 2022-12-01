@@ -199,6 +199,7 @@ function FindTeachers({ results }: { results: TeacherInterface[] }) {
   const router = useRouter();
   const { keywords } = router.query;
   const { isLogin } = useContext(AuthContext);
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
   const [showMemberModal, setShowMemberModal] = useRecoilState(showMemberModalState);
   const [teachersList, setTeachersList] = useState(results);
   const [showMore, setShowMore] = useState<string>();
@@ -219,14 +220,21 @@ function FindTeachers({ results }: { results: TeacherInterface[] }) {
         beTeacherTime: number;
       }[] = [];
       querySnapshot.forEach((data) => {
+        const uid = data.data().uid as string;
+        const name = data.data().username as string;
+        const reviews = data.data().reviews as { score: number }[];
+        const avatar = data.data().photoURL as string;
+        const introduction = data.data().teacher_introduction as string;
+        const experience = data.data().teacher_experience as string;
+        const beTeacherTime = data.data().beTeacherTime as number;
         newResults.push({
-          uid: data.data().uid,
-          name: data.data().username,
-          reviews: data.data().reviews,
-          avatar: data.data().photoURL,
-          introduction: data.data().teacher_introduction,
-          experience: data.data().teacher_experience,
-          beTeacherTime: data.data().beTeacherTime,
+          uid,
+          name,
+          reviews,
+          avatar,
+          introduction,
+          experience,
+          beTeacherTime,
         });
       });
       if (typeof keywords === "string") {
@@ -452,14 +460,21 @@ export const getServerSideProps = async ({ query }: { query: { keywords: string 
     beTeacherTime: number;
   }[] = [];
   querySnapshot.forEach((data) => {
+    const uid = data.data().uid as string;
+    const name = data.data().username as string;
+    const reviews = data.data().reviews as { score: number }[];
+    const avatar = data.data().photoURL as string;
+    const introduction = data.data().teacher_introduction as string;
+    const experience = data.data().teacher_experience as string;
+    const beTeacherTime = data.data().beTeacherTime as number;
     results.push({
-      uid: data.data().uid,
-      name: data.data().username,
-      reviews: data.data().reviews || null,
-      avatar: data.data().photoURL,
-      introduction: data.data().teacher_introduction,
-      experience: data.data().teacher_experience,
-      beTeacherTime: data.data().beTeacherTime,
+      uid,
+      name,
+      reviews: reviews || null,
+      avatar,
+      introduction,
+      experience,
+      beTeacherTime,
     });
   });
 

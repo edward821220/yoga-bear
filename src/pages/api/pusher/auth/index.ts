@@ -1,6 +1,7 @@
 import { NextApiRequest, NextApiResponse } from "next";
 import pusher from "../../../../../lib/pusher";
 
+/* eslint-disable @typescript-eslint/no-unsafe-assignment */
 export default function handler(req: NextApiRequest, res: NextApiResponse) {
   const {
     socket_id: socketId,

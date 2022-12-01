@@ -192,7 +192,7 @@ function Cart() {
       const docRef = doc(db, "users", uid);
       const docSnap = await getDoc(docRef);
       if (docSnap.exists() && docSnap) {
-        const items: { cover: string; name: string; price: string; id: string }[] = docSnap.data().cartItems;
+        const items = docSnap.data().cartItems as { cover: string; name: string; price: string; id: string }[];
         setCartItems(items);
       }
     };

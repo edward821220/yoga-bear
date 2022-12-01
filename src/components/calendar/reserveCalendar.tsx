@@ -76,7 +76,7 @@ function BasicLayout({ onFieldChange, appointmentData, ...restProps }: Appointme
       />
       <AppointmentForm.Label text="課程說明" type="titleLabel" />
       <AppointmentForm.TextEditor
-        value={appointmentData.description}
+        value={appointmentData.description as string}
         onValueChange={() => {}}
         placeholder="請輸入課程內容（若是實體課請填寫上課地點）"
         type="ordinaryTextEditor"
@@ -84,7 +84,7 @@ function BasicLayout({ onFieldChange, appointmentData, ...restProps }: Appointme
       />
       <AppointmentForm.Label text="注意事項" type="titleLabel" />
       <AppointmentForm.TextEditor
-        value={appointmentData.precaution}
+        value={appointmentData.precaution as string}
         onValueChange={() => {}}
         placeholder="請輸入注意事項"
         type="ordinaryTextEditor"
@@ -92,7 +92,7 @@ function BasicLayout({ onFieldChange, appointmentData, ...restProps }: Appointme
       />
       <AppointmentForm.Label text="開課老師" type="titleLabel" />
       <AppointmentForm.TextEditor
-        value={appointmentData.teacherName}
+        value={appointmentData.teacherName as string}
         onValueChange={() => {}}
         placeholder="開課老師"
         type="ordinaryTextEditor"
