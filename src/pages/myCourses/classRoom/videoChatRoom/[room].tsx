@@ -168,6 +168,8 @@ function Group() {
     channelRef.current.bind("pusher:member_removed", (member: { info: { uid: string } }) => {
       const { uid } = member.info;
       console.log("有人落跑!");
+      const leavePeer = peersRef.current.find((peer) => peer.peerID === uid);
+      leavePeer?.peer.destroy();
       peersRef.current = peersRef.current.filter((peer) => peer.peerID !== uid);
       setPeers(peersRef.current);
     });
