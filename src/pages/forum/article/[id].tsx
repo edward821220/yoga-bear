@@ -446,7 +446,7 @@ function MessagesSection({
         </MessagesContainer>
       )}
       <MessageBlock>
-        <Editor content={inputMessage} setContent={setInputMessage} style={{}} placeholder="留言......" />
+        <Editor content={inputMessage} setContent={setInputMessage} placeholder="留言......" />
         <Button onClick={handleMessage}>送出</Button>
       </MessageBlock>
     </>

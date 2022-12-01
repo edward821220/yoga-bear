@@ -12,10 +12,14 @@ function Editor({
 }: {
   content: string;
   setContent: React.Dispatch<React.SetStateAction<string>>;
-  style: Record<string, string>;
+  style?: Record<string, string>;
   placeholder: string;
 }) {
   return <Quill style={style} theme="bubble" value={content} onChange={setContent} placeholder={placeholder} />;
 }
+
+Editor.defaultProps = {
+  style: {},
+};
 
 export default Editor;

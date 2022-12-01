@@ -722,7 +722,7 @@ function LaunchVideoCourse({ uid }: { uid: string }) {
         </LaunchFormLabel>
         <LaunchFormLabel>
           <LaunchFormLabelText>課程描述</LaunchFormLabelText>
-          <Editor content={introduction} setContent={setIntroduction} style={{}} placeholder="請輸入課程簡介" />
+          <Editor content={introduction} setContent={setIntroduction} placeholder="請輸入課程簡介" />
         </LaunchFormLabel>
         <LaunchFormLabelFile>
           <LaunchFormLabelFileButton>上傳課程封面</LaunchFormLabelFileButton>
@@ -953,21 +953,11 @@ function BeTeacher({
     <LaunchForm onSubmit={handleSubmit}>
       <LaunchFormLabel>
         <LaunchFormLabelText>自我介紹：</LaunchFormLabelText>
-        <Editor
-          content={teacherIntroduction}
-          setContent={setTeacherIntroduction}
-          style={{}}
-          placeholder="簡短介紹讓同學認識～"
-        />
+        <Editor content={teacherIntroduction} setContent={setTeacherIntroduction} placeholder="簡短介紹讓同學認識～" />
       </LaunchFormLabel>
       <LaunchFormLabel>
         <LaunchFormLabelText>師資班及教學經歷：</LaunchFormLabelText>
-        <Editor
-          content={teacherExperience}
-          setContent={setTeacherExperience}
-          style={{}}
-          placeholder="簡短描述過往經歷～"
-        />
+        <Editor content={teacherExperience} setContent={setTeacherExperience} placeholder="簡短描述過往經歷～" />
       </LaunchFormLabel>
       <LaunchFormLabelFile>
         <LaunchFormLabelFileButton>證照上傳</LaunchFormLabelFileButton>
