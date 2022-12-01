@@ -103,8 +103,8 @@ const LaunchFormLabel = styled.label`
   margin-bottom: 20px;
   .ql-editor {
     color: #000;
-    width: 500px;
-    height: 300px;
+    width: 520px;
+    height: 480px;
     border: 1px solid gray;
     @media screen and (max-width: 566px) {
       width: 400px;
@@ -123,7 +123,7 @@ const LaunchFormLabelText = styled.div`
 `;
 const LaunchFormLabelInput = styled.input`
   display: block;
-  width: 500px;
+  width: 520px;
   line-height: 24px;
   padding-left: 5px;
   margin-bottom: 20px;
@@ -157,10 +157,6 @@ const LaunchFormLabelFileButton = styled.div`
 `;
 const LaunchFormLabelInputFile = styled.input`
   display: none;
-  width: 500px;
-  line-height: 24px;
-  padding-left: 5px;
-  margin-bottom: 20px;
 `;
 const PlusButton = styled.button`
   background-color: ${(props) => props.theme.colors.color4};
@@ -381,7 +377,7 @@ function VideoCourses({ uid }: { uid: string }) {
         <Course key={course.id}>
           <CourseCover>
             <Link href={`/myCourses/classRoom/videoCourseRoom/${course.id}`}>
-              <Image src={course.cover} alt="cover" fill sizes="contain" />
+              <Image src={course.cover} alt="cover" fill sizes="contain" style={{ objectFit: "cover" }} />
             </Link>
           </CourseCover>
           <CourseInfos>

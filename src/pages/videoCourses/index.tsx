@@ -331,7 +331,7 @@ function VideoCourses({ results }: { results: CourseInterface[] }) {
               <Course key={course.id}>
                 <CourseCover>
                   <Link href={`/videoCourses/courseDetail/${course.id}`}>
-                    <Image src={course.cover} alt="cover" fill sizes="contain" />
+                    <Image src={course.cover} alt="cover" fill sizes="contain" style={{ objectFit: "cover" }} />
                   </Link>
                 </CourseCover>
                 <CourseInfos>
