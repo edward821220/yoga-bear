@@ -256,6 +256,7 @@ const BearWrapper = styled.div`
   display: flex;
   justify-content: center;
   align-items: center;
+  cursor: pointer;
 `;
 
 interface CoursesListInterface {
@@ -588,7 +589,11 @@ export default function Home({
             ))}
           </Swiper>
           <Title>歡迎加入我們</Title>
-          <BearWrapper>
+          <BearWrapper
+            onClick={() => {
+              setShowMemberModal(true);
+            }}
+          >
             <Image src={Bear} alt="bear" width={500} />
           </BearWrapper>
         </Container>
@@ -610,7 +615,7 @@ export const getStaticProps = async () => {
   });
 
   const usersRef = collection(db, "users");
-  const queryTeachers = await getDocs(query(usersRef, where("identity", "==", "teacher"), limit(15)));
+  const queryTeachers = await getDocs(query(usersRef, where("identity", "==", "teacher"), limit(10)));
   const teachersList: TeachersListInterface[] = [];
   queryTeachers.forEach((data) => {
     const id = data.data().uid as string;
