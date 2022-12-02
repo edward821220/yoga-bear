@@ -627,8 +627,17 @@ function LaunchVideoCourse({ uid }: { uid: string }) {
 
   const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
+    const fileInputs: HTMLInputElement[] = Array.from(document.querySelectorAll("input[type=file]"));
+    if (fileInputs.some((fileInput) => fileInput.files?.length === 0)) {
+      Swal.fire({ text: "您有檔案沒上傳唷～請確認後再送出", confirmButtonColor: "#5d7262", icon: "error" });
+      return;
+    }
     if (chapters.length === 0) {
       Swal.fire({ text: "至少要有一個章節唷！", confirmButtonColor: "#5d7262", icon: "error" });
+      return;
+    }
+    if (chapters.some((chapter) => chapter.units.length === 0)) {
+      Swal.fire({ text: "每章節至少要有一個單元唷！", confirmButtonColor: "#5d7262", icon: "error" });
       return;
     }
     setShowMemberModal(true);
@@ -674,12 +683,7 @@ function LaunchVideoCourse({ uid }: { uid: string }) {
         );
       });
     }
-    const fileInputs: HTMLInputElement[] = Array.from(document.querySelectorAll("input[type=file]"));
-    if (fileInputs.some((fileInput) => fileInput.files?.length === 0)) {
-      Swal.fire({ text: "您有檔案沒上傳唷～請確認後再送出", confirmButtonColor: "#5d7262", icon: "error" });
-      setShowMemberModal(false);
-      return;
-    }
+
     await Promise.all(
       fileInputs.map(async (input: HTMLInputElement, index) => {
         await uploadTaskPromise(input, index);

@@ -2,6 +2,7 @@ import React, { Component, ErrorInfo, ReactNode } from "react";
 import styled from "styled-components";
 
 const Title = styled.h1`
+  margin-top: 40px;
   font-size: 24px;
   text-align: center;
 `;

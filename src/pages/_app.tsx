@@ -1,6 +1,7 @@
 import Head from "next/head";
-import type { AppProps } from "next/app";
 import { createGlobalStyle, DefaultTheme, ThemeProvider } from "styled-components";
+import type { AppProps } from "next/app";
+import { useRouter } from "next/router";
 import { Reset } from "styled-reset";
 import React from "react";
 import { RecoilRoot } from "recoil";
@@ -47,6 +48,7 @@ const theme: DefaultTheme = {
 };
 
 export default function App({ Component, pageProps }: AppProps) {
+  const router = useRouter();
   return (
     <>
       <Head>
@@ -60,7 +62,7 @@ export default function App({ Component, pageProps }: AppProps) {
         <RecoilRoot>
           <ThemeProvider theme={theme}>
             <Header />
-            <ErrorBoundary>
+            <ErrorBoundary key={router.pathname}>
               <Component {...pageProps} />
             </ErrorBoundary>
           </ThemeProvider>
