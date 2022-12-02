@@ -216,7 +216,7 @@ const TimeProgressBarContainer = styled.div`
   background-color: #484848;
   border-radius: 15px;
   width: 360px;
-  height: 10px;
+  height: 15px;
   z-index: 30;
   position: relative;
   margin: 0 20px;
@@ -245,6 +245,16 @@ const TimeProgressBar = styled.div`
 `;
 const ControlTime = styled.p`
   color: ${(props) => props.theme.colors.color1};
+`;
+const SnapshotContainer = styled.div`
+  position: absolute;
+  display: block;
+  z-index: 1000;
+  width: 150px;
+  height: 80px;
+  bottom: 50px;
+  border: 1px solid lightgray;
+  box-shadow: 0 0 5px #00000050;
 `;
 const VoiceBarContainer = styled.div`
   position: absolute;
@@ -314,6 +324,9 @@ const ControlIconFullWindow = styled(ControlIcon)`
   @media screen and (max-width: 760px) {
     display: none;
   }
+`;
+const SecondVideo = styled.video`
+  display: none;
 `;
 const CourseDetailContainer = styled.div`
   color: ${(props) => props.theme.colors.color2};
@@ -457,6 +470,8 @@ function VideoPlayer({
   const handle = useFullScreenHandle();
   const videoRef = useRef<HTMLVideoElement>(null);
   const timeoutRef = useRef<NodeJS.Timeout>();
+  const secondVideoRef = useRef<HTMLVideoElement>(null);
+  const snapshotRef = useRef<HTMLDivElement>(null);
   const [isPlaying, setIsPlaying] = useState(true);
   const [isMute, setIsMute] = useState(false);
   const [isFullScreen, setIsFullScreen] = useState(false);
@@ -467,6 +482,7 @@ function VideoPlayer({
   const [currentTime, setCurrentTime] = useState(0);
   const [videoTime, setVideoTime] = useState(0);
   const [progress, setProgress] = useState(0);
+  const [snapshot, setSnapshot] = useState("");
   const [voice, setVoice] = useState(0);
   const [speed, setSpeed] = useState(1.0);
 
@@ -477,7 +493,6 @@ function VideoPlayer({
         videoRef.current.play();
         setIsPlaying(true);
         setVideoTime(videoRef.current.duration);
-        setVoice(videoRef.current.volume * 100);
         break;
       }
       case "pause": {
@@ -508,6 +523,17 @@ function VideoPlayer({
       }
     }
   };
+  const capture = (video: HTMLVideoElement) => {
+    const w = video.videoWidth;
+    const h = video.videoHeight;
+    const canvas = document.createElement("canvas");
+    canvas.width = w;
+    canvas.height = h;
+    const ctx = canvas.getContext("2d");
+    ctx?.drawImage(video, 0, 0, w, h);
+    return canvas;
+  };
+
   return (
     <FullScreen
       handle={handle}
@@ -606,12 +632,32 @@ function VideoPlayer({
                 onClick={(e) => {
                   if (!videoRef.current) return;
                   const target = e.currentTarget as HTMLDivElement;
-                  const timeAtProgressBar = (e.nativeEvent.offsetX / target.scrollWidth) * videoRef.current.duration;
+                  const timeAtProgressBar = (e.nativeEvent.offsetX / target.offsetWidth) * videoRef.current.duration;
                   videoRef.current.currentTime = timeAtProgressBar;
                   setCurrentTime(timeAtProgressBar);
                 }}
+                onMouseMove={(e) => {
+                  if (!videoRef.current) return;
+                  const target = e.currentTarget as HTMLDivElement;
+                  const timeAtProgressBar = (e.nativeEvent.offsetX / target.offsetWidth) * videoRef.current.duration;
+                  if (!secondVideoRef.current) return;
+                  secondVideoRef.current.currentTime = timeAtProgressBar;
+                  const canvas = capture(secondVideoRef.current);
+                  setSnapshot(canvas?.toDataURL("image/jpeg", 0.5));
+                  if (snapshotRef.current) {
+                    snapshotRef.current.style.left = `${e.clientX - 240}px`;
+                  }
+                }}
+                onMouseOut={() => {
+                  setSnapshot("");
+                }}
               >
                 <TimeProgressBar style={{ width: `${progress}%` }} />
+                {snapshot && (
+                  <SnapshotContainer ref={snapshotRef}>
+                    <Image src={snapshot} alt="snapshot" fill sizes="contain" />
+                  </SnapshotContainer>
+                )}
               </TimeProgressBarContainer>
               <ControlTime>{`${Math.floor(videoTime / 60)}:${`0${Math.floor(videoTime % 60)}`.slice(-2)}`}</ControlTime>
             </TimeControls>
@@ -619,6 +665,8 @@ function VideoPlayer({
               <ControlIcon
                 onMouseOver={() => {
                   setShowVoiceBar(true);
+                  if (!videoRef.current) return;
+                  setVoice(videoRef.current.volume * 100);
                 }}
                 onMouseOut={() => {
                   setShowVoiceBar(false);
@@ -626,7 +674,7 @@ function VideoPlayer({
               >
                 {showVoiceBar && (
                   <VoiceBarContainer
-                    onClickCapture={(e) => {
+                    onClick={(e) => {
                       if (!videoRef.current) return;
                       if (e.target === e.currentTarget) {
                         const volume = Math.abs(e.nativeEvent.offsetY - 100);
@@ -712,6 +760,7 @@ function VideoPlayer({
           </ToolBar>
         )}
       </VideoContainer>
+      <SecondVideo src={chapters[selectChapter].units[selectUnit].video} ref={secondVideoRef} crossOrigin="anonymous" />
     </FullScreen>
   );
 }

@@ -475,11 +475,7 @@ const Comments = styled.p`
     font-size: 16px;
   }
 `;
-interface ChapterInterface {
-  id: number;
-  title: string;
-  units: { id: number; title: string; video: string }[];
-}
+
 function VideoPlayer({ introductionVideo }: { introductionVideo: string | undefined }) {
   const handle = useFullScreenHandle();
   const videoRef = useRef<HTMLVideoElement>(null);
@@ -507,7 +503,6 @@ function VideoPlayer({ introductionVideo }: { introductionVideo: string | undefi
         videoRef.current.play();
         setIsPlaying(true);
         setVideoTime(videoRef.current.duration);
-        setVoice(videoRef.current.volume * 100);
         break;
       }
       case "pause": {
@@ -679,6 +674,8 @@ function VideoPlayer({ introductionVideo }: { introductionVideo: string | undefi
               <ControlIcon
                 onMouseOver={() => {
                   setShowVoiceBar(true);
+                  if (!videoRef.current) return;
+                  setVoice(videoRef.current.volume * 100);
                 }}
                 onMouseOut={() => {
                   setShowVoiceBar(false);
@@ -775,6 +772,12 @@ function VideoPlayer({ introductionVideo }: { introductionVideo: string | undefi
       <SecondVideo src={introductionVideo} ref={secondVideoRef} crossOrigin="anonymous" />
     </FullScreen>
   );
+}
+
+interface ChapterInterface {
+  id: number;
+  title: string;
+  units: { id: number; title: string; video: string }[];
 }
 interface ReviewInterface {
   comments: string;
