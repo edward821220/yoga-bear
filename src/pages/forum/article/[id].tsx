@@ -82,6 +82,13 @@ const Title = styled.h2`
   margin: 20px 25px;
   word-wrap: break-word;
 `;
+const TitleInput = styled.input`
+  font-size: 30px;
+  font-weight: bold;
+  color: ${(props) => props.theme.colors.color2};
+  margin: 0 25px;
+  word-wrap: break-word;
+`;
 const PostTime = styled.p`
   margin: 10px 25px;
 `;
@@ -535,6 +542,7 @@ function Article({ id, articleData }: { id: string; articleData: ArticleInterfac
                       const postRef = doc(db, "posts", id);
                       await updateDoc(postRef, {
                         content,
+                        title: article.title,
                       });
                       setIsEditState(false);
                     }}
@@ -565,7 +573,15 @@ function Article({ id, articleData }: { id: string; articleData: ArticleInterfac
               </>
             )}
           </ArticleUser>
-          <Title>{article?.title}</Title>
+          {isEditState || <Title>{article?.title}</Title>}
+          {isEditState && (
+            <TitleInput
+              value={article?.title}
+              onChange={(e) => {
+                setArticle((prev) => ({ ...prev, title: e.target.value }));
+              }}
+            />
+          )}
           {article && <PostTime>{new Date(article.time).toLocaleString()}</PostTime>}
           {isEditState && <RichEditor content={content} setContent={setContent} />}
           {article && !isEditState && (
