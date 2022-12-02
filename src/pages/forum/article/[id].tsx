@@ -191,6 +191,9 @@ const MessageContent = styled.div`
   margin-bottom: 20px;
   max-width: 100%;
   word-wrap: break-word;
+  p {
+    line-height: 24px;
+  }
 `;
 const MessageInfo = styled.div`
   display: flex;
