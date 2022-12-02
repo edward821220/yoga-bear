@@ -475,7 +475,11 @@ const Comments = styled.p`
     font-size: 16px;
   }
 `;
-
+interface ChapterInterface {
+  id: number;
+  title: string;
+  units: { id: number; title: string; video: string }[];
+}
 function VideoPlayer({ introductionVideo }: { introductionVideo: string | undefined }) {
   const handle = useFullScreenHandle();
   const videoRef = useRef<HTMLVideoElement>(null);
