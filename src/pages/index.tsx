@@ -1,12 +1,16 @@
-import { useState } from "react";
-import Head from "next/head";
+import { useState, useContext } from "react";
 import styled from "styled-components";
+import Swal from "sweetalert2";
+import Head from "next/head";
 import Image from "next/image";
 import { useRouter } from "next/router";
+import { useRecoilState } from "recoil";
 import { Swiper, SwiperSlide } from "swiper/react";
 import { Pagination, Navigation } from "swiper";
 import { collection, query, where, limit, getDocs } from "firebase/firestore";
 import { db } from "../../lib/firebase";
+import { AuthContext } from "../contexts/authContext";
+import { showMemberModalState } from "../../lib/recoil";
 import Bear from "../../public/bear-logo1.png";
 import BannerPic from "../../public/banner6.jpg";
 import "swiper/css";
@@ -274,8 +278,11 @@ export default function Home({
   teachersList: TeachersListInterface[];
 }) {
   const router = useRouter();
+  const { isLogin } = useContext(AuthContext);
   const [keywords, setKeywords] = useState("");
   const [category, setCategory] = useState("course");
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
+  const [showMemberModal, setShowMemberModal] = useRecoilState(showMemberModalState);
   return (
     <>
       <Head>
@@ -560,6 +567,15 @@ export default function Home({
               <SwiperSlide key={teacher.id}>
                 <Course
                   onClick={() => {
+                    if (!isLogin) {
+                      Swal.fire({
+                        title: "請先登入才能預約老師唷！",
+                        confirmButtonColor: "#5d7262",
+                        icon: "warning",
+                      });
+                      setShowMemberModal(true);
+                      return;
+                    }
                     router.push(`/findTeachers/reserve/${teacher.id}`);
                   }}
                 >

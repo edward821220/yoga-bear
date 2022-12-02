@@ -364,7 +364,11 @@ function FindTeachers({ results }: { results: TeacherInterface[] }) {
                   avatar={teacher.avatar}
                   onClick={() => {
                     if (!isLogin) {
-                      Swal.fire({ title: "您還沒登入唷！", confirmButtonColor: "#5d7262", icon: "warning" });
+                      Swal.fire({
+                        title: "請先登入才能預約老師唷！",
+                        confirmButtonColor: "#5d7262",
+                        icon: "warning",
+                      });
                       setShowMemberModal(true);
                       return;
                     }
@@ -425,7 +429,11 @@ function FindTeachers({ results }: { results: TeacherInterface[] }) {
                 <Button
                   onClick={() => {
                     if (!isLogin) {
-                      Swal.fire({ title: "您還沒登入唷！", confirmButtonColor: "#5d7262", icon: "warning" });
+                      Swal.fire({
+                        title: "請先登入才能預約老師唷！",
+                        confirmButtonColor: "#5d7262",
+                        icon: "warning",
+                      });
                       setShowMemberModal(true);
                       return;
                     }

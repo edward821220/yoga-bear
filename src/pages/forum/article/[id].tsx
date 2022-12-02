@@ -363,6 +363,15 @@ function MessagesSection({
                       identity={message.identity}
                       onClick={() => {
                         if (message.identity === "teacher") {
+                          if (!isLogin) {
+                            Swal.fire({
+                              title: "請先登入才能預約老師唷！",
+                              confirmButtonColor: "#5d7262",
+                              icon: "warning",
+                            });
+                            setShowMemberModal(true);
+                            return;
+                          }
                           router.push(`/findTeachers/reserve/${message.authorId}`);
                         }
                       }}

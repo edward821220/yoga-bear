@@ -6,7 +6,7 @@ import { useRouter } from "next/router";
 import styled from "styled-components";
 import Swal from "sweetalert2";
 import parse from "html-react-parser";
-import { useRecoilState } from "recoil";
+import { SetterOrUpdater, useRecoilState } from "recoil";
 import { FullScreen, useFullScreenHandle } from "react-full-screen";
 import { db } from "../../../../lib/firebase";
 import { AuthContext } from "../../../contexts/authContext";
@@ -747,12 +747,14 @@ interface CourseDataInterface {
 }
 
 interface CourseDetailProps {
+  isLogin: boolean;
+  setShowMemberModal: SetterOrUpdater<boolean>;
   courseData: CourseDataInterface;
   teacherData: Record<string, string>;
   reviewsUsersData: { index: number; username: string; avatar: string }[];
 }
 
-function CourseDetail({ courseData, teacherData, reviewsUsersData }: CourseDetailProps) {
+function CourseDetail({ isLogin, setShowMemberModal, courseData, teacherData, reviewsUsersData }: CourseDetailProps) {
   const router = useRouter();
 
   return (
@@ -763,6 +765,11 @@ function CourseDetail({ courseData, teacherData, reviewsUsersData }: CourseDetai
       <About>
         <TeacherInfo
           onClick={() => {
+            if (!isLogin) {
+              Swal.fire({ title: "請先登入才能預約老師唷！", confirmButtonColor: "#5d7262", icon: "warning" });
+              setShowMemberModal(true);
+              return;
+            }
             router.push(`/findTeachers/reserve/${courseData.teacherId}`);
           }}
         >
@@ -978,7 +985,13 @@ function CourseInfo({ courseId, courseData }: { courseId: string; courseData: Co
           )}
         </CourseContainer>
         {courseData && teacherData && (
-          <CourseDetail courseData={courseData} teacherData={teacherData} reviewsUsersData={reviewsUsersData} />
+          <CourseDetail
+            isLogin={isLogin}
+            setShowMemberModal={setShowMemberModal}
+            courseData={courseData}
+            teacherData={teacherData}
+            reviewsUsersData={reviewsUsersData}
+          />
         )}
       </Wrapper>
     </>
