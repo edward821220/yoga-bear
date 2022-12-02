@@ -627,8 +627,11 @@ function LaunchVideoCourse({ uid }: { uid: string }) {
 
   const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
+    if (chapters.length === 0) {
+      Swal.fire({ text: "至少要有一個章節唷！", confirmButtonColor: "#5d7262", icon: "error" });
+      return;
+    }
     setShowMemberModal(true);
-
     let newChapters = [...chapters];
     let imageUrl = "";
     let introductionVideoUrl = "";
@@ -674,6 +677,7 @@ function LaunchVideoCourse({ uid }: { uid: string }) {
     const fileInputs: HTMLInputElement[] = Array.from(document.querySelectorAll("input[type=file]"));
     if (fileInputs.some((fileInput) => fileInput.files?.length === 0)) {
       Swal.fire({ text: "您有檔案沒上傳唷～請確認後再送出", confirmButtonColor: "#5d7262", icon: "error" });
+      setShowMemberModal(false);
       return;
     }
     await Promise.all(
