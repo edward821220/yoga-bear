@@ -1,12 +1,12 @@
 import React, { useState, useEffect, useRef, useContext } from "react";
 import Image from "next/image";
 import Head from "next/head";
-import { doc, query, getDoc, getDocs, collection, updateDoc, arrayUnion } from "firebase/firestore";
+import { doc, getDoc, updateDoc, arrayUnion } from "firebase/firestore";
 import { useRouter } from "next/router";
 import styled from "styled-components";
 import Swal from "sweetalert2";
 import parse from "html-react-parser";
-import { useRecoilState } from "recoil";
+import { SetterOrUpdater, useRecoilState } from "recoil";
 import { FullScreen, useFullScreenHandle } from "react-full-screen";
 import { db } from "../../../../lib/firebase";
 import { AuthContext } from "../../../contexts/authContext";
@@ -367,6 +367,7 @@ const TeacherInfo = styled.div`
   cursor: pointer;
 `;
 const TeacherWrapper = styled.div`
+  position: relative;
   display: flex;
   justify-content: center;
   align-items: center;
@@ -428,6 +429,7 @@ const User = styled.div`
   }
 `;
 const AvatarWrapper = styled.div`
+  position: relative;
   display: flex;
   justify-content: center;
   align-items: center;
@@ -440,7 +442,9 @@ const AvatarWrapper = styled.div`
 const UserName = styled.p`
   text-align: center;
 `;
-const CommentWrapper = styled.div``;
+const CommentWrapper = styled.div`
+  max-width: 80%;
+`;
 const Score = styled.div`
   margin-bottom: 10px;
   display: flex;
@@ -453,6 +457,7 @@ const StarWrapper = styled.div`
 `;
 const Comments = styled.p`
   font-size: 18px;
+  word-wrap: break-word;
   @media screen and (max-width: 866px) {
     font-size: 16px;
   }
@@ -719,26 +724,37 @@ function VideoPlayer({ introductionVideo }: { introductionVideo: string | undefi
     </FullScreen>
   );
 }
-
+interface ChapterInterface {
+  id: number;
+  title: string;
+  units: { id: number; title: string; video: string }[];
+}
+interface ReviewInterface {
+  comments: string;
+  score: number;
+  userId: string;
+}
 interface CourseDataInterface {
   id: string;
   name: string;
-  chapters: { id: number; title: string; units: { id: number; title: string; video: string }[] }[];
+  chapters: ChapterInterface[];
   introduction: string;
   introductionVideo: string;
   teacherId: string;
   cover: string;
   price: string;
-  reviews: { comments: string; score: number; userId: string }[];
+  reviews: ReviewInterface[];
 }
 
 interface CourseDetailProps {
+  isLogin: boolean;
+  setShowMemberModal: SetterOrUpdater<boolean>;
   courseData: CourseDataInterface;
   teacherData: Record<string, string>;
   reviewsUsersData: { index: number; username: string; avatar: string }[];
 }
 
-function CourseDetail({ courseData, teacherData, reviewsUsersData }: CourseDetailProps) {
+function CourseDetail({ isLogin, setShowMemberModal, courseData, teacherData, reviewsUsersData }: CourseDetailProps) {
   const router = useRouter();
 
   return (
@@ -749,11 +765,16 @@ function CourseDetail({ courseData, teacherData, reviewsUsersData }: CourseDetai
       <About>
         <TeacherInfo
           onClick={() => {
+            if (!isLogin) {
+              Swal.fire({ title: "請先登入才能預約老師唷！", confirmButtonColor: "#5d7262", icon: "warning" });
+              setShowMemberModal(true);
+              return;
+            }
             router.push(`/findTeachers/reserve/${courseData.teacherId}`);
           }}
         >
           <TeacherWrapper>
-            <Image src={teacherData.teacherAvatar} alt="avatar" width={120} height={120} />
+            <Image src={teacherData.teacherAvatar} alt="avatar" fill sizes="contain" style={{ objectFit: "cover" }} />
           </TeacherWrapper>
           <TeacherName>{teacherData.teacherName}</TeacherName>
         </TeacherInfo>
@@ -799,8 +820,9 @@ function CourseDetail({ courseData, teacherData, reviewsUsersData }: CourseDetai
                       reviewsUsersData.find((reviewUserData) => reviewUserData.index === reviewIndex)?.avatar || Avatar
                     }
                     alt="avatar"
-                    width={120}
-                    height={120}
+                    fill
+                    sizes="contain"
+                    style={{ objectFit: "cover" }}
                   />
                 </AvatarWrapper>
                 <UserName>
@@ -835,8 +857,10 @@ function CourseInfo({ courseId, courseData }: { courseId: string; courseData: Co
   const [teacherData, setTeacherData] = useState<Record<string, string>>();
   const [reviewsUsersData, setReviewsUsersData] = useState<{ index: number; username: string; avatar: string }[]>([]);
   const { isLogin, userData } = useContext(AuthContext);
+  /* eslint-disable @typescript-eslint/no-unused-vars */
   const [orderQty, setOrderQty] = useRecoilState(orderQtyState);
   const [showMemberModal, setShowMemberModal] = useRecoilState(showMemberModalState);
+  /* eslint-enable @typescript-eslint/no-unused-vars */
 
   useEffect(() => {
     const getBoughtCourses = async () => {
@@ -868,8 +892,8 @@ function CourseInfo({ courseId, courseData }: { courseId: string; courseData: Co
         const userRef = doc(db, "users", review.userId);
         const userSnap = await getDoc(userRef);
         if (!userSnap.exists()) return;
-        const { username } = userSnap.data();
-        const avatar = userSnap.data().photoURL;
+        const username = userSnap.data().username as string;
+        const avatar = userSnap.data().photoURL as string;
         setReviewsUsersData((prev) => [...prev, { index, username, avatar }]);
       });
     };
@@ -895,8 +919,8 @@ function CourseInfo({ courseId, courseData }: { courseId: string; courseData: Co
     Swal.fire({ title: "已加入購物車！", confirmButtonColor: "#5d7262", icon: "success" });
     const docSnap = await getDoc(userRef);
     if (docSnap.exists()) {
-      // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
-      const qty: number = docSnap.data()?.cartItems?.length;
+      const cartItems = docSnap.data().cartItems as [];
+      const qty = cartItems.length;
       setOrderQty(qty);
     }
   };
@@ -953,7 +977,7 @@ function CourseInfo({ courseId, courseData }: { courseId: string; courseData: Co
               type="button"
               onClick={() => {
                 if (typeof courseId !== "string") return;
-                router.push(`/myCourses/classRoom/videoRoom/${courseId}`);
+                router.push(`/myCourses/classRoom/videoCourseRoom/${courseId}`);
               }}
             >
               前往課程
@@ -961,7 +985,13 @@ function CourseInfo({ courseId, courseData }: { courseId: string; courseData: Co
           )}
         </CourseContainer>
         {courseData && teacherData && (
-          <CourseDetail courseData={courseData} teacherData={teacherData} reviewsUsersData={reviewsUsersData} />
+          <CourseDetail
+            isLogin={isLogin}
+            setShowMemberModal={setShowMemberModal}
+            courseData={courseData}
+            teacherData={teacherData}
+            reviewsUsersData={reviewsUsersData}
+          />
         )}
       </Wrapper>
     </>
@@ -970,34 +1000,20 @@ function CourseInfo({ courseId, courseData }: { courseId: string; courseData: Co
 
 export default CourseInfo;
 
-export async function getStaticPaths() {
-  const coursesRef = collection(db, "video_courses");
-  const queryCourses = await getDocs(query(coursesRef));
-  const paths: { params: { courseId: string } }[] = [];
-  queryCourses.forEach((data) => {
-    const { id: courseId } = data.data();
-    paths.push({ params: { courseId } });
-  });
-
-  return { paths, fallback: false };
-}
-
-export async function getStaticProps({ params }: { params: { courseId: string } }) {
+export async function getServerSideProps({ params }: { params: { courseId: string } }) {
   const docRef = doc(db, "video_courses", params.courseId);
   const docSnap = await getDoc(docRef);
   if (!docSnap.exists()) return;
-  const {
-    id,
-    name,
-    chapters,
-    introduction,
-    introductionVideo,
-    teacher_id: teacherId,
-    cover,
-    price,
-    reviews,
-  } = docSnap.data();
+  const id = docSnap.data().id as string;
+  const name = docSnap.data().name as string;
+  const chapters = docSnap.data().chapters as ChapterInterface[];
+  const introduction = docSnap.data().introduction as string;
+  const introductionVideo = docSnap.data().introductionVideo as string;
+  const teacherId = docSnap.data().teacher_id as string;
+  const cover = docSnap.data().cover as string;
+  const price = docSnap.data().price as number;
+  const reviews = docSnap.data().reviews as ReviewInterface[];
   const courseData = { id, name, chapters, introduction, introductionVideo, teacherId, cover, price, reviews };
 
-  return { props: { courseId: params.courseId, courseData }, revalidate: 1800 };
+  return { props: { courseId: params.courseId, courseData } };
 }

@@ -1,9 +1,11 @@
 import Head from "next/head";
-import type { AppProps } from "next/app";
 import { createGlobalStyle, DefaultTheme, ThemeProvider } from "styled-components";
+import type { AppProps } from "next/app";
+import { useRouter } from "next/router";
 import { Reset } from "styled-reset";
 import React from "react";
 import { RecoilRoot } from "recoil";
+import ErrorBoundary from "../components/errorBoundary";
 import Header from "../components/header";
 import { AuthContextProvider } from "../contexts/authContext";
 
@@ -46,11 +48,13 @@ const theme: DefaultTheme = {
 };
 
 export default function App({ Component, pageProps }: AppProps) {
+  const router = useRouter();
   return (
     <>
       <Head>
         <meta name="viewport" content="viewport-fit=cover" />
         <meta name="viewport" content="initial-scale=1.0, width=device-width" key="viewport" />
+        <link rel="shortcut icon" href="/member.png" />
       </Head>
       <Reset />
       <GlobalStyle />
@@ -58,7 +62,9 @@ export default function App({ Component, pageProps }: AppProps) {
         <RecoilRoot>
           <ThemeProvider theme={theme}>
             <Header />
-            <Component {...pageProps} />
+            <ErrorBoundary key={router.pathname}>
+              <Component {...pageProps} />
+            </ErrorBoundary>
           </ThemeProvider>
         </RecoilRoot>
       </AuthContextProvider>

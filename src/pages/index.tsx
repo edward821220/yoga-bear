@@ -1,12 +1,16 @@
-import { useState } from "react";
-import Head from "next/head";
+import { useState, useContext } from "react";
 import styled from "styled-components";
+import Swal from "sweetalert2";
+import Head from "next/head";
 import Image from "next/image";
 import { useRouter } from "next/router";
+import { useRecoilState } from "recoil";
 import { Swiper, SwiperSlide } from "swiper/react";
 import { Pagination, Navigation } from "swiper";
 import { collection, query, where, limit, getDocs } from "firebase/firestore";
 import { db } from "../../lib/firebase";
+import { AuthContext } from "../contexts/authContext";
+import { showMemberModalState } from "../../lib/recoil";
 import Bear from "../../public/bear-logo1.png";
 import BannerPic from "../../public/banner6.jpg";
 import "swiper/css";
@@ -252,6 +256,7 @@ const BearWrapper = styled.div`
   display: flex;
   justify-content: center;
   align-items: center;
+  cursor: pointer;
 `;
 
 interface CoursesListInterface {
@@ -274,8 +279,11 @@ export default function Home({
   teachersList: TeachersListInterface[];
 }) {
   const router = useRouter();
+  const { isLogin } = useContext(AuthContext);
   const [keywords, setKeywords] = useState("");
   const [category, setCategory] = useState("course");
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
+  const [showMemberModal, setShowMemberModal] = useRecoilState(showMemberModalState);
   return (
     <>
       <Head>
@@ -310,6 +318,7 @@ export default function Home({
                 onChange={(e) => {
                   setCategory(e.target.value);
                 }}
+                defaultChecked
               />
               找課程
             </SearchLabel>
@@ -559,11 +568,20 @@ export default function Home({
               <SwiperSlide key={teacher.id}>
                 <Course
                   onClick={() => {
+                    if (!isLogin) {
+                      Swal.fire({
+                        title: "請先登入才能預約老師唷！",
+                        confirmButtonColor: "#5d7262",
+                        icon: "warning",
+                      });
+                      setShowMemberModal(true);
+                      return;
+                    }
                     router.push(`/findTeachers/reserve/${teacher.id}`);
                   }}
                 >
                   <AvatarWrapper>
-                    <Image src={teacher.avatar} alt="avatar" fill sizes="contain" />
+                    <Image src={teacher.avatar} alt="avatar" fill sizes="contain" style={{ objectFit: "cover" }} />
                   </AvatarWrapper>
                   <Info>{teacher.name}</Info>
                 </Course>
@@ -571,7 +589,11 @@ export default function Home({
             ))}
           </Swiper>
           <Title>歡迎加入我們</Title>
-          <BearWrapper>
+          <BearWrapper
+            onClick={() => {
+              setShowMemberModal(true);
+            }}
+          >
             <Image src={Bear} alt="bear" width={500} />
           </BearWrapper>
         </Container>
@@ -585,15 +607,20 @@ export const getStaticProps = async () => {
   const queryCourses = await getDocs(query(coursesRef, where("price", "<", 2000), limit(9)));
   const coursesList: CoursesListInterface[] = [];
   queryCourses.forEach((data) => {
-    const { id, cover, name, price } = data.data();
+    const id = data.data().id as string;
+    const cover = data.data().cover as string;
+    const name = data.data().name as string;
+    const price = data.data().price as number;
     coursesList.push({ id, cover, name, price });
   });
 
   const usersRef = collection(db, "users");
-  const queryTeachers = await getDocs(query(usersRef, where("identity", "==", "teacher"), limit(15)));
+  const queryTeachers = await getDocs(query(usersRef, where("identity", "==", "teacher"), limit(10)));
   const teachersList: TeachersListInterface[] = [];
   queryTeachers.forEach((data) => {
-    const { uid: id, photoURL: avatar, username: name } = data.data();
+    const id = data.data().uid as string;
+    const avatar = data.data().photoURL as string;
+    const name = data.data().username as string;
     teachersList.push({ id, avatar, name });
   });
 
@@ -602,6 +629,6 @@ export const getStaticProps = async () => {
       coursesList,
       teachersList,
     },
-    revalidate: 1800,
+    revalidate: 180,
   };
 };

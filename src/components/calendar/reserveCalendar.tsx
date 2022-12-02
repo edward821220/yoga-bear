@@ -22,7 +22,7 @@ import { collection, getDocs, query, where, doc, updateDoc, arrayUnion, getDoc }
 import { useRecoilState } from "recoil";
 import { db } from "../../../lib/firebase";
 import { AuthContext } from "../../contexts/authContext";
-import { bearMoneyState, showMemberModalState } from "../../../lib/recoil";
+import { bearMoneyState } from "../../../lib/recoil";
 import resources from "./resources";
 import ReserveButton from "../../../public/reserve.png";
 
@@ -43,8 +43,8 @@ const ReserveButtonWrapper = styled.div`
 `;
 
 function TextEditor(props: AppointmentForm.TextEditorProps) {
-  // eslint-disable-next-line react/destructuring-assignment
-  if (props.type === "multilineTextEditor") {
+  const { type } = props;
+  if (type === "multilineTextEditor") {
     return null;
   }
   return <AppointmentForm.TextEditor {...props} />;
@@ -52,7 +52,12 @@ function TextEditor(props: AppointmentForm.TextEditorProps) {
 
 function BasicLayout({ onFieldChange, appointmentData, ...restProps }: AppointmentForm.BasicLayoutProps) {
   return (
-    <AppointmentForm.BasicLayout appointmentData={appointmentData} onFieldChange={onFieldChange} {...restProps}>
+    <AppointmentForm.BasicLayout
+      appointmentData={appointmentData}
+      onFieldChange={onFieldChange}
+      {...restProps}
+      readOnly
+    >
       <AppointmentForm.Label text="課程人數" type="titleLabel" />
       <AppointmentForm.TextEditor
         value={Number(appointmentData.maximum) || 1}
@@ -71,7 +76,7 @@ function BasicLayout({ onFieldChange, appointmentData, ...restProps }: Appointme
       />
       <AppointmentForm.Label text="課程說明" type="titleLabel" />
       <AppointmentForm.TextEditor
-        value={appointmentData.description}
+        value={appointmentData.description as string}
         onValueChange={() => {}}
         placeholder="請輸入課程內容（若是實體課請填寫上課地點）"
         type="ordinaryTextEditor"
@@ -79,7 +84,7 @@ function BasicLayout({ onFieldChange, appointmentData, ...restProps }: Appointme
       />
       <AppointmentForm.Label text="注意事項" type="titleLabel" />
       <AppointmentForm.TextEditor
-        value={appointmentData.precaution}
+        value={appointmentData.precaution as string}
         onValueChange={() => {}}
         placeholder="請輸入注意事項"
         type="ordinaryTextEditor"
@@ -87,7 +92,7 @@ function BasicLayout({ onFieldChange, appointmentData, ...restProps }: Appointme
       />
       <AppointmentForm.Label text="開課老師" type="titleLabel" />
       <AppointmentForm.TextEditor
-        value={appointmentData.teacherName}
+        value={appointmentData.teacherName as string}
         onValueChange={() => {}}
         placeholder="開課老師"
         type="ordinaryTextEditor"
@@ -98,9 +103,8 @@ function BasicLayout({ onFieldChange, appointmentData, ...restProps }: Appointme
 }
 
 function Header({ appointmentData, ...restProps }: AppointmentTooltip.HeaderProps) {
-  const { userData, isLogin } = useContext(AuthContext);
+  const { userData } = useContext(AuthContext);
   const { email } = userData;
-  const [showMemberModal, setShowMemberModal] = useRecoilState(showMemberModalState);
   const [bearMoney, setBearMoney] = useRecoilState(bearMoneyState);
   const isEnded = Date.now() > Date.parse(appointmentData?.endDate as string);
   const maximum = Number(appointmentData?.maximum) || 1;
@@ -113,11 +117,6 @@ function Header({ appointmentData, ...restProps }: AppointmentTooltip.HeaderProp
             alt="reserve-btn"
             width={36}
             onClick={() => {
-              if (!isLogin) {
-                Swal.fire({ title: "您還沒登入唷！", confirmButtonColor: "#5d7262", icon: "warning" });
-                setShowMemberModal(true);
-                return;
-              }
               if (!appointmentData) return;
               const price = Number(appointmentData.price as string) || 0;
               Swal.fire({
@@ -192,15 +191,16 @@ function ReserveCalendar({ teacherId }: { teacherId: string }) {
       const courseQuery = query(courseRef, where("teacherId", "==", teacherId));
       const querySnapshot = await getDocs(courseQuery);
       const results: AppointmentModel[] = [];
-      /* eslint-disable @typescript-eslint/no-unsafe-member-access */
+
       querySnapshot.forEach((data) => {
+        const startDate = data.data().startDate as { seconds: number };
+        const endDate = data.data().endDate as { seconds: number };
         results.push({
           ...data.data(),
-          startDate: new Date(data.data().startDate.seconds * 1000),
-          endDate: new Date(data.data().endDate.seconds * 1000),
+          startDate: new Date(startDate.seconds * 1000),
+          endDate: new Date(endDate.seconds * 1000),
         });
       });
-      /* eslint-enable @typescript-eslint/no-unsafe-member-access */
       setAppointments(results);
     };
     getRooms();

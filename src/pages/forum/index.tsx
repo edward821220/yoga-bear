@@ -126,6 +126,7 @@ const UserName = styled.span`
 `;
 const ArticleInfo = styled.div`
   display: flex;
+  max-width: 746px;
 `;
 const ArticleText = styled.div`
   flex-basis: 75%;
@@ -150,6 +151,7 @@ const ArticleTitle = styled.h4`
   margin-bottom: 10px;
   width: 100%;
   overflow: hidden;
+  word-wrap: break-word;
 `;
 const ArticlePreview = styled.div`
   line-height: 20px;
@@ -202,6 +204,7 @@ interface PostInterface {
 
 function Forum({ posts }: { posts: PostInterface[] }) {
   const router = useRouter();
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
   const [showMemberModal, setShowMemberModal] = useRecoilState(showMemberModalState);
   const { isLogin } = useContext(AuthContext);
 
@@ -226,7 +229,13 @@ function Forum({ posts }: { posts: PostInterface[] }) {
                 >
                   <ArticleUser>
                     <UserAvatarWrapper>
-                      <Image src={article.authorAvatar || Avatar} alt="avatar" fill sizes="contain" />
+                      <Image
+                        src={article.authorAvatar || Avatar}
+                        alt="avatar"
+                        fill
+                        sizes="contain"
+                        style={{ objectFit: "cover" }}
+                      />
                     </UserAvatarWrapper>
                     <UserName>{article.authorName}</UserName>
                   </ArticleUser>
@@ -295,12 +304,16 @@ export const getServerSideProps = async () => {
     let picPreview = "";
     if (paragraphs) preview = `${paragraphs[0].slice(3, -4)}...`;
     if (images) [picPreview] = images;
+    const id = data.data().id as string;
+    const title = data.data().title as string;
+    const content = data.data().content as string;
+    const authorId = data.data().author as string;
     return {
-      id: data.data().id,
+      id,
       time: new Date(data.data().time as string).toLocaleString(),
-      title: data.data().title,
-      content: data.data().content,
-      authorId: data.data().author,
+      title,
+      content,
+      authorId,
       preview,
       picPreview,
       messagesQty,
@@ -312,8 +325,10 @@ export const getServerSideProps = async () => {
       const docRef = doc(db, "users", result.authorId);
       const docSnap = await getDoc(docRef);
       if (docSnap.exists()) {
-        results[index].authorName = docSnap.data().username;
-        results[index].authorAvatar = docSnap.data().photoURL;
+        const authorName = docSnap.data().username as string;
+        const authorAvatar = docSnap.data().photoURL as string;
+        results[index].authorName = authorName;
+        results[index].authorAvatar = authorAvatar;
       }
     })
   );

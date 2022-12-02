@@ -1,6 +1,5 @@
 import { useState, useEffect } from "react";
 import styled from "styled-components";
-import { useRouter } from "next/router";
 import Head from "next/head";
 import Image from "next/image";
 import Link from "next/link";
@@ -11,7 +10,6 @@ import ReserveCalendar from "../../../components/calendar/reserveCalendar";
 import Avatar from "../../../../public/member.png";
 import Star from "../../../../public/star.png";
 import HalfStar from "../../../../public/star-half.png";
-import Loading from "../../../../public/loading.gif";
 
 const Wrapper = styled.div`
   background-color: ${(props) => props.theme.colors.color1};
@@ -42,6 +40,7 @@ const TeacherInfo = styled.div`
   margin-bottom: 20px;
 `;
 const TeacherAvatar = styled.div`
+  position: relative;
   width: 66px;
   height: 66px;
   border-radius: 50%;
@@ -212,6 +211,7 @@ const User = styled.div`
   margin-right: 80px;
 `;
 const AvatarWrapper = styled.div`
+  position: relative;
   display: flex;
   justify-content: center;
   align-items: center;
@@ -228,7 +228,9 @@ const AvatarWrapper = styled.div`
 const UserName = styled.p`
   text-align: center;
 `;
-const CommentWrapper = styled.div``;
+const CommentWrapper = styled.div`
+  max-width: 80%;
+`;
 const Score = styled.div`
   margin-bottom: 10px;
   display: flex;
@@ -245,6 +247,7 @@ const StarWrapper = styled.div`
 `;
 const Comments = styled.p`
   font-size: 18px;
+  word-wrap: break-word;
   @media screen and (max-width: 780px) {
     font-size: 16px;
   }
@@ -271,7 +274,10 @@ function LaunchedVideoCourses({ uid }: { uid: string }) {
       const teachersQuery = query(usersRef, where("teacher_id", "==", uid));
       const querySnapshot = await getDocs(teachersQuery);
       const launchedVideoCourses = querySnapshot.docs.map((course) => {
-        const { name, cover, id, reviews } = course.data();
+        const name = course.data().name as string;
+        const cover = course.data().cover as string;
+        const id = course.data().id as string;
+        const reviews = course.data().reviews as { userId: string; score: number; comments: string }[];
         return { name, cover, id, reviews };
       });
       setCourses(launchedVideoCourses);
@@ -287,7 +293,7 @@ function LaunchedVideoCourses({ uid }: { uid: string }) {
       {courses?.map((course) => (
         <Course key={course.name}>
           <CourseCover>
-            <Link href={`/myCourses/classRoom/videoRoom/${course.id}`}>
+            <Link href={`/videoCourses/courseDetail/${course.id}`}>
               <Image src={course.cover} alt="cover" fill sizes="cover" />
             </Link>
           </CourseCover>
@@ -336,51 +342,28 @@ interface ReviewInterface {
   comments: string;
   userId: string;
 }
-export default function Reserve() {
-  const router = useRouter();
-  const { teacherId } = router.query;
-  const [teacherData, setTeacherData] = useState<{
-    username: string;
-    introduction: string;
-    experience: string;
-    reviews?: ReviewInterface[];
-    avatar?: string;
-  }>();
+interface TeacherDataInterface {
+  username: string;
+  introduction: string;
+  experience: string;
+  reviews?: ReviewInterface[];
+  avatar?: string;
+}
+export default function Reserve({ teacherId, teacherData }: { teacherId: string; teacherData: TeacherDataInterface }) {
   const [reviewUsersData, setReviewUsersData] = useState<{ index: number; username: string; avatar: string }[]>([]);
 
   useEffect(() => {
-    const getTeacherData = async () => {
-      if (typeof teacherId !== "string") return;
-      const userRef = doc(db, "users", teacherId);
-      const userSnap = await getDoc(userRef);
-      if (!userSnap.exists()) return;
-      const username = userSnap.data().username as string;
-      const introduction = userSnap.data().teacher_introduction as string;
-      const experience = userSnap.data().teacher_experience as string;
-      const avatar = userSnap.data().photoURL as string;
-      const reviews = userSnap.data().reviews as ReviewInterface[];
-      setTeacherData({ username, introduction, experience, reviews, avatar });
+    if (!Array.isArray(teacherData.reviews)) return;
+    teacherData.reviews.forEach(async (review: { comments: string; score: number; userId: string }, index) => {
+      const reviewUserRef = doc(db, "users", review.userId);
+      const reviewUserSnap = await getDoc(reviewUserRef);
+      if (!reviewUserSnap.exists()) return;
+      const reviewUsername = reviewUserSnap.data().username as string;
+      const reviewUserAvatar = reviewUserSnap.data().photoURL as string;
+      setReviewUsersData((prev) => [...prev, { index, username: reviewUsername, avatar: reviewUserAvatar }]);
+    });
+  }, [teacherData.reviews]);
 
-      if (!Array.isArray(reviews)) return;
-      reviews.forEach(async (review: { comments: string; score: number; userId: string }, index) => {
-        const reviewUserRef = doc(db, "users", review.userId);
-        const reviewUserSnap = await getDoc(reviewUserRef);
-        if (!reviewUserSnap.exists()) return;
-        const reviewUsername = reviewUserSnap.data().username;
-        const reviewUserAvatar = reviewUserSnap.data().photoURL;
-        setReviewUsersData((prev) => [...prev, { index, username: reviewUsername, avatar: reviewUserAvatar }]);
-      });
-    };
-    getTeacherData();
-  }, [teacherId]);
-
-  if (!teacherData) {
-    return (
-      <TeacherContainer style={{ justifyContent: "center", alignItems: "center" }}>
-        <Image src={Loading} alt="loading" width={100} height={100} />
-      </TeacherContainer>
-    );
-  }
   return (
     <>
       <Head>
@@ -391,7 +374,13 @@ export default function Reserve() {
           <TeacherDetail>
             <TeacherInfo>
               <TeacherAvatar>
-                <Image src={teacherData?.avatar || Avatar} alt="avatar" width={120} height={120} />
+                <Image
+                  src={teacherData?.avatar || Avatar}
+                  alt="avatar"
+                  fill
+                  sizes="contain"
+                  style={{ objectFit: "cover" }}
+                />
               </TeacherAvatar>
               <TeacherName>{teacherData?.username} 老師</TeacherName>
             </TeacherInfo>
@@ -463,8 +452,9 @@ export default function Reserve() {
                           Avatar
                         }
                         alt="avatar"
-                        width={120}
-                        height={120}
+                        fill
+                        sizes="contain"
+                        style={{ objectFit: "cover" }}
                       />
                     </AvatarWrapper>
                     <UserName>
@@ -494,4 +484,18 @@ export default function Reserve() {
       </Wrapper>
     </>
   );
+}
+
+export async function getServerSideProps({ params }: { params: { teacherId: string } }) {
+  const userRef = doc(db, "users", params.teacherId);
+  const userSnap = await getDoc(userRef);
+  if (!userSnap.exists()) return;
+  const username = userSnap.data().username as string;
+  const introduction = userSnap.data().teacher_introduction as string;
+  const experience = userSnap.data().teacher_experience as string;
+  const avatar = userSnap.data().photoURL as string;
+  const reviews = (userSnap.data().reviews as ReviewInterface[]) || null;
+  const teacherData = { username, introduction, experience, reviews, avatar };
+
+  return { props: { teacherId: params.teacherId, teacherData } };
 }

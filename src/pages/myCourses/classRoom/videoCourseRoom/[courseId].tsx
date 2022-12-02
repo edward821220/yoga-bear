@@ -1,11 +1,12 @@
 import React, { useState, useEffect, useRef, useContext } from "react";
 import Image from "next/image";
-import { doc, collection, query, getDoc, getDocs } from "firebase/firestore";
+import { doc, getDoc } from "firebase/firestore";
 import { useRouter } from "next/router";
 import styled from "styled-components";
 import Swal from "sweetalert2";
 import parse from "html-react-parser";
 import { FullScreen, useFullScreenHandle } from "react-full-screen";
+import Head from "next/head";
 import { db } from "../../../../../lib/firebase";
 import { AuthContext } from "../../../../contexts/authContext";
 import Play from "../../../../../public/play.png";
@@ -340,6 +341,7 @@ const TeacherInfo = styled.div`
   cursor: pointer;
 `;
 const TeacherWrapper = styled.div`
+  position: relative;
   display: flex;
   justify-content: center;
   align-items: center;
@@ -401,6 +403,7 @@ const User = styled.div`
   }
 `;
 const AvatarWrapper = styled.div`
+  position: relative;
   display: flex;
   justify-content: center;
   align-items: center;
@@ -413,7 +416,9 @@ const AvatarWrapper = styled.div`
 const UserName = styled.p`
   text-align: center;
 `;
-const CommentWrapper = styled.div``;
+const CommentWrapper = styled.div`
+  max-width: 80%;
+`;
 const Score = styled.div`
   margin-bottom: 10px;
   display: flex;
@@ -426,6 +431,7 @@ const StarWrapper = styled.div`
 `;
 const Comments = styled.p`
   font-size: 18px;
+  word-wrap: break-word;
   @media screen and (max-width: 866px) {
     font-size: 16px;
   }
@@ -709,16 +715,26 @@ function VideoPlayer({
     </FullScreen>
   );
 }
+interface ChapterInterface {
+  id: number;
+  title: string;
+  units: { id: number; title: string; video: string }[];
+}
+interface ReviewInterface {
+  comments: string;
+  score: number;
+  userId: string;
+}
 interface CourseDataInterface {
   id: string;
   name: string;
-  chapters: { id: number; title: string; units: { id: number; title: string; video: string }[] }[];
+  chapters: ChapterInterface[];
   introduction: string;
   introductionVideo: string;
   teacherId: string;
   cover: string;
   price: string;
-  reviews: { comments: string; score: number; userId: string }[];
+  reviews: ReviewInterface[];
 }
 interface CourseDetailProps {
   courseData: CourseDataInterface;
@@ -741,7 +757,7 @@ function CourseDetail({ courseData, teacherData, reviewsUsersData }: CourseDetai
           }}
         >
           <TeacherWrapper>
-            <Image src={teacherData.teacherAvatar} alt="avatar" width={120} height={120} />
+            <Image src={teacherData.teacherAvatar} alt="avatar" fill sizes="contain " style={{ objectFit: "cover" }} />
           </TeacherWrapper>
           <TeacherName>{teacherData.teacherName}</TeacherName>
         </TeacherInfo>
@@ -787,8 +803,9 @@ function CourseDetail({ courseData, teacherData, reviewsUsersData }: CourseDetai
                       reviewsUsersData.find((reviewUserData) => reviewUserData.index === reviewIndex)?.avatar || Avatar
                     }
                     alt="avatar"
-                    width={120}
-                    height={120}
+                    fill
+                    sizes="contain"
+                    style={{ objectFit: "cover" }}
                   />
                 </AvatarWrapper>
                 <UserName>
@@ -860,8 +877,8 @@ function VideoRoom({ courseId, courseData }: { courseId: string; courseData: Cou
         const userRef = doc(db, "users", review.userId);
         const userSnap = await getDoc(userRef);
         if (!userSnap.exists()) return;
-        const { username } = userSnap.data();
-        const avatar = userSnap.data().photoURL;
+        const username = userSnap.data().username as string;
+        const avatar = userSnap.data().photoURL as string;
         setReviewsUsersData((prev) => [...prev, { index, username, avatar }]);
       });
     };
@@ -893,90 +910,81 @@ function VideoRoom({ courseId, courseData }: { courseId: string; courseData: Cou
     );
 
   return (
-    <Wrapper>
-      <CourseContainer backgroundImage={courseData?.cover || ""}>
-        <Title>{courseData?.name}</Title>
-        {typeof courseId === "string" &&
-        boughtCourses &&
-        (boughtCourses.includes(courseId) || courseData.teacherId === userData.uid) ? (
-          <CourseRoom>
-            <VideoPlayer
-              handleSwitch={handleSwitch}
-              chapters={courseData?.chapters}
-              selectChapter={selectChapter}
-              selectUnit={selectUnit}
-            />
-            <ChapterSelector>
-              <SubTitle>課程章節</SubTitle>
-              <Chapters>
-                {courseData?.chapters.map((chapter, chapterIndex) => (
-                  <Chapter key={chapter.id}>
-                    <ChapterTitle>
-                      章節 {chapterIndex + 1}：{chapter.title}
-                    </ChapterTitle>
-                    {chapter.units.map((unit, unitIndex) => (
-                      <Units key={unit.id}>
-                        <Unit
-                          onClick={() => {
-                            handleSelect(chapterIndex, unitIndex);
-                          }}
-                          focus={selectChapter === chapterIndex && selectUnit === unitIndex}
-                        >
-                          <UnitTitle>
-                            <PlayIcon>
-                              <Image src={Play} alt="play" fill sizes="contain" />
-                            </PlayIcon>
-                            單元 {unitIndex + 1}：{unit.title}
-                          </UnitTitle>
-                        </Unit>
-                      </Units>
-                    ))}
-                  </Chapter>
-                ))}
-              </Chapters>
-            </ChapterSelector>
-          </CourseRoom>
-        ) : (
-          <p style={{ fontSize: "24px", zIndex: 8 }}>您沒有購買此課程唷！</p>
+    <>
+      <Head>
+        <title>{courseData.name} - Yoga Bear</title>
+      </Head>
+      <Wrapper>
+        <CourseContainer backgroundImage={courseData?.cover || ""}>
+          <Title>{courseData?.name}</Title>
+          {typeof courseId === "string" &&
+          boughtCourses &&
+          (boughtCourses.includes(courseId) || courseData.teacherId === userData.uid) ? (
+            <CourseRoom>
+              <VideoPlayer
+                handleSwitch={handleSwitch}
+                chapters={courseData?.chapters}
+                selectChapter={selectChapter}
+                selectUnit={selectUnit}
+              />
+              <ChapterSelector>
+                <SubTitle>課程章節</SubTitle>
+                <Chapters>
+                  {courseData?.chapters.map((chapter, chapterIndex) => (
+                    <Chapter key={chapter.id}>
+                      <ChapterTitle>
+                        章節 {chapterIndex + 1}：{chapter.title}
+                      </ChapterTitle>
+                      {chapter.units.map((unit, unitIndex) => (
+                        <Units key={unit.id}>
+                          <Unit
+                            onClick={() => {
+                              handleSelect(chapterIndex, unitIndex);
+                            }}
+                            focus={selectChapter === chapterIndex && selectUnit === unitIndex}
+                          >
+                            <UnitTitle>
+                              <PlayIcon>
+                                <Image src={Play} alt="play" fill sizes="contain" />
+                              </PlayIcon>
+                              單元 {unitIndex + 1}：{unit.title}
+                            </UnitTitle>
+                          </Unit>
+                        </Units>
+                      ))}
+                    </Chapter>
+                  ))}
+                </Chapters>
+              </ChapterSelector>
+            </CourseRoom>
+          ) : (
+            <p style={{ fontSize: "24px", zIndex: 8 }}>您沒有購買此課程唷！</p>
+          )}
+        </CourseContainer>
+        {courseData && teacherData && (
+          <CourseDetail courseData={courseData} teacherData={teacherData} reviewsUsersData={reviewsUsersData} />
         )}
-      </CourseContainer>
-      {courseData && teacherData && (
-        <CourseDetail courseData={courseData} teacherData={teacherData} reviewsUsersData={reviewsUsersData} />
-      )}
-    </Wrapper>
+      </Wrapper>
+    </>
   );
 }
 
 export default VideoRoom;
 
-export async function getStaticPaths() {
-  const coursesRef = collection(db, "video_courses");
-  const queryCourses = await getDocs(query(coursesRef));
-  const paths: { params: { courseId: string } }[] = [];
-  queryCourses.forEach((data) => {
-    const { id: courseId } = data.data();
-    paths.push({ params: { courseId } });
-  });
-
-  return { paths, fallback: false };
-}
-
-export async function getStaticProps({ params }: { params: { courseId: string } }) {
+export async function getServerSideProps({ params }: { params: { courseId: string } }) {
   const docRef = doc(db, "video_courses", params.courseId);
   const docSnap = await getDoc(docRef);
   if (!docSnap.exists()) return;
-  const {
-    id,
-    name,
-    chapters,
-    introduction,
-    introductionVideo,
-    teacher_id: teacherId,
-    cover,
-    price,
-    reviews,
-  } = docSnap.data();
+  const id = docSnap.data().id as string;
+  const name = docSnap.data().name as string;
+  const chapters = docSnap.data().chapters as ChapterInterface[];
+  const introduction = docSnap.data().introduction as string;
+  const introductionVideo = docSnap.data().introductionVideo as string;
+  const teacherId = docSnap.data().teacher_id as string;
+  const cover = docSnap.data().cover as string;
+  const price = docSnap.data().price as number;
+  const reviews = docSnap.data().reviews as ReviewInterface[];
   const courseData = { id, name, chapters, introduction, introductionVideo, teacherId, cover, price, reviews };
 
-  return { props: { courseId: params.courseId, courseData }, revalidate: 1800 };
+  return { props: { courseId: params.courseId, courseData } };
 }

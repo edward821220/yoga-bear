@@ -1,13 +1,16 @@
-import React, { useState } from "react";
+import React, { useState, useEffect, useContext } from "react";
 import styled from "styled-components";
 import parse from "html-react-parser";
+import Swal from "sweetalert2";
 import Head from "next/head";
-import Link from "next/link";
 import Image from "next/image";
 import { useRouter } from "next/router";
 import { collection, getDocs, query as storeQuery, where } from "firebase/firestore";
 import produce from "immer";
+import { useRecoilState } from "recoil";
 import { db } from "../../../lib/firebase";
+import { AuthContext } from "../../contexts/authContext";
+import { showMemberModalState } from "../../../lib/recoil";
 import StarIcon from "../../../public/star.png";
 import HalfStar from "../../../public/star-half.png";
 
@@ -93,6 +96,7 @@ const TeacherAvatar = styled.div<{ avatar: string }>`
   width: 80px;
   height: 80px;
   border-radius: 50%;
+  cursor: pointer;
   @media screen and (max-width: 588px) {
     width: 66px;
     height: 66px;
@@ -193,9 +197,66 @@ interface TeacherInterface {
 
 function FindTeachers({ results }: { results: TeacherInterface[] }) {
   const router = useRouter();
+  const { keywords } = router.query;
+  const { isLogin } = useContext(AuthContext);
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
+  const [showMemberModal, setShowMemberModal] = useRecoilState(showMemberModalState);
   const [teachersList, setTeachersList] = useState(results);
   const [showMore, setShowMore] = useState<string>();
   const [selectSort, setSelectSort] = useState("comment");
+
+  useEffect(() => {
+    const getTeachersList = async () => {
+      const usersRef = collection(db, "users");
+      const teachersQuery = storeQuery(usersRef, where("identity", "==", "teacher"));
+      const querySnapshot = await getDocs(teachersQuery);
+      let newResults: {
+        name: string;
+        uid: string;
+        reviews: { score: number }[];
+        avatar: string;
+        introduction: string;
+        experience: string;
+        beTeacherTime: number;
+      }[] = [];
+      querySnapshot.forEach((data) => {
+        const uid = data.data().uid as string;
+        const name = data.data().username as string;
+        const reviews = data.data().reviews as { score: number }[];
+        const avatar = data.data().photoURL as string;
+        const introduction = data.data().teacher_introduction as string;
+        const experience = data.data().teacher_experience as string;
+        const beTeacherTime = data.data().beTeacherTime as number;
+        newResults.push({
+          uid,
+          name,
+          reviews,
+          avatar,
+          introduction,
+          experience,
+          beTeacherTime,
+        });
+      });
+      if (typeof keywords === "string") {
+        newResults = newResults.filter((teacher) => teacher.name.toLowerCase().includes(keywords.toLowerCase()));
+      }
+      setTeachersList(
+        newResults.sort((a, b) => {
+          const reviewsQtyA = a?.reviews?.length || 0;
+          const reviewsQtyB = b?.reviews?.length || 0;
+          if (reviewsQtyA < reviewsQtyB) {
+            return 1;
+          }
+          if (reviewsQtyA > reviewsQtyB) {
+            return -1;
+          }
+          return 0;
+        })
+      );
+      setSelectSort("comment");
+    };
+    getTeachersList();
+  }, [keywords]);
 
   const handleSort = (sort: string) => {
     if (sort === "comment") {
@@ -253,6 +314,12 @@ function FindTeachers({ results }: { results: TeacherInterface[] }) {
       setSelectSort(sort);
     }
   };
+  if (results.length === 0)
+    return (
+      <Wrapper>
+        <Container>找不到您搜尋的老師，請重新查詢唷！</Container>
+      </Wrapper>
+    );
 
   return (
     <>
@@ -293,9 +360,21 @@ function FindTeachers({ results }: { results: TeacherInterface[] }) {
           <TeachersList>
             {teachersList.map((teacher) => (
               <Teacher key={teacher.uid}>
-                <Link href={`/findTeachers/reserve/${teacher.uid}`}>
-                  <TeacherAvatar avatar={teacher.avatar} />
-                </Link>
+                <TeacherAvatar
+                  avatar={teacher.avatar}
+                  onClick={() => {
+                    if (!isLogin) {
+                      Swal.fire({
+                        title: "請先登入才能預約老師唷！",
+                        confirmButtonColor: "#5d7262",
+                        icon: "warning",
+                      });
+                      setShowMemberModal(true);
+                      return;
+                    }
+                    router.push(`/findTeachers/reserve/${teacher.uid}`);
+                  }}
+                />
                 <TeacherInfo>
                   <TeacherName>{teacher.name}</TeacherName>
                   <TeacherIntroduction showMore={showMore === teacher.uid}>
@@ -349,6 +428,15 @@ function FindTeachers({ results }: { results: TeacherInterface[] }) {
                 </TeacherInfo>
                 <Button
                   onClick={() => {
+                    if (!isLogin) {
+                      Swal.fire({
+                        title: "請先登入才能預約老師唷！",
+                        confirmButtonColor: "#5d7262",
+                        icon: "warning",
+                      });
+                      setShowMemberModal(true);
+                      return;
+                    }
                     router.push(`/findTeachers/reserve/${teacher.uid}`);
                   }}
                 >
@@ -380,14 +468,21 @@ export const getServerSideProps = async ({ query }: { query: { keywords: string 
     beTeacherTime: number;
   }[] = [];
   querySnapshot.forEach((data) => {
+    const uid = data.data().uid as string;
+    const name = data.data().username as string;
+    const reviews = data.data().reviews as { score: number }[];
+    const avatar = data.data().photoURL as string;
+    const introduction = data.data().teacher_introduction as string;
+    const experience = data.data().teacher_experience as string;
+    const beTeacherTime = data.data().beTeacherTime as number;
     results.push({
-      uid: data.data().uid,
-      name: data.data().username,
-      reviews: data.data().reviews || null,
-      avatar: data.data().photoURL,
-      introduction: data.data().teacher_introduction,
-      experience: data.data().teacher_experience,
-      beTeacherTime: data.data().beTeacherTime,
+      uid,
+      name,
+      reviews: reviews || null,
+      avatar,
+      introduction,
+      experience,
+      beTeacherTime,
     });
   });
 

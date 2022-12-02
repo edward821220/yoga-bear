@@ -78,8 +78,8 @@ const Button = styled.button`
 `;
 
 function TextEditor(props: AppointmentForm.TextEditorProps) {
-  // eslint-disable-next-line react/destructuring-assignment
-  if (props.type === "multilineTextEditor") {
+  const { type } = props;
+  if (type === "multilineTextEditor") {
     return null;
   }
   return <AppointmentForm.TextEditor {...props} />;
@@ -87,10 +87,15 @@ function TextEditor(props: AppointmentForm.TextEditorProps) {
 
 function BasicLayout({ onFieldChange, appointmentData, ...restProps }: AppointmentForm.BasicLayoutProps) {
   return (
-    <AppointmentForm.BasicLayout appointmentData={appointmentData} onFieldChange={onFieldChange} {...restProps}>
+    <AppointmentForm.BasicLayout
+      appointmentData={appointmentData}
+      onFieldChange={onFieldChange}
+      {...restProps}
+      readOnly
+    >
       <AppointmentForm.Label text="課程人數" type="titleLabel" />
       <AppointmentForm.TextEditor
-        value={appointmentData.maximum}
+        value={appointmentData.maximum as string}
         onValueChange={() => {}}
         placeholder="請輸入人數上限"
         type="ordinaryTextEditor"
@@ -98,7 +103,7 @@ function BasicLayout({ onFieldChange, appointmentData, ...restProps }: Appointme
       />
       <AppointmentForm.Label text="課程價格" type="titleLabel" />
       <AppointmentForm.TextEditor
-        value={appointmentData.price}
+        value={appointmentData.price as string}
         onValueChange={() => {}}
         placeholder="請輸入課程價格"
         type="ordinaryTextEditor"
@@ -106,7 +111,7 @@ function BasicLayout({ onFieldChange, appointmentData, ...restProps }: Appointme
       />
       <AppointmentForm.Label text="課程說明" type="titleLabel" />
       <AppointmentForm.TextEditor
-        value={appointmentData.description}
+        value={appointmentData.description as string}
         onValueChange={() => {}}
         placeholder="請輸入課程內容（若是實體課請填寫上課地點）"
         type="ordinaryTextEditor"
@@ -114,7 +119,7 @@ function BasicLayout({ onFieldChange, appointmentData, ...restProps }: Appointme
       />
       <AppointmentForm.Label text="注意事項" type="titleLabel" />
       <AppointmentForm.TextEditor
-        value={appointmentData.precaution}
+        value={appointmentData.precaution as string}
         onValueChange={() => {}}
         placeholder="請輸入注意事項"
         type="ordinaryTextEditor"
@@ -122,7 +127,7 @@ function BasicLayout({ onFieldChange, appointmentData, ...restProps }: Appointme
       />
       <AppointmentForm.Label text="開課老師" type="titleLabel" />
       <AppointmentForm.TextEditor
-        value={appointmentData.teacherName}
+        value={appointmentData.teacherName as string}
         onValueChange={() => {}}
         placeholder="開課老師"
         type="ordinaryTextEditor"
@@ -139,7 +144,6 @@ function Header({ appointmentData, ...restProps }: AppointmentTooltip.HeaderProp
   const [comments, setComments] = useState("");
   const { userData } = useContext(AuthContext);
   const isEnded = Date.now() > Date.parse(appointmentData?.endDate as string);
-
   const handleClose = () => {
     setScore(0);
     setComments("");
@@ -255,15 +259,15 @@ function StudentCalendar({ userData }: { userData: { uid: string; username: stri
       const courseQuery = query(courseRef, where("students", "array-contains", email));
       const querySnapshot = await getDocs(courseQuery);
       const results: AppointmentModel[] = [];
-      /* eslint-disable @typescript-eslint/no-unsafe-member-access */
       querySnapshot.forEach((data) => {
+        const startDate = data.data().startDate as { seconds: number };
+        const endDate = data.data().endDate as { seconds: number };
         results.push({
           ...data.data(),
-          startDate: new Date(data.data().startDate.seconds * 1000),
-          endDate: new Date(data.data().endDate.seconds * 1000),
+          startDate: new Date(startDate.seconds * 1000),
+          endDate: new Date(endDate.seconds * 1000),
         });
       });
-      /* eslint-enable @typescript-eslint/no-unsafe-member-access */
       setAppointments(results);
     };
     getRooms();

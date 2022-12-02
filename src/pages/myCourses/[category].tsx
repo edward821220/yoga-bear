@@ -103,8 +103,8 @@ const LaunchFormLabel = styled.label`
   margin-bottom: 20px;
   .ql-editor {
     color: #000;
-    width: 500px;
-    height: 300px;
+    width: 520px;
+    height: 480px;
     border: 1px solid gray;
     @media screen and (max-width: 566px) {
       width: 400px;
@@ -123,7 +123,7 @@ const LaunchFormLabelText = styled.div`
 `;
 const LaunchFormLabelInput = styled.input`
   display: block;
-  width: 500px;
+  width: 520px;
   line-height: 24px;
   padding-left: 5px;
   margin-bottom: 20px;
@@ -157,10 +157,6 @@ const LaunchFormLabelFileButton = styled.div`
 `;
 const LaunchFormLabelInputFile = styled.input`
   display: none;
-  width: 500px;
-  line-height: 24px;
-  padding-left: 5px;
-  margin-bottom: 20px;
 `;
 const PlusButton = styled.button`
   background-color: ${(props) => props.theme.colors.color4};
@@ -315,7 +311,7 @@ const StarWrapper = styled.div`
   }
 `;
 
-interface Review {
+interface ReviewInterface {
   userId: string;
   score: number;
   comments: string;
@@ -340,23 +336,27 @@ function VideoCourses({ uid }: { uid: string }) {
       const docSnap = await getDoc(docRef);
       let myVideoCourses: string[] = [];
       if (docSnap.exists() && docSnap) {
-        myVideoCourses = await docSnap.data().boughtCourses;
+        myVideoCourses = (await docSnap.data().boughtCourses) as string[];
       }
       if (!myVideoCourses) {
         setCourses([]);
         return;
       }
-      const results: { name: string; cover: string; id: string; reviews: Review[] }[] = [];
+      const results: { name: string; cover: string; id: string; reviews: ReviewInterface[] }[] = [];
       await Promise.all(
         myVideoCourses.map(async (id: string) => {
           const videoDocRef = doc(db, "video_courses", id);
           const data = await getDoc(videoDocRef);
           if (data.exists() && data) {
+            const courseId = data.data().id as string;
+            const name = data.data().name as string;
+            const cover = data.data().cover as string;
+            const reviews = data.data().reviews as ReviewInterface[];
             results.push({
-              id: data.data().id,
-              name: data.data().name,
-              cover: data.data().cover,
-              reviews: data.data().reviews,
+              id: courseId,
+              name,
+              cover,
+              reviews,
             });
           }
         })
@@ -381,7 +381,7 @@ function VideoCourses({ uid }: { uid: string }) {
         <Course key={course.id}>
           <CourseCover>
             <Link href={`/myCourses/classRoom/videoCourseRoom/${course.id}`}>
-              <Image src={course.cover} alt="cover" fill sizes="contain" />
+              <Image src={course.cover} alt="cover" fill sizes="contain" style={{ objectFit: "cover" }} />
             </Link>
           </CourseCover>
           <CourseInfos>
@@ -510,7 +510,10 @@ function LaunchedVideoCourses({ uid }: { uid: string }) {
       const teachersQuery = query(usersRef, where("teacher_id", "==", uid));
       const querySnapshot = await getDocs(teachersQuery);
       const launchedVideoCourses = querySnapshot.docs.map((course) => {
-        const { name, cover, id, reviews } = course.data();
+        const name = course.data().name as string;
+        const cover = course.data().cover as string;
+        const id = course.data().id as string;
+        const reviews = course.data().reviews as ReviewInterface[];
         return { name, cover, id, reviews };
       });
       setCourses(launchedVideoCourses);
@@ -624,8 +627,20 @@ function LaunchVideoCourse({ uid }: { uid: string }) {
 
   const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
+    const fileInputs: HTMLInputElement[] = Array.from(document.querySelectorAll("input[type=file]"));
+    if (fileInputs.some((fileInput) => fileInput.files?.length === 0)) {
+      Swal.fire({ text: "您有檔案沒上傳唷～請確認後再送出", confirmButtonColor: "#5d7262", icon: "error" });
+      return;
+    }
+    if (chapters.length === 0) {
+      Swal.fire({ text: "至少要有一個章節唷！", confirmButtonColor: "#5d7262", icon: "error" });
+      return;
+    }
+    if (chapters.some((chapter) => chapter.units.length === 0)) {
+      Swal.fire({ text: "每章節至少要有一個單元唷！", confirmButtonColor: "#5d7262", icon: "error" });
+      return;
+    }
     setShowMemberModal(true);
-
     let newChapters = [...chapters];
     let imageUrl = "";
     let introductionVideoUrl = "";
@@ -668,7 +683,7 @@ function LaunchVideoCourse({ uid }: { uid: string }) {
         );
       });
     }
-    const fileInputs: HTMLInputElement[] = Array.from(document.querySelectorAll("input[type=file]"));
+
     await Promise.all(
       fileInputs.map(async (input: HTMLInputElement, index) => {
         await uploadTaskPromise(input, index);
@@ -722,14 +737,13 @@ function LaunchVideoCourse({ uid }: { uid: string }) {
         </LaunchFormLabel>
         <LaunchFormLabel>
           <LaunchFormLabelText>課程描述</LaunchFormLabelText>
-          <Editor content={introduction} setContent={setIntroduction} style={{}} placeholder="請輸入課程簡介" />
+          <Editor content={introduction} setContent={setIntroduction} placeholder="請輸入課程簡介" />
         </LaunchFormLabel>
         <LaunchFormLabelFile>
           <LaunchFormLabelFileButton>上傳課程封面</LaunchFormLabelFileButton>
           <LaunchFormLabelInputFile
             type="file"
             accept="image/*"
-            required
             onChange={(e) => {
               if (!e.target.files) return;
               setCoverPreview(URL.createObjectURL(e.target.files[0]));
@@ -744,7 +758,6 @@ function LaunchVideoCourse({ uid }: { uid: string }) {
           <LaunchFormLabelInputFile
             type="file"
             accept="video/mp4,video/x-m4v,video/*"
-            required
             onChange={(e) => {
               if (!e.target.files) return;
               setCoursePreview(e.target.files[0].name);
@@ -913,9 +926,10 @@ function BeTeacher({
 
   const handleSubmit = (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
-    if (!teacherIntroduction.trim() || !teacherExperience.trim())
+    if (!teacherIntroduction.trim() || !teacherExperience.trim()) {
       Swal.fire({ text: "請輸入自我介紹及教學經歷", confirmButtonColor: "#5d7262", icon: "warning" });
-
+      return;
+    }
     const target = e.target as HTMLInputElement;
     const fileInput = target.querySelector("input[type=file]") as HTMLInputElement;
     if (fileInput.files) {
@@ -954,21 +968,11 @@ function BeTeacher({
     <LaunchForm onSubmit={handleSubmit}>
       <LaunchFormLabel>
         <LaunchFormLabelText>自我介紹：</LaunchFormLabelText>
-        <Editor
-          content={teacherIntroduction}
-          setContent={setTeacherIntroduction}
-          style={{}}
-          placeholder="簡短介紹讓同學認識～"
-        />
+        <Editor content={teacherIntroduction} setContent={setTeacherIntroduction} placeholder="簡短介紹讓同學認識～" />
       </LaunchFormLabel>
       <LaunchFormLabel>
         <LaunchFormLabelText>師資班及教學經歷：</LaunchFormLabelText>
-        <Editor
-          content={teacherExperience}
-          setContent={setTeacherExperience}
-          style={{}}
-          placeholder="簡短描述過往經歷～"
-        />
+        <Editor content={teacherExperience} setContent={setTeacherExperience} placeholder="簡短描述過往經歷～" />
       </LaunchFormLabel>
       <LaunchFormLabelFile>
         <LaunchFormLabelFileButton>證照上傳</LaunchFormLabelFileButton>

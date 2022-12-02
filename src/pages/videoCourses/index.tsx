@@ -1,5 +1,6 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import styled from "styled-components";
+import { useRouter } from "next/router";
 import Head from "next/head";
 import Link from "next/link";
 import Image from "next/image";
@@ -147,15 +148,65 @@ const StarWrapper = styled.div`
 interface CourseInterface {
   name: string;
   id: string;
-  price: string;
+  price: number;
   cover: string;
   reviews: { score: number; comments: string }[];
   launchTime: number;
 }
 
 function VideoCourses({ results }: { results: CourseInterface[] }) {
+  const router = useRouter();
+  const { keywords } = router.query;
   const [coursesList, setCoursesList] = useState(results);
   const [selectSort, setSelectSort] = useState("comment");
+
+  useEffect(() => {
+    const getCoursesList = async () => {
+      const videoCoursesRef = collection(db, "video_courses");
+      const querySnapshot = await getDocs(videoCoursesRef);
+      let newResults: {
+        name: string;
+        id: string;
+        price: number;
+        cover: string;
+        reviews: { score: number; comments: string }[];
+        launchTime: number;
+      }[] = [];
+      querySnapshot.forEach((data) => {
+        const id = data.data().id as string;
+        const name = data.data().name as string;
+        const price = data.data().price as number;
+        const cover = data.data().cover as string;
+        const reviews = data.data().reviews as { score: number; comments: string }[];
+        const launchTime = data.data().launchTime as number;
+        newResults.push({
+          id,
+          name,
+          price,
+          cover,
+          reviews,
+          launchTime,
+        });
+      });
+      if (typeof keywords === "string") {
+        newResults = newResults.filter((course) => course.name.includes(keywords));
+      }
+      setCoursesList(
+        newResults.sort((a, b) => {
+          const reviewsQtyA = a?.reviews?.length || 0;
+          const reviewsQtyB = b?.reviews?.length || 0;
+          if (reviewsQtyA < reviewsQtyB) {
+            return 1;
+          }
+          if (reviewsQtyA > reviewsQtyB) {
+            return -1;
+          }
+          return 0;
+        })
+      );
+    };
+    getCoursesList();
+  }, [keywords]);
 
   const handleSort = (sort: string) => {
     if (sort === "comment") {
@@ -230,10 +281,17 @@ function VideoCourses({ results }: { results: CourseInterface[] }) {
       setSelectSort(sort);
     }
   };
+  if (results.length === 0)
+    return (
+      <Wrapper>
+        <Container>找不到您搜尋的課程，請重新查詢唷！</Container>
+      </Wrapper>
+    );
+
   return (
     <>
       <Head>
-        <title>影音課程 - Yoga Bear</title>
+        <title>探索課程 - Yoga Bear</title>
       </Head>
       <Wrapper>
         <Container>
@@ -279,7 +337,7 @@ function VideoCourses({ results }: { results: CourseInterface[] }) {
               <Course key={course.id}>
                 <CourseCover>
                   <Link href={`/videoCourses/courseDetail/${course.id}`}>
-                    <Image src={course.cover} alt="cover" fill sizes="contain" />
+                    <Image src={course.cover} alt="cover" fill sizes="contain" style={{ objectFit: "cover" }} />
                   </Link>
                 </CourseCover>
                 <CourseInfos>
@@ -288,11 +346,10 @@ function VideoCourses({ results }: { results: CourseInterface[] }) {
                   {course?.reviews?.length > 0 ? (
                     <CourseScore>
                       <StarIcons>
-                        {/* eslint-disable no-unsafe-optional-chaining */}
                         {Array.from(
                           {
                             length: Math.floor(
-                              course?.reviews?.reduce((acc, cur) => acc + cur.score, 0) / course?.reviews?.length
+                              course.reviews.reduce((acc, cur) => acc + cur.score, 0) / course.reviews.length
                             ),
                           },
                           (v, i) => i + 1
@@ -301,7 +358,7 @@ function VideoCourses({ results }: { results: CourseInterface[] }) {
                             <Image src={StarIcon} alt="star" fill sizes="contain" />
                           </StarWrapper>
                         ))}
-                        {(course?.reviews?.reduce((acc, cur) => acc + cur.score, 0) / course?.reviews?.length) % 1 !==
+                        {(course.reviews.reduce((acc, cur) => acc + cur.score, 0) / course.reviews.length) % 1 !==
                           0 && (
                           <StarWrapper>
                             <Image src={HalfStar} alt="star" fill sizes="contain" />
@@ -309,9 +366,9 @@ function VideoCourses({ results }: { results: CourseInterface[] }) {
                         )}
                       </StarIcons>
                       <CourseReviewsInfo>
-                        {(
-                          course?.reviews?.reduce((acc, cur) => acc + cur.score, 0) / course?.reviews?.length || 0
-                        ).toFixed(1) || 0}
+                        {(course.reviews.reduce((acc, cur) => acc + cur.score, 0) / course.reviews.length || 0).toFixed(
+                          1
+                        ) || 0}
                         分 ，{course?.reviews?.length || 0}則評論
                       </CourseReviewsInfo>
                     </CourseScore>
@@ -337,19 +394,25 @@ export const getServerSideProps = async ({ query }: { query: { keywords: string 
   let results: {
     name: string;
     id: string;
-    price: string;
+    price: number;
     cover: string;
     reviews: { score: number; comments: string }[];
     launchTime: number;
   }[] = [];
   querySnapshot.forEach((data) => {
+    const id = data.data().id as string;
+    const name = data.data().name as string;
+    const price = data.data().price as number;
+    const cover = data.data().cover as string;
+    const reviews = data.data().reviews as { score: number; comments: string }[];
+    const launchTime = data.data().launchTime as number;
     results.push({
-      id: data.data().id,
-      name: data.data().name,
-      price: data.data().price,
-      cover: data.data().cover,
-      reviews: data.data().reviews,
-      launchTime: data.data().launchTime,
+      id,
+      name,
+      price,
+      cover,
+      reviews,
+      launchTime,
     });
   });
 
