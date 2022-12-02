@@ -814,11 +814,11 @@ function Header() {
       const docRef = doc(db, "users", userData.uid);
       const docSnap = await getDoc(docRef);
       if (docSnap.exists()) {
-        const cartItems = docSnap.data().cartItems as [];
+        const cartItems = (docSnap.data().cartItems as []) || [];
         const qty = cartItems.length;
-        const money = docSnap.data()?.bearMoney as number;
+        const money = (docSnap.data()?.bearMoney as number) || 0;
         setOrderQty(qty);
-        setBearMoney(money || 0);
+        setBearMoney(money);
       }
     };
     getCartItems();
