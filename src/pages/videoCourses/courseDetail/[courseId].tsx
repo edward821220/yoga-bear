@@ -1000,19 +1000,7 @@ function CourseInfo({ courseId, courseData }: { courseId: string; courseData: Co
 
 export default CourseInfo;
 
-export async function getStaticPaths() {
-  const coursesRef = collection(db, "video_courses");
-  const queryCourses = await getDocs(query(coursesRef));
-  const paths: { params: { courseId: string } }[] = [];
-  queryCourses.forEach((data) => {
-    const courseId = data.data().id as string;
-    paths.push({ params: { courseId } });
-  });
-
-  return { paths, fallback: false };
-}
-
-export async function getStaticProps({ params }: { params: { courseId: string } }) {
+export async function getServerSideProps({ params }: { params: { courseId: string } }) {
   const docRef = doc(db, "video_courses", params.courseId);
   const docSnap = await getDoc(docRef);
   if (!docSnap.exists()) return;
@@ -1027,5 +1015,5 @@ export async function getStaticProps({ params }: { params: { courseId: string } 
   const reviews = docSnap.data().reviews as ReviewInterface[];
   const courseData = { id, name, chapters, introduction, introductionVideo, teacherId, cover, price, reviews };
 
-  return { props: { courseId: params.courseId, courseData }, revalidate: 180 };
+  return { props: { courseId: params.courseId, courseData } };
 }

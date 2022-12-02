@@ -56,16 +56,16 @@ export default function App({ Component, pageProps }: AppProps) {
       </Head>
       <Reset />
       <GlobalStyle />
-      <ErrorBoundary>
-        <AuthContextProvider>
-          <RecoilRoot>
-            <ThemeProvider theme={theme}>
-              <Header />
+      <AuthContextProvider>
+        <RecoilRoot>
+          <ThemeProvider theme={theme}>
+            <Header />
+            <ErrorBoundary>
               <Component {...pageProps} />
-            </ThemeProvider>
-          </RecoilRoot>
-        </AuthContextProvider>
-      </ErrorBoundary>
+            </ErrorBoundary>
+          </ThemeProvider>
+        </RecoilRoot>
+      </AuthContextProvider>
     </>
   );
 }

@@ -486,19 +486,7 @@ export default function Reserve({ teacherId, teacherData }: { teacherId: string;
   );
 }
 
-export async function getStaticPaths() {
-  const usersRef = collection(db, "users");
-  const queryTeachers = await getDocs(query(usersRef, where("identity", "==", "teacher")));
-  const paths: { params: { teacherId: string } }[] = [];
-  queryTeachers.forEach((data) => {
-    const teacherId = data.data().uid as string;
-    paths.push({ params: { teacherId } });
-  });
-
-  return { paths, fallback: false };
-}
-
-export async function getStaticProps({ params }: { params: { teacherId: string } }) {
+export async function getServerSideProps({ params }: { params: { teacherId: string } }) {
   const userRef = doc(db, "users", params.teacherId);
   const userSnap = await getDoc(userRef);
   if (!userSnap.exists()) return;
@@ -509,5 +497,5 @@ export async function getStaticProps({ params }: { params: { teacherId: string }
   const reviews = (userSnap.data().reviews as ReviewInterface[]) || null;
   const teacherData = { username, introduction, experience, reviews, avatar };
 
-  return { props: { teacherId: params.teacherId, teacherData }, revalidate: 60 };
+  return { props: { teacherId: params.teacherId, teacherData } };
 }
