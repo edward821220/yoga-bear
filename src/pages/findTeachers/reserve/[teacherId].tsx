@@ -293,7 +293,7 @@ function LaunchedVideoCourses({ uid }: { uid: string }) {
       {courses?.map((course) => (
         <Course key={course.name}>
           <CourseCover>
-            <Link href={`/myCourses/classRoom/videoCourseRoom/${course.id}`}>
+            <Link href={`/videoCourses/courseDetail/${course.id}`}>
               <Image src={course.cover} alt="cover" fill sizes="cover" />
             </Link>
           </CourseCover>

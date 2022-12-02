@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useRef, useContext } from "react";
 import Image from "next/image";
-import { doc, collection, query, getDoc, getDocs } from "firebase/firestore";
+import { doc, getDoc } from "firebase/firestore";
 import { useRouter } from "next/router";
 import styled from "styled-components";
 import Swal from "sweetalert2";

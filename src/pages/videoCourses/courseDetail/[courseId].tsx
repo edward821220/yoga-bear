@@ -1,7 +1,7 @@
 import React, { useState, useEffect, useRef, useContext } from "react";
 import Image from "next/image";
 import Head from "next/head";
-import { doc, query, getDoc, getDocs, collection, updateDoc, arrayUnion } from "firebase/firestore";
+import { doc, getDoc, updateDoc, arrayUnion } from "firebase/firestore";
 import { useRouter } from "next/router";
 import styled from "styled-components";
 import Swal from "sweetalert2";
