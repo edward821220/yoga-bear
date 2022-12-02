@@ -974,7 +974,11 @@ export default VideoRoom;
 export async function getServerSideProps({ params }: { params: { courseId: string } }) {
   const docRef = doc(db, "video_courses", params.courseId);
   const docSnap = await getDoc(docRef);
-  if (!docSnap.exists()) return;
+  if (!docSnap.exists()) {
+    return {
+      notFound: true,
+    };
+  }
   const id = docSnap.data().id as string;
   const name = docSnap.data().name as string;
   const chapters = docSnap.data().chapters as ChapterInterface[];

@@ -489,7 +489,11 @@ export default function Reserve({ teacherId, teacherData }: { teacherId: string;
 export async function getServerSideProps({ params }: { params: { teacherId: string } }) {
   const userRef = doc(db, "users", params.teacherId);
   const userSnap = await getDoc(userRef);
-  if (!userSnap.exists()) return;
+  if (!userSnap.exists()) {
+    return {
+      notFound: true,
+    };
+  }
   const username = userSnap.data().username as string;
   const introduction = userSnap.data().teacher_introduction as string;
   const experience = userSnap.data().teacher_experience as string;
