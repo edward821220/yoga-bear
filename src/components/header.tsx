@@ -832,10 +832,10 @@ function Header() {
         </Link>
       </LogoWrapper>
       <MenuLinksWrapper
-        onMouseOver={() => {
+        onPointerOver={() => {
           setShowMenu(true);
         }}
-        onMouseOut={() => {
+        onPointerOut={() => {
           setShowMenu(false);
         }}
       >

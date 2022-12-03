@@ -554,13 +554,13 @@ function VideoPlayer({ introductionVideo }: { introductionVideo: string | undefi
       <VideoContainer
         isFullScreen={isFullScreen}
         isFullWindow={isFullWindow}
-        onMouseOver={() => {
+        onPointerOver={() => {
           setShowToolBar(true);
         }}
-        onMouseOut={() => {
+        onPointerOut={() => {
           setShowToolBar(false);
         }}
-        onMouseMove={() => {
+        onPointerMove={() => {
           clearTimeout(timeoutRef.current);
           setShowToolBar(true);
           timeoutRef.current = setTimeout(() => {
@@ -645,7 +645,7 @@ function VideoPlayer({ introductionVideo }: { introductionVideo: string | undefi
                   videoRef.current.currentTime = timeAtProgressBar;
                   setCurrentTime(timeAtProgressBar);
                 }}
-                onMouseMove={(e) => {
+                onPointerMove={(e) => {
                   if (!videoRef.current) return;
                   const target = e.currentTarget as HTMLDivElement;
                   const timeAtProgressBar = (e.nativeEvent.offsetX / target.offsetWidth) * videoRef.current.duration;
@@ -657,7 +657,7 @@ function VideoPlayer({ introductionVideo }: { introductionVideo: string | undefi
                     snapshotRef.current.style.left = `${e.clientX - 240}px`;
                   }
                 }}
-                onMouseOut={() => {
+                onPointerOut={() => {
                   setSnapshot("");
                 }}
               >
@@ -672,12 +672,12 @@ function VideoPlayer({ introductionVideo }: { introductionVideo: string | undefi
             </TimeControls>
             <OtherControls>
               <ControlIcon
-                onMouseOver={() => {
+                onPointerOver={() => {
                   setShowVoiceBar(true);
                   if (!videoRef.current) return;
                   setVoice(videoRef.current.volume * 100);
                 }}
-                onMouseOut={() => {
+                onPointerOut={() => {
                   setShowVoiceBar(false);
                 }}
               >
@@ -710,10 +710,10 @@ function VideoPlayer({ introductionVideo }: { introductionVideo: string | undefi
                 />
               </ControlIcon>
               <ControlIcon
-                onMouseOver={() => {
+                onPointerOver={() => {
                   setShowSpeedMenu(true);
                 }}
-                onMouseOut={() => {
+                onPointerOut={() => {
                   setShowSpeedMenu(false);
                 }}
               >
