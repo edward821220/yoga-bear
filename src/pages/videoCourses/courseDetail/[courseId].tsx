@@ -120,6 +120,9 @@ const Video = styled.video<{ isFullScreen: boolean; showToolBar: boolean; isFull
     height: ${(props) => (props.isFullScreen || props.isFullWindow ? "100vh" : "240px")};
   }
 `;
+const SecondVideo = styled.video`
+  display: none;
+`;
 const Button = styled.button`
   background-color: ${(props) => props.theme.colors.color3};
   color: ${(props) => props.theme.colors.color1};
@@ -242,7 +245,7 @@ const TimeProgressBarContainer = styled.div`
   background-color: #484848;
   border-radius: 15px;
   width: 360px;
-  height: 10px;
+  height: 15px;
   z-index: 30;
   position: relative;
   margin: 0 20px;
@@ -271,6 +274,16 @@ const TimeProgressBar = styled.div`
 `;
 const ControlTime = styled.p`
   color: ${(props) => props.theme.colors.color1};
+`;
+const SnapshotContainer = styled.div`
+  position: absolute;
+  display: block;
+  z-index: 1000;
+  width: 150px;
+  height: 80px;
+  bottom: 50px;
+  border: 1px solid lightgray;
+  box-shadow: 0 0 5px #00000050;
 `;
 const VoiceBarContainer = styled.div`
   position: absolute;
@@ -467,6 +480,8 @@ function VideoPlayer({ introductionVideo }: { introductionVideo: string | undefi
   const handle = useFullScreenHandle();
   const videoRef = useRef<HTMLVideoElement>(null);
   const timeoutRef = useRef<NodeJS.Timeout>();
+  const secondVideoRef = useRef<HTMLVideoElement>(null);
+  const snapshotRef = useRef<HTMLDivElement>(null);
   const [isPlaying, setIsPlaying] = useState(true);
   const [isMute, setIsMute] = useState(false);
   const [isFullScreen, setIsFullScreen] = useState(false);
@@ -477,6 +492,7 @@ function VideoPlayer({ introductionVideo }: { introductionVideo: string | undefi
   const [currentTime, setCurrentTime] = useState(0);
   const [videoTime, setVideoTime] = useState(0);
   const [progress, setProgress] = useState(0);
+  const [snapshot, setSnapshot] = useState("");
   const [voice, setVoice] = useState(0);
   const [speed, setSpeed] = useState(1.0);
 
@@ -487,7 +503,6 @@ function VideoPlayer({ introductionVideo }: { introductionVideo: string | undefi
         videoRef.current.play();
         setIsPlaying(true);
         setVideoTime(videoRef.current.duration);
-        setVoice(videoRef.current.volume * 100);
         break;
       }
       case "pause": {
@@ -518,6 +533,17 @@ function VideoPlayer({ introductionVideo }: { introductionVideo: string | undefi
       }
     }
   };
+  const capture = (video: HTMLVideoElement) => {
+    const w = video.videoWidth;
+    const h = video.videoHeight;
+    const canvas = document.createElement("canvas");
+    canvas.width = w;
+    canvas.height = h;
+    const ctx = canvas.getContext("2d");
+    ctx?.drawImage(video, 0, 0, w, h);
+    return canvas;
+  };
+
   return (
     <FullScreen
       handle={handle}
@@ -528,13 +554,13 @@ function VideoPlayer({ introductionVideo }: { introductionVideo: string | undefi
       <VideoContainer
         isFullScreen={isFullScreen}
         isFullWindow={isFullWindow}
-        onMouseOver={() => {
+        onPointerOver={() => {
           setShowToolBar(true);
         }}
-        onMouseOut={() => {
+        onPointerOut={() => {
           setShowToolBar(false);
         }}
-        onMouseMove={() => {
+        onPointerMove={() => {
           clearTimeout(timeoutRef.current);
           setShowToolBar(true);
           timeoutRef.current = setTimeout(() => {
@@ -615,27 +641,49 @@ function VideoPlayer({ introductionVideo }: { introductionVideo: string | undefi
                 onClick={(e) => {
                   if (!videoRef.current) return;
                   const target = e.currentTarget as HTMLDivElement;
-                  const timeAtProgressBar = (e.nativeEvent.offsetX / target.scrollWidth) * videoRef.current.duration;
+                  const timeAtProgressBar = (e.nativeEvent.offsetX / target.offsetWidth) * videoRef.current.duration;
                   videoRef.current.currentTime = timeAtProgressBar;
                   setCurrentTime(timeAtProgressBar);
                 }}
+                onPointerMove={(e) => {
+                  if (!videoRef.current) return;
+                  const target = e.currentTarget as HTMLDivElement;
+                  const timeAtProgressBar = (e.nativeEvent.offsetX / target.offsetWidth) * videoRef.current.duration;
+                  if (!secondVideoRef.current) return;
+                  secondVideoRef.current.currentTime = timeAtProgressBar;
+                  const canvas = capture(secondVideoRef.current);
+                  setSnapshot(canvas?.toDataURL("image/jpeg", 0.5));
+                  if (snapshotRef.current) {
+                    snapshotRef.current.style.left = `${e.clientX - 240}px`;
+                  }
+                }}
+                onPointerOut={() => {
+                  setSnapshot("");
+                }}
               >
                 <TimeProgressBar style={{ width: `${progress}%` }} />
+                {snapshot && (
+                  <SnapshotContainer ref={snapshotRef}>
+                    <Image src={snapshot} alt="snapshot" fill sizes="contain" />
+                  </SnapshotContainer>
+                )}
               </TimeProgressBarContainer>
               <ControlTime>{`${Math.floor(videoTime / 60)}:${`0${Math.floor(videoTime % 60)}`.slice(-2)}`}</ControlTime>
             </TimeControls>
             <OtherControls>
               <ControlIcon
-                onMouseOver={() => {
+                onPointerOver={() => {
                   setShowVoiceBar(true);
+                  if (!videoRef.current) return;
+                  setVoice(videoRef.current.volume * 100);
                 }}
-                onMouseOut={() => {
+                onPointerOut={() => {
                   setShowVoiceBar(false);
                 }}
               >
                 {showVoiceBar && (
                   <VoiceBarContainer
-                    onClickCapture={(e) => {
+                    onClick={(e) => {
                       if (!videoRef.current) return;
                       if (e.target === e.currentTarget) {
                         const volume = Math.abs(e.nativeEvent.offsetY - 100);
@@ -662,10 +710,10 @@ function VideoPlayer({ introductionVideo }: { introductionVideo: string | undefi
                 />
               </ControlIcon>
               <ControlIcon
-                onMouseOver={() => {
+                onPointerOver={() => {
                   setShowSpeedMenu(true);
                 }}
-                onMouseOut={() => {
+                onPointerOut={() => {
                   setShowSpeedMenu(false);
                 }}
               >
@@ -721,9 +769,11 @@ function VideoPlayer({ introductionVideo }: { introductionVideo: string | undefi
           </ToolBar>
         )}
       </VideoContainer>
+      <SecondVideo src={introductionVideo} ref={secondVideoRef} crossOrigin="anonymous" />
     </FullScreen>
   );
 }
+
 interface ChapterInterface {
   id: number;
   title: string;
@@ -1003,7 +1053,11 @@ export default CourseInfo;
 export async function getServerSideProps({ params }: { params: { courseId: string } }) {
   const docRef = doc(db, "video_courses", params.courseId);
   const docSnap = await getDoc(docRef);
-  if (!docSnap.exists()) return;
+  if (!docSnap.exists()) {
+    return {
+      notFound: true,
+    };
+  }
   const id = docSnap.data().id as string;
   const name = docSnap.data().name as string;
   const chapters = docSnap.data().chapters as ChapterInterface[];

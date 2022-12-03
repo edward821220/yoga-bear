@@ -641,7 +641,11 @@ export async function getServerSideProps({ params }: { params: { id: string } })
   const authorId = docSnap.data().author as string;
   const userRef = doc(db, "users", authorId);
   const userSnap = await getDoc(userRef);
-  if (!userSnap.exists()) return;
+  if (!userSnap.exists()) {
+    return {
+      notFound: true,
+    };
+  }
   const messages = docSnap.data().messages as MessageInterface[];
   if (messages) {
     await Promise.all(

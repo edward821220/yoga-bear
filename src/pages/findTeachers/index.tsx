@@ -86,6 +86,9 @@ const Teacher = styled.li`
   &:last-child {
     margin-bottom: 0;
   }
+  @media screen and (max-width: 588px) {
+    padding: 15px;
+  }
 `;
 const TeacherAvatar = styled.div<{ avatar: string }>`
   margin-right: 20px;
@@ -93,12 +96,13 @@ const TeacherAvatar = styled.div<{ avatar: string }>`
   background-position: center;
   background-repeat: no-repeat;
   background-size: cover;
-  width: 80px;
+  min-width: 80px;
   height: 80px;
   border-radius: 50%;
   cursor: pointer;
   @media screen and (max-width: 588px) {
     width: 66px;
+    min-width: 66px;
     height: 66px;
     margin-right: 10px;
   }
