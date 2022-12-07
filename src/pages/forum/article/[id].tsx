@@ -11,7 +11,7 @@ import produce from "immer";
 import Editor from "../../../components/editor/editor";
 import { db } from "../../../../lib/firebase";
 import { AuthContext } from "../../../contexts/authContext";
-import { showMemberModalState } from "../../../../lib/recoil";
+import { showMemberModalState } from "../../utils/recoil";
 import Avatar from "../../../../public/member.png";
 import LikeQtyIcon from "../../../../public/like.png";
 import MessageIcon from "../../../../public/message.png";
