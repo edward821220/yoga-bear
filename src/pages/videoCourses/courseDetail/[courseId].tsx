@@ -1,15 +1,13 @@
 import React, { useState, useEffect, useRef, useContext } from "react";
 import Image from "next/image";
 import Head from "next/head";
-import { doc, updateDoc, arrayUnion } from "firebase/firestore";
 import { useRouter } from "next/router";
 import styled from "styled-components";
 import Swal from "sweetalert2";
 import parse from "html-react-parser";
 import { SetterOrUpdater, useRecoilState } from "recoil";
 import { FullScreen, useFullScreenHandle } from "react-full-screen";
-import { getVideoCourse, getUserData } from "../../../utils/firestore";
-import { db } from "../../../../lib/firebase";
+import { getVideoCourse, getUserData, updateCartItems } from "../../../utils/firestore";
 import { AuthContext } from "../../../contexts/authContext";
 import { orderQtyState, showMemberModalState } from "../../../utils/recoil";
 import Lock from "../../../../public/lock.png";
@@ -954,16 +952,7 @@ function CourseInfo({ courseId, courseData }: { courseId: string; courseData: Co
       setShowMemberModal(true);
       return;
     }
-    const userRef = doc(db, "users", userData.uid);
-    if (!courseData) return;
-    await updateDoc(userRef, {
-      cartItems: arrayUnion({
-        id: courseData.id,
-        name: courseData.name,
-        cover: courseData.cover,
-        price: courseData.price,
-      }),
-    });
+    updateCartItems(userData.uid, courseData);
     Swal.fire({ title: "已加入購物車！", confirmButtonColor: "#5d7262", icon: "success" });
     const docSnap = await getUserData(userData.uid);
     if (docSnap.exists()) {

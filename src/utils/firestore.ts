@@ -1,4 +1,4 @@
-import { collection, doc, getDoc, getDocs, query, where, limit } from "firebase/firestore";
+import { collection, doc, getDoc, getDocs, updateDoc, arrayUnion, query, where, limit } from "firebase/firestore";
 import { db } from "../../lib/firebase";
 
 interface ChapterInterface {
@@ -72,4 +72,59 @@ export const getRecommended = async () => {
     teachersList.push({ id, avatar, name });
   });
   return { coursesList, teachersList };
+};
+
+export const getCoursesList = async () => {
+  const videoCoursesRef = collection(db, "video_courses");
+  const querySnapshot = await getDocs(videoCoursesRef);
+  const results: {
+    name: string;
+    id: string;
+    price: number;
+    cover: string;
+    reviews: { score: number; comments: string }[];
+    launchTime: number;
+  }[] = [];
+  querySnapshot.forEach((data) => {
+    const id = data.data().id as string;
+    const name = data.data().name as string;
+    const price = data.data().price as number;
+    const cover = data.data().cover as string;
+    const reviews = data.data().reviews as { score: number; comments: string }[];
+    const launchTime = data.data().launchTime as number;
+    results.push({
+      id,
+      name,
+      price,
+      cover,
+      reviews,
+      launchTime,
+    });
+  });
+  return results;
+};
+
+interface CourseDataInterface {
+  id: string;
+  name: string;
+  chapters: ChapterInterface[];
+  introduction: string;
+  introductionVideo: string;
+  teacherId: string;
+  cover: string;
+  price: string;
+  reviews: ReviewInterface[];
+}
+
+export const updateCartItems = async (userId: string, courseData: CourseDataInterface) => {
+  const userRef = doc(db, "users", userId);
+  if (!courseData) return;
+  await updateDoc(userRef, {
+    cartItems: arrayUnion({
+      id: courseData.id,
+      name: courseData.name,
+      cover: courseData.cover,
+      price: courseData.price,
+    }),
+  });
 };
