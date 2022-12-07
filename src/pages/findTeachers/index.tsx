@@ -10,7 +10,7 @@ import produce from "immer";
 import { useRecoilState } from "recoil";
 import { db } from "../../../lib/firebase";
 import { AuthContext } from "../../contexts/authContext";
-import { showMemberModalState } from "../utils/recoil";
+import { showMemberModalState } from "../../utils/recoil";
 import StarIcon from "../../../public/star.png";
 import HalfStar from "../../../public/star-half.png";
 

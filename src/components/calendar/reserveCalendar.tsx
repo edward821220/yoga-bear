@@ -22,7 +22,7 @@ import { collection, getDocs, query, where, doc, updateDoc, arrayUnion, getDoc }
 import { useRecoilState } from "recoil";
 import { db } from "../../../lib/firebase";
 import { AuthContext } from "../../contexts/authContext";
-import { bearMoneyState } from "../../pages/utils/recoil";
+import { bearMoneyState } from "../../utils/recoil";
 import resources from "./resources";
 import ReserveButton from "../../../public/reserve.png";
 

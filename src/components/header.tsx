@@ -12,7 +12,7 @@ import { ref, uploadBytesResumable, getDownloadURL } from "firebase/storage";
 import Modal from "./modal";
 import Editor from "./editor/editor";
 import { AuthContext } from "../contexts/authContext";
-import { orderQtyState, bearMoneyState, showMemberModalState } from "../pages/utils/recoil";
+import { orderQtyState, bearMoneyState, showMemberModalState } from "../utils/recoil";
 import { db, storage } from "../../lib/firebase";
 import BearLogo from "../../public/bear-logo2.png";
 import CartLogo from "../../public/cart.png";

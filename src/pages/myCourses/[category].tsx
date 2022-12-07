@@ -13,14 +13,14 @@ import { storage, db } from "../../../lib/firebase";
 import Modal from "../../components/modal";
 import Editor from "../../components/editor/editor";
 import ToggleButton from "../../components/toggleButton";
+import Upload from "../../../public/upload.png";
 import Bear from "../../../public/bear.png";
 import Trash from "../../../public/trash.png";
-import Upload from "../../../public/upload.png";
 import TeacherCalendar from "../../components/calendar/teacherCalendar";
 import StudentCalendar from "../../components/calendar/studentCalendar";
 import EmptyStar from "../../../public/star-empty.png";
-import Star from "../../../public/star.png";
 import HalfStar from "../../../public/star-half.png";
+import Star from "../../../public/star.png";
 
 const Wrapper = styled.div`
   background-color: ${(props) => props.theme.colors.color1};

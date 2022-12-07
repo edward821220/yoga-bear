@@ -10,7 +10,7 @@ import { Pagination, Navigation } from "swiper";
 import { collection, query, where, limit, getDocs } from "firebase/firestore";
 import { db } from "../../lib/firebase";
 import { AuthContext } from "../contexts/authContext";
-import { showMemberModalState } from "./utils/recoil";
+import { showMemberModalState } from "../utils/recoil";
 import Bear from "../../public/bear-logo1.png";
 import BannerPic from "../../public/banner6.jpg";
 import "swiper/css";

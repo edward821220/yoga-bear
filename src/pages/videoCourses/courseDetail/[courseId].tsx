@@ -10,7 +10,7 @@ import { SetterOrUpdater, useRecoilState } from "recoil";
 import { FullScreen, useFullScreenHandle } from "react-full-screen";
 import { db } from "../../../../lib/firebase";
 import { AuthContext } from "../../../contexts/authContext";
-import { orderQtyState, showMemberModalState } from "../../utils/recoil";
+import { orderQtyState, showMemberModalState } from "../../../utils/recoil";
 import Lock from "../../../../public/lock.png";
 import Play from "../../../../public/play.png";
 import Pause from "../../../../public/pause.png";

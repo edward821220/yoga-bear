@@ -13,7 +13,7 @@ import MessageIcon from "../../../public/message.png";
 import Avatar from "../../../public/member.png";
 import { db } from "../../../lib/firebase";
 import { AuthContext } from "../../contexts/authContext";
-import { showMemberModalState } from "../utils/recoil";
+import { showMemberModalState } from "../../utils/recoil";
 
 const Wrapper = styled.div`
   background-color: ${(props) => props.theme.colors.color1};

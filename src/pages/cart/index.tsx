@@ -9,7 +9,7 @@ import { useRecoilState } from "recoil";
 import { useRouter } from "next/router";
 import { AuthContext } from "../../contexts/authContext";
 import { db } from "../../../lib/firebase";
-import { orderQtyState, bearMoneyState } from "../utils/recoil";
+import { orderQtyState, bearMoneyState } from "../../utils/recoil";
 import RemoveIcon from "../../../public/trash.png";
 
 const Wrapper = styled.div`
