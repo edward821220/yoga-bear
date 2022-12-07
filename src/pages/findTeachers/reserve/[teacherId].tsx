@@ -3,9 +3,8 @@ import styled from "styled-components";
 import Head from "next/head";
 import Image from "next/image";
 import Link from "next/link";
-import { doc, getDoc, getDocs, collection, query, where } from "firebase/firestore";
 import parse from "html-react-parser";
-import { db } from "../../../../lib/firebase";
+import { getUserData, getLaunchedVideoCourses } from "../../../utils/firestore";
 import Calendar from "../../../components/calendar/calendar";
 import Avatar from "../../../../public/member.png";
 import Star from "../../../../public/star.png";
@@ -268,21 +267,12 @@ function LaunchedVideoCourses({ uid }: { uid: string }) {
   const [courses, setCourses] = useState<CourseInterface[]>();
 
   useEffect(() => {
-    const getLaunchedVideoCourses = async () => {
-      if (!uid) return;
-      const usersRef = collection(db, "video_courses");
-      const teachersQuery = query(usersRef, where("teacher_id", "==", uid));
-      const querySnapshot = await getDocs(teachersQuery);
-      const launchedVideoCourses = querySnapshot.docs.map((course) => {
-        const name = course.data().name as string;
-        const cover = course.data().cover as string;
-        const id = course.data().id as string;
-        const reviews = course.data().reviews as { userId: string; score: number; comments: string }[];
-        return { name, cover, id, reviews };
-      });
+    const getLaunchedCourses = async () => {
+      const launchedVideoCourses = await getLaunchedVideoCourses(uid);
+
       setCourses(launchedVideoCourses);
     };
-    getLaunchedVideoCourses();
+    getLaunchedCourses();
   }, [uid]);
 
   if (courses?.length === 0) {
@@ -355,8 +345,7 @@ export default function Reserve({ teacherId, teacherData }: { teacherId: string;
   useEffect(() => {
     if (!Array.isArray(teacherData.reviews)) return;
     teacherData.reviews.forEach(async (review: { comments: string; score: number; userId: string }, index) => {
-      const reviewUserRef = doc(db, "users", review.userId);
-      const reviewUserSnap = await getDoc(reviewUserRef);
+      const reviewUserSnap = await getUserData(review.userId);
       if (!reviewUserSnap.exists()) return;
       const reviewUsername = reviewUserSnap.data().username as string;
       const reviewUserAvatar = reviewUserSnap.data().photoURL as string;
@@ -487,8 +476,7 @@ export default function Reserve({ teacherId, teacherData }: { teacherId: string;
 }
 
 export async function getServerSideProps({ params }: { params: { teacherId: string } }) {
-  const userRef = doc(db, "users", params.teacherId);
-  const userSnap = await getDoc(userRef);
+  const userSnap = await getUserData(params.teacherId);
   if (!userSnap.exists()) {
     return {
       notFound: true,

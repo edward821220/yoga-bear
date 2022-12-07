@@ -103,6 +103,39 @@ export const getCoursesList = async () => {
   });
   return results;
 };
+export const getTeachersList = async () => {
+  const usersRef = collection(db, "users");
+  const teachersQuery = query(usersRef, where("identity", "==", "teacher"));
+  const querySnapshot = await getDocs(teachersQuery);
+  const results: {
+    name: string;
+    uid: string;
+    reviews: { score: number }[];
+    avatar: string;
+    introduction: string;
+    experience: string;
+    beTeacherTime: number;
+  }[] = [];
+  querySnapshot.forEach((data) => {
+    const uid = data.data().uid as string;
+    const name = data.data().username as string;
+    const reviews = data.data().reviews as { score: number }[];
+    const avatar = data.data().photoURL as string;
+    const introduction = data.data().teacher_introduction as string;
+    const experience = data.data().teacher_experience as string;
+    const beTeacherTime = data.data().beTeacherTime as number;
+    results.push({
+      uid,
+      name,
+      reviews: reviews || [],
+      avatar,
+      introduction,
+      experience,
+      beTeacherTime,
+    });
+  });
+  return results;
+};
 
 interface CourseDataInterface {
   id: string;
@@ -127,4 +160,18 @@ export const updateCartItems = async (userId: string, courseData: CourseDataInte
       price: courseData.price,
     }),
   });
+};
+
+export const getLaunchedVideoCourses = async (teacherId: string) => {
+  const coursesRef = collection(db, "video_courses");
+  const teachersQuery = query(coursesRef, where("teacher_id", "==", teacherId));
+  const querySnapshot = await getDocs(teachersQuery);
+  const launchedVideoCourses = querySnapshot.docs.map((course) => {
+    const name = course.data().name as string;
+    const cover = course.data().cover as string;
+    const id = course.data().id as string;
+    const reviews = course.data().reviews as { userId: string; score: number; comments: string }[];
+    return { name, cover, id, reviews };
+  });
+  return launchedVideoCourses;
 };
