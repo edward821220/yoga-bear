@@ -1,4 +1,4 @@
-import { doc, getDoc } from "firebase/firestore";
+import { collection, doc, getDoc, getDocs, query, where, limit } from "firebase/firestore";
 import { db } from "../../lib/firebase";
 
 interface ChapterInterface {
@@ -37,4 +37,39 @@ export const getUserData = async (userId: string) => {
   const userRef = doc(db, "users", userId);
   const userSnap = await getDoc(userRef);
   return userSnap;
+};
+
+interface CoursesListInterface {
+  id: string;
+  cover: string;
+  name: string;
+  price: number;
+}
+interface TeachersListInterface {
+  id: string;
+  avatar: string;
+  name: string;
+}
+export const getRecommended = async () => {
+  const coursesRef = collection(db, "video_courses");
+  const queryCourses = await getDocs(query(coursesRef, where("price", "<", 2000), limit(9)));
+  const coursesList: CoursesListInterface[] = [];
+  queryCourses.forEach((data) => {
+    const id = data.data().id as string;
+    const cover = data.data().cover as string;
+    const name = data.data().name as string;
+    const price = data.data().price as number;
+    coursesList.push({ id, cover, name, price });
+  });
+
+  const usersRef = collection(db, "users");
+  const queryTeachers = await getDocs(query(usersRef, where("identity", "==", "teacher"), limit(10)));
+  const teachersList: TeachersListInterface[] = [];
+  queryTeachers.forEach((data) => {
+    const id = data.data().uid as string;
+    const avatar = data.data().photoURL as string;
+    const name = data.data().username as string;
+    teachersList.push({ id, avatar, name });
+  });
+  return { coursesList, teachersList };
 };

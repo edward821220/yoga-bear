@@ -7,9 +7,8 @@ import { useRouter } from "next/router";
 import { useRecoilState } from "recoil";
 import { Swiper, SwiperSlide } from "swiper/react";
 import { Pagination, Navigation } from "swiper";
-import { collection, query, where, limit, getDocs } from "firebase/firestore";
-import { db } from "../../lib/firebase";
 import { AuthContext } from "../contexts/authContext";
+import { getRecommended } from "../utils/firestore";
 import { showMemberModalState } from "../utils/recoil";
 import Bear from "../../public/bear-logo1.png";
 import BannerPic from "../../public/banner6.jpg";
@@ -602,26 +601,7 @@ export default function Home({
 }
 
 export const getStaticProps = async () => {
-  const coursesRef = collection(db, "video_courses");
-  const queryCourses = await getDocs(query(coursesRef, where("price", "<", 2000), limit(9)));
-  const coursesList: CoursesListInterface[] = [];
-  queryCourses.forEach((data) => {
-    const id = data.data().id as string;
-    const cover = data.data().cover as string;
-    const name = data.data().name as string;
-    const price = data.data().price as number;
-    coursesList.push({ id, cover, name, price });
-  });
-
-  const usersRef = collection(db, "users");
-  const queryTeachers = await getDocs(query(usersRef, where("identity", "==", "teacher"), limit(10)));
-  const teachersList: TeachersListInterface[] = [];
-  queryTeachers.forEach((data) => {
-    const id = data.data().uid as string;
-    const avatar = data.data().photoURL as string;
-    const name = data.data().username as string;
-    teachersList.push({ id, avatar, name });
-  });
+  const { coursesList, teachersList } = await getRecommended();
 
   return {
     props: {
