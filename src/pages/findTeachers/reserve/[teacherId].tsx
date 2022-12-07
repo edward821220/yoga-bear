@@ -6,7 +6,7 @@ import Link from "next/link";
 import { doc, getDoc, getDocs, collection, query, where } from "firebase/firestore";
 import parse from "html-react-parser";
 import { db } from "../../../../lib/firebase";
-import ReserveCalendar from "../../../components/calendar/reserveCalendar";
+import Calendar from "../../../components/calendar/calendar";
 import Avatar from "../../../../public/member.png";
 import Star from "../../../../public/star.png";
 import HalfStar from "../../../../public/star-half.png";
@@ -396,7 +396,7 @@ export default function Reserve({ teacherId, teacherData }: { teacherId: string;
             </Introduction>
           </TeacherDetail>
           <CalendarWrapper>
-            {typeof teacherId === "string" && <ReserveCalendar teacherId={teacherId} />}
+            {typeof teacherId === "string" && <Calendar category="reserveCalendar" teacherId={teacherId} />}
           </CalendarWrapper>
         </TeacherContainer>
         {typeof teacherId === "string" && (

@@ -16,8 +16,8 @@ import ToggleButton from "../../components/toggleButton";
 import Upload from "../../../public/upload.png";
 import Bear from "../../../public/bear.png";
 import Trash from "../../../public/trash.png";
-import TeacherCalendar from "../../components/calendar/teacherCalendar";
-import StudentCalendar from "../../components/calendar/studentCalendar";
+import Calendar from "../../components/calendar/calendar";
+// import StudentCalendar from "../../components/calendar/studentCalendar";
 import EmptyStar from "../../../public/star-empty.png";
 import HalfStar from "../../../public/star-half.png";
 import Star from "../../../public/star.png";
@@ -1076,12 +1076,12 @@ function MyCourses() {
           {category === "launchedVideoCourses" && <LaunchedVideoCourses uid={userData.uid} />}
           {category === "teacherCalendar" && (
             <CalendarWrapper>
-              <TeacherCalendar uid={userData.uid} name={userData.username} />
+              <Calendar userData={userData} category={category} />
             </CalendarWrapper>
           )}
           {category === "studentCalendar" && (
             <CalendarWrapper>
-              <StudentCalendar userData={userData} />
+              <Calendar userData={userData} category={category} />
             </CalendarWrapper>
           )}
           {category === "beTeacher" && <BeTeacher uid={userData.uid} setUserData={setUserData} />}

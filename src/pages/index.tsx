@@ -18,7 +18,6 @@ import "swiper/css/pagination";
 import "swiper/css/navigation";
 
 const Wrapper = styled.div`
-  min-height: 80vh;
   display: flex;
   flex-direction: column;
   align-items: center;
