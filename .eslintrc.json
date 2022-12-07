@@ -33,6 +33,12 @@
         "checksVoidReturn": false
       }
     ],
+    "import/order": [
+      "error",
+      {
+        "groups": ["builtin", "external", "internal", "parent", "sibling", "index", "object", "type"]
+      }
+    ],
     "prettier/prettier": [
       "warn",
       {

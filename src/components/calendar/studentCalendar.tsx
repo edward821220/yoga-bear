@@ -22,11 +22,11 @@ import { useRouter } from "next/router";
 import { AuthContext } from "../../contexts/authContext";
 import { db } from "../../../lib/firebase";
 import Modal from "../modal";
-import resources from "./resources";
 import RoomButton from "../../../public/room.png";
 import ReviewButton from "../../../public/review.png";
 import EmptyStar from "../../../public/star-empty.png";
 import Star from "../../../public/star.png";
+import resources from "./resources";
 
 const ButtonWrapper = styled.div`
   display: flex;

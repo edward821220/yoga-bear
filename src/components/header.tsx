@@ -9,8 +9,6 @@ import { useRouter } from "next/router";
 import { useRecoilState, SetterOrUpdater } from "recoil";
 import { getDoc, doc, updateDoc } from "firebase/firestore";
 import { ref, uploadBytesResumable, getDownloadURL } from "firebase/storage";
-import Modal from "./modal";
-import Editor from "./editor/editor";
 import { AuthContext } from "../contexts/authContext";
 import { orderQtyState, bearMoneyState, showMemberModalState } from "../utils/recoil";
 import { db, storage } from "../../lib/firebase";
@@ -22,6 +20,8 @@ import PlusMoneyIcon from "../../public/add.png";
 import MoneyBear from "../../public/money.png";
 import Loading from "../../public/loading.gif";
 import MenuIcon from "../../public/menu.png";
+import Editor from "./editor/editor";
+import Modal from "./modal";
 
 const Wrapper = styled.header`
   display: flex;

@@ -23,8 +23,8 @@ import { useRecoilState } from "recoil";
 import { db } from "../../../lib/firebase";
 import { AuthContext } from "../../contexts/authContext";
 import { bearMoneyState } from "../../utils/recoil";
-import resources from "./resources";
 import ReserveButton from "../../../public/reserve.png";
+import resources from "./resources";
 
 const ReserveButtonWrapper = styled.div`
   display: flex;
