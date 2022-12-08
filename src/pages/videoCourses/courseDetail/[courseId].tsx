@@ -7,7 +7,7 @@ import Swal from "sweetalert2";
 import parse from "html-react-parser";
 import { SetterOrUpdater, useRecoilState } from "recoil";
 import { FullScreen, useFullScreenHandle } from "react-full-screen";
-import { getVideoCourse, getUserData, updateCartItems } from "../../../utils/firestore";
+import { getVideoCourse, getUserData, updateCartItem } from "../../../utils/firestore";
 import { AuthContext } from "../../../contexts/authContext";
 import { orderQtyState, showMemberModalState } from "../../../utils/recoil";
 import Lock from "../../../../public/lock.png";
@@ -241,12 +241,12 @@ const TimeControls = styled.div`
   justify-content: space-evenly;
 `;
 const TimeProgressBarContainer = styled.div`
+  position: relative;
   background-color: #484848;
   border-radius: 15px;
   width: 360px;
   height: 15px;
   z-index: 30;
-  position: relative;
   margin: 0 20px;
   cursor: pointer;
   @media screen and (max-width: 724px) {
@@ -952,7 +952,7 @@ function CourseInfo({ courseId, courseData }: { courseId: string; courseData: Co
       setShowMemberModal(true);
       return;
     }
-    updateCartItems(userData.uid, courseData);
+    updateCartItem(userData.uid, courseData);
     Swal.fire({ title: "已加入購物車！", confirmButtonColor: "#5d7262", icon: "success" });
     const docSnap = await getUserData(userData.uid);
     if (docSnap.exists()) {

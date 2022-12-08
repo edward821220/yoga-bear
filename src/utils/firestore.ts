@@ -167,9 +167,8 @@ interface CourseDataInterface {
   reviews: ReviewInterface[];
 }
 
-export const updateCartItems = async (userId: string, courseData: CourseDataInterface) => {
+export const updateCartItem = async (userId: string, courseData: CourseDataInterface) => {
   const userRef = doc(db, "users", userId);
-  if (!courseData) return;
   await updateDoc(userRef, {
     cartItems: arrayUnion({
       id: courseData.id,
@@ -178,6 +177,40 @@ export const updateCartItems = async (userId: string, courseData: CourseDataInte
       price: courseData.price,
     }),
   });
+};
+
+interface CartItem {
+  cover: string;
+  name: string;
+  price: string;
+  id: string;
+}
+
+export const deleteCartItem = async (userId: string, item: CartItem) => {
+  const userRef = doc(db, "users", userId);
+  await updateDoc(userRef, {
+    cartItems: arrayRemove({
+      cover: item.cover,
+      name: item.name,
+      price: item.price,
+      id: item.id,
+    }),
+  });
+};
+
+export const checkout = async (userId: string, bearMoney: number, subtotal: number, cartItems: CartItem[]) => {
+  const docRef = doc(db, "users", userId);
+  await updateDoc(docRef, {
+    cartItems: [],
+    bearMoney: bearMoney - subtotal,
+  });
+  await Promise.all(
+    cartItems.map(async (item) => {
+      await updateDoc(docRef, {
+        boughtCourses: arrayUnion(item.id),
+      });
+    })
+  );
 };
 
 export const getLaunchedVideoCourses = async (teacherId: string) => {
