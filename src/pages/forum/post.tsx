@@ -4,8 +4,7 @@ import Swal from "sweetalert2";
 import Head from "next/head";
 import Image from "next/image";
 import { useRouter } from "next/router";
-import { collection, doc, setDoc } from "firebase/firestore";
-import { db } from "../../../lib/firebase";
+import { createArticle } from "../../utils/firestore";
 import { AuthContext } from "../../contexts/authContext";
 import RichEditor from "../../components/editor/richEditor";
 import Bear from "../../../public/Yoga-Bear.png";
@@ -130,14 +129,13 @@ function Post() {
       Swal.fire({ title: "請輸入內容！", confirmButtonColor: "#5d7262", icon: "warning" });
       return;
     }
-    const newPostRef = doc(collection(db, "posts"));
-    await setDoc(newPostRef, {
-      id: newPostRef.id,
+    await createArticle({
       author: userData.uid,
       title,
       content,
       time: Date.now(),
     });
+
     Swal.fire({ title: "您已成功提問！", confirmButtonColor: "#5d7262", icon: "success" });
     router.push("/forum");
   };

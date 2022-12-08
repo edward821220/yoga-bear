@@ -5,10 +5,13 @@ import {
   getDoc,
   getDocs,
   updateDoc,
+  deleteDoc,
   arrayUnion,
+  arrayRemove,
   query,
   where,
   limit,
+  orderBy,
 } from "firebase/firestore";
 import { db } from "../../lib/firebase";
 
@@ -189,4 +192,101 @@ export const getLaunchedVideoCourses = async (teacherId: string) => {
     return { name, cover, id, reviews };
   });
   return launchedVideoCourses;
+};
+
+interface PostInterface {
+  id: string;
+  time: string;
+  title: string;
+  content: string;
+  preview?: string;
+  authorId: string;
+  authorName?: string;
+  authorAvatar?: string;
+  picPreview?: string;
+  messages?: [];
+  messagesQty: number;
+  likes?: [];
+  likesQty: number;
+}
+
+export const getAllArticles = async () => {
+  const q = query(collection(db, "posts"), orderBy("time", "desc"));
+  const querySnapshot = await getDocs(q);
+  const results: PostInterface[] = querySnapshot.docs.map((data) => {
+    const article = data.data() as PostInterface;
+    const images = article?.content?.match(/<img.*?>/g);
+    const paragraphs = article?.content?.match(/<p>.*?<\/p>/g);
+    const messagesQty = article?.messages?.length || 0;
+    const likesQty = article?.likes?.length || 0;
+    let preview = "";
+    let picPreview = "";
+    if (paragraphs) preview = `${paragraphs[0].slice(3, -4)}...`;
+    if (images) [picPreview] = images;
+    const id = data.data().id as string;
+    const title = data.data().title as string;
+    const content = data.data().content as string;
+    const authorId = data.data().author as string;
+    return {
+      id,
+      time: new Date(data.data().time as string).toLocaleString(),
+      title,
+      content,
+      authorId,
+      preview,
+      picPreview,
+      messagesQty,
+      likesQty,
+    };
+  });
+  return results;
+};
+
+export const getArticle = async (articleId: string) => {
+  const articleRef = doc(db, "posts", articleId);
+  const articleSnap = await getDoc(articleRef);
+  return articleSnap;
+};
+
+export const createArticle = async (articleData: { author: string; title: string; content: string; time: number }) => {
+  const newPostRef = doc(collection(db, "posts"));
+  await setDoc(newPostRef, { ...articleData, id: newPostRef.id });
+};
+
+export const deleteArticle = async (articleId: string) => {
+  const articleRef = doc(db, "posts", articleId);
+  await deleteDoc(articleRef);
+};
+
+interface MessageInterface {
+  time: string | number;
+  message: string;
+  authorId: string;
+  authorName: string;
+  authorAvatar?: string;
+  identity: string;
+  likes: string[];
+}
+export const updateArticle = async (articleId: string, articleData: Record<string, string | MessageInterface[]>) => {
+  const articleRef = doc(db, "posts", articleId);
+  await updateDoc(articleRef, articleData);
+};
+
+export const createArticleMessage = async (
+  articleId: string,
+  message: { authorId: string; time: number; message: string; likes: string[] }
+) => {
+  const articleRef = doc(db, "posts", articleId);
+  await updateDoc(articleRef, {
+    messages: arrayUnion(message),
+  });
+};
+
+export const likeArticle = async (articleId: string, userId: string) => {
+  const articleRef = doc(db, "posts", articleId);
+  await updateDoc(articleRef, { likes: arrayUnion(userId) });
+};
+export const dislikeArticle = async (articleId: string, userId: string) => {
+  const articleRef = doc(db, "posts", articleId);
+  await updateDoc(articleRef, { likes: arrayRemove(userId) });
 };

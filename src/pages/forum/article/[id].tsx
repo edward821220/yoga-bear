@@ -6,13 +6,21 @@ import styled from "styled-components";
 import Swal from "sweetalert2";
 import parse from "html-react-parser";
 import { useRecoilState, SetterOrUpdater } from "recoil";
-import { doc, getDoc, updateDoc, arrayUnion, arrayRemove, deleteDoc } from "firebase/firestore";
 import produce from "immer";
+import Avatar from "../../../../public/member.png";
 import Editor from "../../../components/editor/editor";
-import { db } from "../../../../lib/firebase";
 import { AuthContext } from "../../../contexts/authContext";
 import { showMemberModalState } from "../../../utils/recoil";
-import Avatar from "../../../../public/member.png";
+import {
+  createArticleMessage,
+  dislikeArticle,
+  getArticle,
+  getUserData,
+  likeArticle,
+  updateArticle,
+  deleteArticle,
+} from "../../../utils/firestore";
+import RichEditor from "../../../components/editor/richEditor";
 import LikeQtyIcon from "../../../../public/like.png";
 import MessageIcon from "../../../../public/message.png";
 import LikeBlankIcon from "../../../../public/favorite-blank.png";
@@ -21,7 +29,6 @@ import Remove from "../../../../public/trash.png";
 import Save from "../../../../public/save.png";
 import Edit from "../../../../public/edit.png";
 import "react-quill/dist/quill.snow.css";
-import RichEditor from "../../../components/editor/richEditor";
 
 const Wrapper = styled.div`
   background-color: ${(props) => props.theme.colors.color1};
@@ -312,8 +319,7 @@ function MessagesSection({
       draft.messages[index].likes.push(userData.uid);
     });
     setArticle(updatedArticle);
-    const articleRef = doc(db, "posts", id);
-    updateDoc(articleRef, { messages: updatedArticle.messages });
+    updateArticle(id, { messages: updatedArticle.messages });
   };
 
   const handleDislikeMessage = (index: number) => {
@@ -321,8 +327,7 @@ function MessagesSection({
       draft.messages[index].likes.splice(draft.messages[index].likes.indexOf(userData.uid), 1);
     });
     setArticle(updatedArticle);
-    const articleRef = doc(db, "posts", id);
-    updateDoc(articleRef, { messages: updatedArticle.messages });
+    updateArticle(id, { messages: updatedArticle.messages });
   };
 
   const handleMessage = async () => {
@@ -335,14 +340,11 @@ function MessagesSection({
       Swal.fire({ title: "請輸入內容！", confirmButtonColor: "#5d7262", icon: "warning" });
       return;
     }
-    const articleRef = doc(db, "posts", id);
-    await updateDoc(articleRef, {
-      messages: arrayUnion({
-        authorId: userData.uid,
-        time: Date.now(),
-        message: inputMessage,
-        likes: [],
-      }),
+    await createArticleMessage(id, {
+      authorId: userData.uid,
+      time: Date.now(),
+      message: inputMessage,
+      likes: [],
     });
     setInputMessage("");
     setArticle(
@@ -418,8 +420,7 @@ function MessagesSection({
                                   draft.messages = newMessages;
                                 })
                               );
-                              const articleRef = doc(db, "posts", id);
-                              updateDoc(articleRef, {
+                              updateArticle(id, {
                                 messages: newMessages,
                               });
                             }
@@ -493,8 +494,7 @@ function Article({ id, articleData }: { id: string; articleData: ArticleInterfac
         draft.likes.push(userData.uid);
       })
     );
-    const articleRef = doc(db, "posts", id);
-    await updateDoc(articleRef, { likes: arrayUnion(userData.uid) });
+    await likeArticle(id, userData.uid);
   };
 
   const handleDislikeArticle = async () => {
@@ -503,8 +503,7 @@ function Article({ id, articleData }: { id: string; articleData: ArticleInterfac
         draft.likes.splice(draft.likes.indexOf(userData.uid), 1);
       })
     );
-    const articleRef = doc(db, "posts", id);
-    await updateDoc(articleRef, { likes: arrayRemove(userData.uid) });
+    await dislikeArticle(id, userData.uid);
   };
 
   return (
@@ -539,8 +538,7 @@ function Article({ id, articleData }: { id: string; articleData: ArticleInterfac
                 {isEditState && (
                   <ClickIconWrapper
                     onClick={async () => {
-                      const postRef = doc(db, "posts", id);
-                      await updateDoc(postRef, {
+                      await updateArticle(id, {
                         content,
                         title: article.title,
                       });
@@ -561,8 +559,7 @@ function Article({ id, articleData }: { id: string; articleData: ArticleInterfac
                       confirmButtonText: "Yes!",
                     }).then(async (result) => {
                       if (result.isConfirmed) {
-                        const articleRef = doc(db, "posts", id);
-                        await deleteDoc(articleRef);
+                        await deleteArticle(id);
                         router.push("/forum");
                       }
                     });
@@ -635,24 +632,24 @@ function Article({ id, articleData }: { id: string; articleData: ArticleInterfac
 export default Article;
 
 export async function getServerSideProps({ params }: { params: { id: string } }) {
-  const docRef = doc(db, "posts", params.id);
-  const docSnap = await getDoc(docRef);
-  if (!docSnap.exists()) return;
-  const authorId = docSnap.data().author as string;
-  const userRef = doc(db, "users", authorId);
-  const userSnap = await getDoc(userRef);
+  const articleSnap = await getArticle(params.id);
+  if (!articleSnap.exists()) {
+    return {
+      notFound: true,
+    };
+  }
+  const authorId = articleSnap.data().author as string;
+  const userSnap = await getUserData(authorId);
   if (!userSnap.exists()) {
     return {
       notFound: true,
     };
   }
-  const messages = docSnap.data().messages as MessageInterface[];
+  const messages = articleSnap.data().messages as MessageInterface[];
   if (messages) {
     await Promise.all(
       messages?.map(async (message, index) => {
-        const messageAuthorId = message.authorId;
-        const messageAuthorRef = doc(db, "users", messageAuthorId);
-        const messageAuthorSnap = await getDoc(messageAuthorRef);
+        const messageAuthorSnap = await getUserData(message.authorId);
         if (messageAuthorSnap.exists()) {
           const authorName = messageAuthorSnap.data().username as string;
           const authorAvatar = messageAuthorSnap.data().photoURL as string;
@@ -666,14 +663,14 @@ export async function getServerSideProps({ params }: { params: { id: string } })
   }
 
   const articleData: ArticleInterface = {
-    time: docSnap.data().time as string,
-    title: docSnap.data().title as string,
-    authorId: docSnap.data().author as string,
-    content: docSnap.data().content as string,
+    time: articleSnap.data().time as string,
+    title: articleSnap.data().title as string,
+    authorId: articleSnap.data().author as string,
+    content: articleSnap.data().content as string,
     messages: messages || [],
     authorName: userSnap.data().username as string,
     authorAvatar: userSnap.data().photoURL as string,
-    likes: (docSnap.data().likes as string[]) || [],
+    likes: (articleSnap.data().likes as string[]) || [],
   };
 
   return { props: { id: params.id, articleData } };
