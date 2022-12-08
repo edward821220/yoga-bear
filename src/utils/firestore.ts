@@ -56,6 +56,33 @@ export const createUserData = async (userId: string, userData: Record<string, st
   const userRef = doc(db, "users", userId);
   await setDoc(userRef, userData);
 };
+export const updateBearMoney = async (userId: string, bearMoney: number, addMoney: number) => {
+  const docRef = doc(db, "users", userId);
+  await updateDoc(docRef, {
+    bearMoney: bearMoney + addMoney,
+  });
+};
+export const updateTeacherData = async (
+  userId: string,
+  certificate: string,
+  teacherIntroduction: string,
+  teacherExperience: string
+) => {
+  const docRef = doc(db, "users", userId);
+  await updateDoc(docRef, {
+    identity: "teacher",
+    certificate,
+    teacher_introduction: teacherIntroduction,
+    teacher_experience: teacherExperience,
+    beTeacherTime: Date.now(),
+  });
+};
+export const updateAvatar = async (userId: string, avatarURL: string) => {
+  const docRef = doc(db, "users", userId);
+  await updateDoc(docRef, {
+    photoURL: avatarURL,
+  });
+};
 
 interface CoursesListInterface {
   id: string;
@@ -225,6 +252,59 @@ export const getLaunchedVideoCourses = async (teacherId: string) => {
     return { name, cover, id, reviews };
   });
   return launchedVideoCourses;
+};
+
+export const getMyVideoCourses = async (myVideoCourses: string[]) => {
+  const results: { name: string; cover: string; id: string; reviews: ReviewInterface[] }[] = [];
+  await Promise.all(
+    myVideoCourses.map(async (id: string) => {
+      const videoDocRef = doc(db, "video_courses", id);
+      const data = await getDoc(videoDocRef);
+      if (data.exists() && data) {
+        const courseId = data.data().id as string;
+        const name = data.data().name as string;
+        const cover = data.data().cover as string;
+        const reviews = data.data().reviews as ReviewInterface[];
+        results.push({
+          id: courseId,
+          name,
+          cover,
+          reviews,
+        });
+      }
+    })
+  );
+  return results;
+};
+export const createVideoCourse = async (courseData: {
+  name: string;
+  cover: string;
+  price: number;
+  introduction: string;
+  introductionVideo: string;
+  teacher_id: string;
+  chapters: ChapterInterface[];
+  reviews: ReviewInterface[];
+}) => {
+  const newVideoCoursesRef = doc(collection(db, "video_courses"));
+  await setDoc(newVideoCoursesRef, {
+    ...courseData,
+    id: newVideoCoursesRef.id,
+    launchTime: Date.now(),
+  });
+};
+export const addVideoCourseReview = async (
+  courseId: string,
+  review: {
+    userId: string;
+    score: number;
+    comments: string;
+  }
+) => {
+  const courseRef = doc(db, "video_courses", courseId);
+  await updateDoc(courseRef, {
+    reviews: arrayUnion(review),
+  });
 };
 
 interface PostInterface {

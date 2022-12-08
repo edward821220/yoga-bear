@@ -7,11 +7,11 @@ import imageCompression from "browser-image-compression";
 import InputMask from "react-input-mask";
 import { useRouter } from "next/router";
 import { useRecoilState, SetterOrUpdater } from "recoil";
-import { getDoc, doc, updateDoc } from "firebase/firestore";
 import { ref, uploadBytesResumable, getDownloadURL } from "firebase/storage";
 import { AuthContext } from "../contexts/authContext";
+import { getUserData, updateAvatar, updateBearMoney, updateTeacherData } from "../utils/firestore";
 import { orderQtyState, bearMoneyState, showMemberModalState } from "../utils/recoil";
-import { db, storage } from "../../lib/firebase";
+import { storage } from "../../lib/firebase";
 import BearLogo from "../../public/bear-logo2.png";
 import CartLogo from "../../public/cart.png";
 import MemberLogo from "../../public/member.png";
@@ -491,14 +491,8 @@ function MemberModal({
           Swal.fire({ text: "上傳失敗！請再試一次", confirmButtonColor: "#5d7262", icon: "error" });
         },
         () => {
-          getDownloadURL(uploadTask.snapshot.ref).then((downloadURL) => {
-            const docRef = doc(db, "users", uid);
-            updateDoc(docRef, {
-              certificate: downloadURL,
-              teacher_introduction: teacherIntroduction,
-              teacher_experience: teacherExperience,
-              beTeacherTime: Date.now(),
-            });
+          getDownloadURL(uploadTask.snapshot.ref).then(async (downloadURL) => {
+            await updateTeacherData(uid, downloadURL, teacherIntroduction, teacherExperience);
           });
         }
       );
@@ -529,10 +523,7 @@ function MemberModal({
         },
         () => {
           getDownloadURL(uploadTask.snapshot.ref).then(async (downloadURL) => {
-            const docRef = doc(db, "users", userData.uid);
-            await updateDoc(docRef, {
-              photoURL: downloadURL,
-            });
+            await updateAvatar(userData.uid, downloadURL);
             setUserData({ ...userData, avatar: downloadURL });
             setIsUploading(false);
           });
@@ -718,7 +709,7 @@ function PaymentModal({ setShowPaymentModal, bearMoney, setBearMoney, userId }: 
   const handleClose = () => {
     setShowPaymentModal(false);
   };
-  const handleSubmit = (e: React.FormEvent<HTMLFormElement>) => {
+  const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
     if (!paymentData.cardNumber.match(isValidCardNumber)) {
       Swal.fire({ title: "請輸入正確的信用卡格式", confirmButtonColor: "#5d7262" });
@@ -735,10 +726,7 @@ function PaymentModal({ setShowPaymentModal, bearMoney, setBearMoney, userId }: 
     setBearMoney((prev) => prev + Number(paymentData.money));
     Swal.fire({ title: "儲值成功！可以上課囉！", confirmButtonColor: "#5d7262", icon: "success" });
     setShowPaymentModal(false);
-    const docRef = doc(db, "users", userId);
-    updateDoc(docRef, {
-      bearMoney: bearMoney + Number(paymentData.money),
-    });
+    await updateBearMoney(userId, bearMoney, Number(paymentData.money));
   };
   return (
     <Modal handleClose={handleClose}>
@@ -811,12 +799,11 @@ function Header() {
   useEffect(() => {
     const getCartItems = async () => {
       if (!userData.uid) return;
-      const docRef = doc(db, "users", userData.uid);
-      const docSnap = await getDoc(docRef);
-      if (docSnap.exists()) {
-        const cartItems = (docSnap.data().cartItems as []) || [];
+      const userSnap = await getUserData(userData.uid);
+      if (userSnap.exists()) {
+        const cartItems = (userSnap.data().cartItems as []) || [];
         const qty = cartItems.length;
-        const money = (docSnap.data()?.bearMoney as number) || 0;
+        const money = (userSnap.data()?.bearMoney as number) || 0;
         setOrderQty(qty);
         setBearMoney(money);
       }
