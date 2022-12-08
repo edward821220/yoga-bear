@@ -281,6 +281,8 @@ const SnapshotContainer = styled.div`
   width: 150px;
   height: 80px;
   bottom: 50px;
+  left: 50%;
+  transform: translateX(-50%);
   border: 1px solid lightgray;
   box-shadow: 0 0 5px #00000050;
 `;
@@ -647,14 +649,13 @@ function VideoPlayer({ introductionVideo }: { introductionVideo: string | undefi
                 onPointerMove={(e) => {
                   if (!videoRef.current) return;
                   const target = e.currentTarget as HTMLDivElement;
-                  const timeAtProgressBar = (e.nativeEvent.offsetX / target.offsetWidth) * videoRef.current.duration;
+                  const timeAtProgressBar = Number(
+                    ((e.nativeEvent.offsetX / target.offsetWidth) * videoRef.current.duration).toFixed(2)
+                  );
                   if (!secondVideoRef.current) return;
                   secondVideoRef.current.currentTime = timeAtProgressBar;
                   const canvas = capture(secondVideoRef.current);
-                  setSnapshot(canvas?.toDataURL("image/jpeg", 0.5));
-                  if (snapshotRef.current) {
-                    snapshotRef.current.style.left = `${e.clientX - 240}px`;
-                  }
+                  setSnapshot(canvas?.toDataURL("image/jpeg", 0.1));
                 }}
                 onPointerOut={() => {
                   setSnapshot("");
