@@ -1,4 +1,15 @@
-import { collection, doc, getDoc, getDocs, updateDoc, arrayUnion, query, where, limit } from "firebase/firestore";
+import {
+  collection,
+  doc,
+  setDoc,
+  getDoc,
+  getDocs,
+  updateDoc,
+  arrayUnion,
+  query,
+  where,
+  limit,
+} from "firebase/firestore";
 import { db } from "../../lib/firebase";
 
 interface ChapterInterface {
@@ -37,6 +48,10 @@ export const getUserData = async (userId: string) => {
   const userRef = doc(db, "users", userId);
   const userSnap = await getDoc(userRef);
   return userSnap;
+};
+export const createUserData = async (userId: string, userData: Record<string, string>) => {
+  const userRef = doc(db, "users", userId);
+  await setDoc(userRef, userData);
 };
 
 interface CoursesListInterface {

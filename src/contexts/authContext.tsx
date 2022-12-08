@@ -1,8 +1,8 @@
 import React, { createContext, useState, useEffect, useMemo } from "react";
 import { createUserWithEmailAndPassword, signInWithEmailAndPassword, signOut, onAuthStateChanged } from "firebase/auth";
-import { doc, setDoc, getDoc } from "firebase/firestore";
 import Swal from "sweetalert2";
-import { auth, db } from "../../lib/firebase";
+import { getUserData, createUserData } from "../utils/firestore";
+import { auth } from "../../lib/firebase";
 
 interface AuthContextInterface {
   isLogin: boolean;
@@ -34,8 +34,9 @@ export function AuthContextProvider({ children }: { children: React.ReactNode })
         const { email } = user;
         if (typeof email !== "string") return;
         setIsLogin(true);
-        const res = await getDoc(doc(db, "users", user.uid));
-        const data = res.data();
+        const userSnap = await getUserData(user.uid);
+        if (!userSnap.exists()) return;
+        const data = userSnap.data();
         const identity = data?.identity as string;
         const username = data?.username as string;
         const avatar = data?.photoURL as string;
@@ -49,15 +50,15 @@ export function AuthContextProvider({ children }: { children: React.ReactNode })
     try {
       const res = await createUserWithEmailAndPassword(auth, email, password);
       const { user } = res;
-      setDoc(doc(db, "users", user.uid), {
-        uid: res.user.uid,
-        email: res.user.email,
-        identity,
-        username,
-        photoURL:
-          "https://firebasestorage.googleapis.com/v0/b/yoga-bear-5faab.appspot.com/o/profile.png?alt=media&token=2fb4f433-e1b6-4f86-9b5d-b33d367e99b7",
-      });
       if (typeof user.email === "string") {
+        await createUserData(user.uid, {
+          uid: user.uid,
+          email: user.email,
+          identity,
+          username,
+          photoURL:
+            "https://firebasestorage.googleapis.com/v0/b/yoga-bear-5faab.appspot.com/o/profile.png?alt=media&token=2fb4f433-e1b6-4f86-9b5d-b33d367e99b7",
+        });
         setUserData({
           uid: user.uid,
           email: user.email,
@@ -79,9 +80,9 @@ export function AuthContextProvider({ children }: { children: React.ReactNode })
       const res = await signInWithEmailAndPassword(auth, email, password);
       const { user } = res;
       if (typeof user.email !== "string") return;
-      const result = await getDoc(doc(db, "users", user.uid));
-      const data = result.data();
-      if (!data) return;
+      const userSnap = await getUserData(user.uid);
+      if (!userSnap.exists()) return;
+      const data = userSnap.data();
       setUserData({
         uid: user.uid,
         email: user.email,
