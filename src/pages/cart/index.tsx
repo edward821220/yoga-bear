@@ -1,5 +1,4 @@
 import React, { useState, useEffect, useContext } from "react";
-import { getDoc, doc, updateDoc, arrayRemove, arrayUnion } from "firebase/firestore";
 import styled from "styled-components";
 import Swal from "sweetalert2";
 import emailjs from "@emailjs/browser";
@@ -8,8 +7,8 @@ import Image from "next/image";
 import { useRecoilState } from "recoil";
 import { useRouter } from "next/router";
 import { AuthContext } from "../../contexts/authContext";
-import { db } from "../../../lib/firebase";
-import { orderQtyState, bearMoneyState } from "../../../lib/recoil";
+import { getUserData, deleteCartItem, checkout } from "../../utils/firestore";
+import { orderQtyState, bearMoneyState } from "../../utils/recoil";
 import RemoveIcon from "../../../public/trash.png";
 
 const Wrapper = styled.div`
@@ -179,7 +178,7 @@ const Button = styled.button`
 
 function Cart() {
   const router = useRouter();
-  const [cartItems, setCartItems] = useState<{ cover: string; name: string; price: string; id: string }[]>();
+  const [cartItems, setCartItems] = useState<{ cover: string; name: string; price: string; id: string }[]>([]);
   const { userData } = useContext(AuthContext);
   const { uid } = userData;
   const subtotal = cartItems?.reduce((acc, current) => acc + Number(current.price), 0);
@@ -189,10 +188,9 @@ function Cart() {
   useEffect(() => {
     const getCartItems = async () => {
       if (!uid) return;
-      const docRef = doc(db, "users", uid);
-      const docSnap = await getDoc(docRef);
-      if (docSnap.exists() && docSnap) {
-        const items = docSnap.data().cartItems as { cover: string; name: string; price: string; id: string }[];
+      const userSnap = await getUserData(uid);
+      if (userSnap.exists()) {
+        const items = userSnap.data().cartItems as { cover: string; name: string; price: string; id: string }[];
         setCartItems(items);
       }
     };
@@ -211,23 +209,14 @@ function Cart() {
       confirmButtonColor: "#3085d6",
       cancelButtonColor: "#d33",
       confirmButtonText: "Yes!",
-    }).then((result) => {
+    }).then(async (result) => {
       if (result.isConfirmed) {
         if (subtotal > bearMoney) {
           Swal.fire({ text: "熊幣餘額不足唷！請加值～", confirmButtonColor: "#5d7262", icon: "warning" });
         } else {
           setBearMoney((prev) => prev - subtotal);
           setCartItems([]);
-          const docRef = doc(db, "users", uid);
-          updateDoc(docRef, {
-            cartItems: [],
-            bearMoney: bearMoney - subtotal,
-          });
-          cartItems?.forEach((item) => {
-            updateDoc(docRef, {
-              boughtCourses: arrayUnion(item.id),
-            });
-          });
+          await checkout(uid, bearMoney, subtotal, cartItems);
           Swal.fire({ text: "購買成功！可以去上課囉～", confirmButtonColor: "#5d7262", icon: "success" });
           setOrderQty(0);
           const templateParams = {
@@ -279,15 +268,7 @@ function Cart() {
                           if (result.isConfirmed) {
                             setCartItems(cartItems?.filter((removeItem) => item.id !== removeItem.id));
                             setOrderQty(orderQty - 1);
-                            const docRef = doc(db, "users", uid);
-                            updateDoc(docRef, {
-                              cartItems: arrayRemove({
-                                cover: item.cover,
-                                name: item.name,
-                                price: item.price,
-                                id: item.id,
-                              }),
-                            });
+                            deleteCartItem(uid, item);
                           }
                         });
                       }}

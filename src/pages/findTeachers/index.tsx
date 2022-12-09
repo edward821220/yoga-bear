@@ -5,12 +5,11 @@ import Swal from "sweetalert2";
 import Head from "next/head";
 import Image from "next/image";
 import { useRouter } from "next/router";
-import { collection, getDocs, query as storeQuery, where } from "firebase/firestore";
 import produce from "immer";
 import { useRecoilState } from "recoil";
-import { db } from "../../../lib/firebase";
 import { AuthContext } from "../../contexts/authContext";
-import { showMemberModalState } from "../../../lib/recoil";
+import { getTeachersList } from "../../utils/firestore";
+import { showMemberModalState } from "../../utils/recoil";
 import StarIcon from "../../../public/star.png";
 import HalfStar from "../../../public/star-half.png";
 
@@ -210,37 +209,8 @@ function FindTeachers({ results }: { results: TeacherInterface[] }) {
   const [selectSort, setSelectSort] = useState("comment");
 
   useEffect(() => {
-    const getTeachersList = async () => {
-      const usersRef = collection(db, "users");
-      const teachersQuery = storeQuery(usersRef, where("identity", "==", "teacher"));
-      const querySnapshot = await getDocs(teachersQuery);
-      let newResults: {
-        name: string;
-        uid: string;
-        reviews: { score: number }[];
-        avatar: string;
-        introduction: string;
-        experience: string;
-        beTeacherTime: number;
-      }[] = [];
-      querySnapshot.forEach((data) => {
-        const uid = data.data().uid as string;
-        const name = data.data().username as string;
-        const reviews = data.data().reviews as { score: number }[];
-        const avatar = data.data().photoURL as string;
-        const introduction = data.data().teacher_introduction as string;
-        const experience = data.data().teacher_experience as string;
-        const beTeacherTime = data.data().beTeacherTime as number;
-        newResults.push({
-          uid,
-          name,
-          reviews,
-          avatar,
-          introduction,
-          experience,
-          beTeacherTime,
-        });
-      });
+    const getNewTeachersList = async () => {
+      let newResults = await getTeachersList();
       if (typeof keywords === "string") {
         newResults = newResults.filter((teacher) => teacher.name.toLowerCase().includes(keywords.toLowerCase()));
       }
@@ -259,7 +229,7 @@ function FindTeachers({ results }: { results: TeacherInterface[] }) {
       );
       setSelectSort("comment");
     };
-    getTeachersList();
+    getNewTeachersList();
   }, [keywords]);
 
   const handleSort = (sort: string) => {
@@ -459,36 +429,7 @@ export default FindTeachers;
 
 export const getServerSideProps = async ({ query }: { query: { keywords: string } }) => {
   const { keywords }: { keywords: string } = query;
-  const usersRef = collection(db, "users");
-  const teachersQuery = storeQuery(usersRef, where("identity", "==", "teacher"));
-  const querySnapshot = await getDocs(teachersQuery);
-  let results: {
-    name: string;
-    uid: string;
-    reviews: { score: number }[] | null;
-    avatar: string;
-    introduction: string;
-    experience: string;
-    beTeacherTime: number;
-  }[] = [];
-  querySnapshot.forEach((data) => {
-    const uid = data.data().uid as string;
-    const name = data.data().username as string;
-    const reviews = data.data().reviews as { score: number }[];
-    const avatar = data.data().photoURL as string;
-    const introduction = data.data().teacher_introduction as string;
-    const experience = data.data().teacher_experience as string;
-    const beTeacherTime = data.data().beTeacherTime as number;
-    results.push({
-      uid,
-      name,
-      reviews: reviews || null,
-      avatar,
-      introduction,
-      experience,
-      beTeacherTime,
-    });
-  });
+  let results = await getTeachersList();
 
   if (keywords) {
     results = results.filter((teacher) => teacher.name.toLowerCase().includes(keywords.toLowerCase()));

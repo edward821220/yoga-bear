@@ -7,20 +7,26 @@ import Link from "next/link";
 import Image from "next/image";
 import { useRouter } from "next/router";
 import { ref, getDownloadURL, uploadBytesResumable } from "firebase/storage";
-import { collection, doc, setDoc, getDoc, updateDoc, arrayUnion, getDocs, query, where } from "firebase/firestore";
 import { AuthContext } from "../../contexts/authContext";
-import { storage, db } from "../../../lib/firebase";
+import { storage } from "../../../lib/firebase";
+import {
+  addVideoCourseReview,
+  createVideoCourse,
+  getLaunchedVideoCourses,
+  getMyVideoCourses,
+  getUserData,
+  updateTeacherData,
+} from "../../utils/firestore";
 import Modal from "../../components/modal";
 import Editor from "../../components/editor/editor";
 import ToggleButton from "../../components/toggleButton";
+import Upload from "../../../public/upload.png";
 import Bear from "../../../public/bear.png";
 import Trash from "../../../public/trash.png";
-import Upload from "../../../public/upload.png";
-import TeacherCalendar from "../../components/calendar/teacherCalendar";
-import StudentCalendar from "../../components/calendar/studentCalendar";
+import Calendar from "../../components/calendar/calendar";
 import EmptyStar from "../../../public/star-empty.png";
-import Star from "../../../public/star.png";
 import HalfStar from "../../../public/star-half.png";
+import Star from "../../../public/star.png";
 
 const Wrapper = styled.div`
   background-color: ${(props) => props.theme.colors.color1};
@@ -311,12 +317,6 @@ const StarWrapper = styled.div`
   }
 `;
 
-interface ReviewInterface {
-  userId: string;
-  score: number;
-  comments: string;
-}
-
 interface CourseInterface {
   name: string;
   id: string;
@@ -332,35 +332,16 @@ function VideoCourses({ uid }: { uid: string }) {
   useEffect(() => {
     const getCourses = async () => {
       if (!uid) return;
-      const docRef = doc(db, "users", uid);
-      const docSnap = await getDoc(docRef);
-      let myVideoCourses: string[] = [];
-      if (docSnap.exists() && docSnap) {
-        myVideoCourses = (await docSnap.data().boughtCourses) as string[];
+      const userSnap = await getUserData(uid);
+      let myVideoCoursesId: string[] = [];
+      if (userSnap.exists()) {
+        myVideoCoursesId = userSnap.data().boughtCourses as string[];
       }
-      if (!myVideoCourses) {
+      if (!myVideoCoursesId) {
         setCourses([]);
         return;
       }
-      const results: { name: string; cover: string; id: string; reviews: ReviewInterface[] }[] = [];
-      await Promise.all(
-        myVideoCourses.map(async (id: string) => {
-          const videoDocRef = doc(db, "video_courses", id);
-          const data = await getDoc(videoDocRef);
-          if (data.exists() && data) {
-            const courseId = data.data().id as string;
-            const name = data.data().name as string;
-            const cover = data.data().cover as string;
-            const reviews = data.data().reviews as ReviewInterface[];
-            results.push({
-              id: courseId,
-              name,
-              cover,
-              reviews,
-            });
-          }
-        })
-      );
+      const results = await getMyVideoCourses(myVideoCoursesId);
       setCourses(results);
     };
     getCourses();
@@ -462,14 +443,12 @@ function VideoCourses({ uid }: { uid: string }) {
                       Swal.fire({ title: "請點選星星評分", confirmButtonColor: "#5d7262", icon: "warning" });
                       return;
                     }
-                    const courseRef = doc(db, "video_courses", course.id);
-                    await updateDoc(courseRef, {
-                      reviews: arrayUnion({
-                        userId: uid,
-                        score,
-                        comments,
-                      }),
+                    await addVideoCourseReview(course.id, {
+                      userId: uid,
+                      score,
+                      comments,
                     });
+
                     Swal.fire({
                       text: "感謝您的評論～您的支持是我們最大的動力！",
                       confirmButtonColor: "#5d7262",
@@ -504,21 +483,12 @@ function LaunchedVideoCourses({ uid }: { uid: string }) {
   const [courses, setCourses] = useState<CourseInterface[]>();
 
   useEffect(() => {
-    const getLaunchedVideoCourses = async () => {
+    const getTeacherLaunchedVideoCourses = async () => {
       if (!uid) return;
-      const usersRef = collection(db, "video_courses");
-      const teachersQuery = query(usersRef, where("teacher_id", "==", uid));
-      const querySnapshot = await getDocs(teachersQuery);
-      const launchedVideoCourses = querySnapshot.docs.map((course) => {
-        const name = course.data().name as string;
-        const cover = course.data().cover as string;
-        const id = course.data().id as string;
-        const reviews = course.data().reviews as ReviewInterface[];
-        return { name, cover, id, reviews };
-      });
+      const launchedVideoCourses = await getLaunchedVideoCourses(uid);
       setCourses(launchedVideoCourses);
     };
-    getLaunchedVideoCourses();
+    getTeacherLaunchedVideoCourses();
   }, [uid]);
 
   if (courses?.length === 0) {
@@ -689,10 +659,7 @@ function LaunchVideoCourse({ uid }: { uid: string }) {
         await uploadTaskPromise(input, index);
       })
     );
-
-    const newVideoCoursesRef = doc(collection(db, "video_courses"));
-    await setDoc(newVideoCoursesRef, {
-      id: newVideoCoursesRef.id,
+    const courseData = {
       name: courseName,
       cover: imageUrl,
       price: Number(price),
@@ -701,8 +668,8 @@ function LaunchVideoCourse({ uid }: { uid: string }) {
       teacher_id: uid,
       chapters: newChapters,
       reviews: [],
-      launchTime: Date.now(),
-    });
+    };
+    await createVideoCourse(courseData);
     setShowMemberModal(false);
     Swal.fire({ title: "課程上架完成！", confirmButtonColor: "#5d7262", icon: "success" });
     router.push("/myCourses/launchedVideoCourses");
@@ -948,14 +915,7 @@ function BeTeacher({
         },
         () => {
           getDownloadURL(uploadTask.snapshot.ref).then(async (downloadURL) => {
-            const docRef = doc(db, "users", uid);
-            await updateDoc(docRef, {
-              identity: "teacher",
-              certificate: downloadURL,
-              teacher_introduction: teacherIntroduction,
-              teacher_experience: teacherExperience,
-              beTeacherTime: Date.now(),
-            });
+            await updateTeacherData(uid, downloadURL, teacherIntroduction, teacherExperience);
             setUserData((prev) => ({ ...prev, identity: "teacher" }));
             Swal.fire({ text: "恭喜成為老師～可以開始排課囉！", confirmButtonColor: "#5d7262", icon: "success" });
             router.push("/myCourses/teacherCalendar");
@@ -1076,12 +1036,12 @@ function MyCourses() {
           {category === "launchedVideoCourses" && <LaunchedVideoCourses uid={userData.uid} />}
           {category === "teacherCalendar" && (
             <CalendarWrapper>
-              <TeacherCalendar uid={userData.uid} name={userData.username} />
+              <Calendar userData={userData} category={category} />
             </CalendarWrapper>
           )}
           {category === "studentCalendar" && (
             <CalendarWrapper>
-              <StudentCalendar userData={userData} />
+              <Calendar userData={userData} category={category} />
             </CalendarWrapper>
           )}
           {category === "beTeacher" && <BeTeacher uid={userData.uid} setUserData={setUserData} />}

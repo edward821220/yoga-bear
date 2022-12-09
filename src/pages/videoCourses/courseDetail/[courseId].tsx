@@ -1,16 +1,15 @@
 import React, { useState, useEffect, useRef, useContext } from "react";
 import Image from "next/image";
 import Head from "next/head";
-import { doc, getDoc, updateDoc, arrayUnion } from "firebase/firestore";
 import { useRouter } from "next/router";
 import styled from "styled-components";
 import Swal from "sweetalert2";
 import parse from "html-react-parser";
 import { SetterOrUpdater, useRecoilState } from "recoil";
 import { FullScreen, useFullScreenHandle } from "react-full-screen";
-import { db } from "../../../../lib/firebase";
+import { getVideoCourse, getUserData, updateCartItem } from "../../../utils/firestore";
 import { AuthContext } from "../../../contexts/authContext";
-import { orderQtyState, showMemberModalState } from "../../../../lib/recoil";
+import { orderQtyState, showMemberModalState } from "../../../utils/recoil";
 import Lock from "../../../../public/lock.png";
 import Play from "../../../../public/play.png";
 import Pause from "../../../../public/pause.png";
@@ -242,12 +241,12 @@ const TimeControls = styled.div`
   justify-content: space-evenly;
 `;
 const TimeProgressBarContainer = styled.div`
+  position: relative;
   background-color: #484848;
   border-radius: 15px;
   width: 360px;
   height: 15px;
   z-index: 30;
-  position: relative;
   margin: 0 20px;
   cursor: pointer;
   @media screen and (max-width: 724px) {
@@ -282,6 +281,8 @@ const SnapshotContainer = styled.div`
   width: 150px;
   height: 80px;
   bottom: 50px;
+  left: 50%;
+  transform: translateX(-50%);
   border: 1px solid lightgray;
   box-shadow: 0 0 5px #00000050;
 `;
@@ -554,13 +555,13 @@ function VideoPlayer({ introductionVideo }: { introductionVideo: string | undefi
       <VideoContainer
         isFullScreen={isFullScreen}
         isFullWindow={isFullWindow}
-        onPointerOver={() => {
+        onMouseOver={() => {
           setShowToolBar(true);
         }}
-        onPointerOut={() => {
+        onMouseOut={() => {
           setShowToolBar(false);
         }}
-        onPointerMove={() => {
+        onMouseMove={() => {
           clearTimeout(timeoutRef.current);
           setShowToolBar(true);
           timeoutRef.current = setTimeout(() => {
@@ -645,19 +646,18 @@ function VideoPlayer({ introductionVideo }: { introductionVideo: string | undefi
                   videoRef.current.currentTime = timeAtProgressBar;
                   setCurrentTime(timeAtProgressBar);
                 }}
-                onPointerMove={(e) => {
+                onMouseMove={(e) => {
                   if (!videoRef.current) return;
                   const target = e.currentTarget as HTMLDivElement;
-                  const timeAtProgressBar = (e.nativeEvent.offsetX / target.offsetWidth) * videoRef.current.duration;
+                  const timeAtProgressBar = Number(
+                    ((e.nativeEvent.offsetX / target.offsetWidth) * videoRef.current.duration).toFixed(2)
+                  );
                   if (!secondVideoRef.current) return;
                   secondVideoRef.current.currentTime = timeAtProgressBar;
                   const canvas = capture(secondVideoRef.current);
-                  setSnapshot(canvas?.toDataURL("image/jpeg", 0.5));
-                  if (snapshotRef.current) {
-                    snapshotRef.current.style.left = `${e.clientX - 240}px`;
-                  }
+                  setSnapshot(canvas?.toDataURL("image/jpeg", 0.1));
                 }}
-                onPointerOut={() => {
+                onMouseOut={() => {
                   setSnapshot("");
                 }}
               >
@@ -672,12 +672,12 @@ function VideoPlayer({ introductionVideo }: { introductionVideo: string | undefi
             </TimeControls>
             <OtherControls>
               <ControlIcon
-                onPointerOver={() => {
+                onMouseOver={() => {
                   setShowVoiceBar(true);
                   if (!videoRef.current) return;
                   setVoice(videoRef.current.volume * 100);
                 }}
-                onPointerOut={() => {
+                onMouseOut={() => {
                   setShowVoiceBar(false);
                 }}
               >
@@ -710,10 +710,10 @@ function VideoPlayer({ introductionVideo }: { introductionVideo: string | undefi
                 />
               </ControlIcon>
               <ControlIcon
-                onPointerOver={() => {
+                onMouseOver={() => {
                   setShowSpeedMenu(true);
                 }}
-                onPointerOut={() => {
+                onMouseOut={() => {
                   setShowSpeedMenu(false);
                 }}
               >
@@ -915,8 +915,7 @@ function CourseInfo({ courseId, courseData }: { courseId: string; courseData: Co
   useEffect(() => {
     const getBoughtCourses = async () => {
       if (!userData.uid) return;
-      const userRef = doc(db, "users", userData.uid);
-      const docSnap = await getDoc(userRef);
+      const docSnap = await getUserData(userData.uid);
       if (docSnap.exists()) {
         const courses = docSnap.data().boughtCourses as string[];
         setBoughtCourses(courses);
@@ -927,8 +926,7 @@ function CourseInfo({ courseId, courseData }: { courseId: string; courseData: Co
 
   useEffect(() => {
     const getCourseInfo = async () => {
-      const teacherRef = doc(db, "users", courseData.teacherId);
-      const teacherSnap = await getDoc(teacherRef);
+      const teacherSnap = await getUserData(courseData.teacherId);
       if (teacherSnap.exists()) {
         const teacherName = teacherSnap.data().username as string;
         const teacherAvatar = teacherSnap.data().photoURL as string;
@@ -939,8 +937,7 @@ function CourseInfo({ courseId, courseData }: { courseId: string; courseData: Co
 
       if (!Array.isArray(courseData.reviews)) return;
       courseData.reviews.forEach(async (review: { comments: string; score: number; userId: string }, index) => {
-        const userRef = doc(db, "users", review.userId);
-        const userSnap = await getDoc(userRef);
+        const userSnap = await getUserData(review.userId);
         if (!userSnap.exists()) return;
         const username = userSnap.data().username as string;
         const avatar = userSnap.data().photoURL as string;
@@ -956,18 +953,9 @@ function CourseInfo({ courseId, courseData }: { courseId: string; courseData: Co
       setShowMemberModal(true);
       return;
     }
-    const userRef = doc(db, "users", userData.uid);
-    if (!courseData) return;
-    await updateDoc(userRef, {
-      cartItems: arrayUnion({
-        id: courseData.id,
-        name: courseData.name,
-        cover: courseData.cover,
-        price: courseData.price,
-      }),
-    });
+    updateCartItem(userData.uid, courseData);
     Swal.fire({ title: "已加入購物車！", confirmButtonColor: "#5d7262", icon: "success" });
-    const docSnap = await getDoc(userRef);
+    const docSnap = await getUserData(userData.uid);
     if (docSnap.exists()) {
       const cartItems = docSnap.data().cartItems as [];
       const qty = cartItems.length;
@@ -1051,23 +1039,7 @@ function CourseInfo({ courseId, courseData }: { courseId: string; courseData: Co
 export default CourseInfo;
 
 export async function getServerSideProps({ params }: { params: { courseId: string } }) {
-  const docRef = doc(db, "video_courses", params.courseId);
-  const docSnap = await getDoc(docRef);
-  if (!docSnap.exists()) {
-    return {
-      notFound: true,
-    };
-  }
-  const id = docSnap.data().id as string;
-  const name = docSnap.data().name as string;
-  const chapters = docSnap.data().chapters as ChapterInterface[];
-  const introduction = docSnap.data().introduction as string;
-  const introductionVideo = docSnap.data().introductionVideo as string;
-  const teacherId = docSnap.data().teacher_id as string;
-  const cover = docSnap.data().cover as string;
-  const price = docSnap.data().price as number;
-  const reviews = docSnap.data().reviews as ReviewInterface[];
-  const courseData = { id, name, chapters, introduction, introductionVideo, teacherId, cover, price, reviews };
-
-  return { props: { courseId: params.courseId, courseData } };
+  const { courseId } = params;
+  const courseData = await getVideoCourse(courseId);
+  return { props: { courseId, courseData } };
 }

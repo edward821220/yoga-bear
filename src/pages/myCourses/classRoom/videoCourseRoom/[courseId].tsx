@@ -1,13 +1,12 @@
 import React, { useState, useEffect, useRef, useContext } from "react";
 import Image from "next/image";
-import { doc, getDoc } from "firebase/firestore";
 import { useRouter } from "next/router";
 import styled from "styled-components";
 import Swal from "sweetalert2";
 import parse from "html-react-parser";
 import { FullScreen, useFullScreenHandle } from "react-full-screen";
 import Head from "next/head";
-import { db } from "../../../../../lib/firebase";
+import { getUserData, getVideoCourse } from "../../../../utils/firestore";
 import { AuthContext } from "../../../../contexts/authContext";
 import Play from "../../../../../public/play.png";
 import Pause from "../../../../../public/pause.png";
@@ -253,6 +252,8 @@ const SnapshotContainer = styled.div`
   width: 150px;
   height: 80px;
   bottom: 50px;
+  left: 50%;
+  transform: translateX(-50%);
   border: 1px solid lightgray;
   box-shadow: 0 0 5px #00000050;
 `;
@@ -544,13 +545,13 @@ function VideoPlayer({
       <VideoContainer
         isFullScreen={isFullScreen}
         isFullWindow={isFullWindow}
-        onPointerOver={() => {
+        onMouseOver={() => {
           setShowToolBar(true);
         }}
-        onPointerOut={() => {
+        onMouseOut={() => {
           setShowToolBar(false);
         }}
-        onPointerMove={() => {
+        onMouseMove={() => {
           clearTimeout(timeoutRef.current);
           setShowToolBar(true);
           timeoutRef.current = setTimeout(() => {
@@ -636,19 +637,18 @@ function VideoPlayer({
                   videoRef.current.currentTime = timeAtProgressBar;
                   setCurrentTime(timeAtProgressBar);
                 }}
-                onPointerMove={(e) => {
+                onMouseMove={(e) => {
                   if (!videoRef.current) return;
                   const target = e.currentTarget as HTMLDivElement;
-                  const timeAtProgressBar = (e.nativeEvent.offsetX / target.offsetWidth) * videoRef.current.duration;
+                  const timeAtProgressBar = Number(
+                    ((e.nativeEvent.offsetX / target.offsetWidth) * videoRef.current.duration).toFixed(2)
+                  );
                   if (!secondVideoRef.current) return;
                   secondVideoRef.current.currentTime = timeAtProgressBar;
                   const canvas = capture(secondVideoRef.current);
-                  setSnapshot(canvas?.toDataURL("image/jpeg", 0.5));
-                  if (snapshotRef.current) {
-                    snapshotRef.current.style.left = `${e.clientX - 240}px`;
-                  }
+                  setSnapshot(canvas?.toDataURL("image/jpeg", 0.1));
                 }}
-                onPointerOut={() => {
+                onMouseOut={() => {
                   setSnapshot("");
                 }}
               >
@@ -663,12 +663,12 @@ function VideoPlayer({
             </TimeControls>
             <OtherControls>
               <ControlIcon
-                onPointerOver={() => {
+                onMouseOver={() => {
                   setShowVoiceBar(true);
                   if (!videoRef.current) return;
                   setVoice(videoRef.current.volume * 100);
                 }}
-                onPointerOut={() => {
+                onMouseOut={() => {
                   setShowVoiceBar(false);
                 }}
               >
@@ -701,10 +701,10 @@ function VideoPlayer({
                 />
               </ControlIcon>
               <ControlIcon
-                onPointerOver={() => {
+                onMouseOver={() => {
                   setShowSpeedMenu(true);
                 }}
-                onPointerOut={() => {
+                onMouseOut={() => {
                   setShowSpeedMenu(false);
                 }}
               >
@@ -895,8 +895,7 @@ function VideoRoom({ courseId, courseData }: { courseId: string; courseData: Cou
   useEffect(() => {
     const getBoughtCourses = async () => {
       if (!userData.uid) return;
-      const userRef = doc(db, "users", userData.uid);
-      const docSnap = await getDoc(userRef);
+      const docSnap = await getUserData(userData.uid);
       if (docSnap.exists()) {
         const courses = docSnap.data().boughtCourses as string[];
         setBoughtCourses(courses);
@@ -911,8 +910,7 @@ function VideoRoom({ courseId, courseData }: { courseId: string; courseData: Cou
 
   useEffect(() => {
     const getCourseInfo = async () => {
-      const teacherRef = doc(db, "users", courseData.teacherId);
-      const teacherSnap = await getDoc(teacherRef);
+      const teacherSnap = await getUserData(courseData.teacherId);
       if (teacherSnap.exists()) {
         const teacherName = teacherSnap.data().username as string;
         const teacherAvatar = teacherSnap.data().photoURL as string;
@@ -923,8 +921,7 @@ function VideoRoom({ courseId, courseData }: { courseId: string; courseData: Cou
 
       if (!Array.isArray(courseData.reviews)) return;
       courseData.reviews.forEach(async (review: { comments: string; score: number; userId: string }, index) => {
-        const userRef = doc(db, "users", review.userId);
-        const userSnap = await getDoc(userRef);
+        const userSnap = await getUserData(review.userId);
         if (!userSnap.exists()) return;
         const username = userSnap.data().username as string;
         const avatar = userSnap.data().photoURL as string;
@@ -1021,23 +1018,8 @@ function VideoRoom({ courseId, courseData }: { courseId: string; courseData: Cou
 export default VideoRoom;
 
 export async function getServerSideProps({ params }: { params: { courseId: string } }) {
-  const docRef = doc(db, "video_courses", params.courseId);
-  const docSnap = await getDoc(docRef);
-  if (!docSnap.exists()) {
-    return {
-      notFound: true,
-    };
-  }
-  const id = docSnap.data().id as string;
-  const name = docSnap.data().name as string;
-  const chapters = docSnap.data().chapters as ChapterInterface[];
-  const introduction = docSnap.data().introduction as string;
-  const introductionVideo = docSnap.data().introductionVideo as string;
-  const teacherId = docSnap.data().teacher_id as string;
-  const cover = docSnap.data().cover as string;
-  const price = docSnap.data().price as number;
-  const reviews = docSnap.data().reviews as ReviewInterface[];
-  const courseData = { id, name, chapters, introduction, introductionVideo, teacherId, cover, price, reviews };
+  const { courseId } = params;
+  const courseData = await getVideoCourse(courseId);
 
-  return { props: { courseId: params.courseId, courseData } };
+  return { props: { courseId, courseData } };
 }

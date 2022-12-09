@@ -1,6 +1,5 @@
 import Head from "next/head";
 import { createGlobalStyle, DefaultTheme, ThemeProvider } from "styled-components";
-import type { AppProps } from "next/app";
 import { useRouter } from "next/router";
 import { Reset } from "styled-reset";
 import React from "react";
@@ -8,6 +7,7 @@ import { RecoilRoot } from "recoil";
 import ErrorBoundary from "../components/errorBoundary";
 import Header from "../components/header";
 import { AuthContextProvider } from "../contexts/authContext";
+import type { AppProps } from "next/app";
 
 const GlobalStyle = createGlobalStyle`
 *,

@@ -5,8 +5,7 @@ import Head from "next/head";
 import Link from "next/link";
 import Image from "next/image";
 import produce from "immer";
-import { collection, getDocs } from "firebase/firestore";
-import { db } from "../../../lib/firebase";
+import { getCoursesList } from "../../utils/firestore";
 import StarIcon from "../../../public/star.png";
 import HalfStar from "../../../public/star-half.png";
 
@@ -161,33 +160,8 @@ function VideoCourses({ results }: { results: CourseInterface[] }) {
   const [selectSort, setSelectSort] = useState("comment");
 
   useEffect(() => {
-    const getCoursesList = async () => {
-      const videoCoursesRef = collection(db, "video_courses");
-      const querySnapshot = await getDocs(videoCoursesRef);
-      let newResults: {
-        name: string;
-        id: string;
-        price: number;
-        cover: string;
-        reviews: { score: number; comments: string }[];
-        launchTime: number;
-      }[] = [];
-      querySnapshot.forEach((data) => {
-        const id = data.data().id as string;
-        const name = data.data().name as string;
-        const price = data.data().price as number;
-        const cover = data.data().cover as string;
-        const reviews = data.data().reviews as { score: number; comments: string }[];
-        const launchTime = data.data().launchTime as number;
-        newResults.push({
-          id,
-          name,
-          price,
-          cover,
-          reviews,
-          launchTime,
-        });
-      });
+    const getNewCoursesList = async () => {
+      let newResults = await getCoursesList();
       if (typeof keywords === "string") {
         newResults = newResults.filter((course) => course.name.includes(keywords));
       }
@@ -205,7 +179,7 @@ function VideoCourses({ results }: { results: CourseInterface[] }) {
         })
       );
     };
-    getCoursesList();
+    getNewCoursesList();
   }, [keywords]);
 
   const handleSort = (sort: string) => {
@@ -389,33 +363,7 @@ export default VideoCourses;
 
 export const getServerSideProps = async ({ query }: { query: { keywords: string } }) => {
   const { keywords }: { keywords: string } = query;
-  const videoCoursesRef = collection(db, "video_courses");
-  const querySnapshot = await getDocs(videoCoursesRef);
-  let results: {
-    name: string;
-    id: string;
-    price: number;
-    cover: string;
-    reviews: { score: number; comments: string }[];
-    launchTime: number;
-  }[] = [];
-  querySnapshot.forEach((data) => {
-    const id = data.data().id as string;
-    const name = data.data().name as string;
-    const price = data.data().price as number;
-    const cover = data.data().cover as string;
-    const reviews = data.data().reviews as { score: number; comments: string }[];
-    const launchTime = data.data().launchTime as number;
-    results.push({
-      id,
-      name,
-      price,
-      cover,
-      reviews,
-      launchTime,
-    });
-  });
-
+  let results = await getCoursesList();
   if (keywords) {
     results = results.filter((course) => course.name.includes(keywords));
   }

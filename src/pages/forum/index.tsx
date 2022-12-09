@@ -6,14 +6,13 @@ import parse from "html-react-parser";
 import Head from "next/head";
 import { useRouter } from "next/router";
 import { useRecoilState } from "recoil";
-import { collection, doc, getDoc, getDocs, query, orderBy } from "firebase/firestore";
 import BannerPic from "../../../public/banner0.jpeg";
 import LikeIcon from "../../../public/like.png";
 import MessageIcon from "../../../public/message.png";
 import Avatar from "../../../public/member.png";
-import { db } from "../../../lib/firebase";
 import { AuthContext } from "../../contexts/authContext";
-import { showMemberModalState } from "../../../lib/recoil";
+import { showMemberModalState } from "../../utils/recoil";
+import { getAllArticles, getUserData } from "../../utils/firestore";
 
 const Wrapper = styled.div`
   background-color: ${(props) => props.theme.colors.color1};
@@ -292,41 +291,13 @@ function Forum({ posts }: { posts: PostInterface[] }) {
 export default Forum;
 
 export const getServerSideProps = async () => {
-  const q = query(collection(db, "posts"), orderBy("time", "desc"));
-  const querySnapshot = await getDocs(q);
-  const results: PostInterface[] = querySnapshot.docs.map((data) => {
-    const article = data.data() as PostInterface;
-    const images = article?.content?.match(/<img.*?>/g);
-    const paragraphs = article?.content?.match(/<p>.*?<\/p>/g);
-    const messagesQty = article?.messages?.length || 0;
-    const likesQty = article?.likes?.length || 0;
-    let preview = "";
-    let picPreview = "";
-    if (paragraphs) preview = `${paragraphs[0].slice(3, -4)}...`;
-    if (images) [picPreview] = images;
-    const id = data.data().id as string;
-    const title = data.data().title as string;
-    const content = data.data().content as string;
-    const authorId = data.data().author as string;
-    return {
-      id,
-      time: new Date(data.data().time as string).toLocaleString(),
-      title,
-      content,
-      authorId,
-      preview,
-      picPreview,
-      messagesQty,
-      likesQty,
-    };
-  });
+  const results = await getAllArticles();
   await Promise.all(
     results.map(async (result: PostInterface, index) => {
-      const docRef = doc(db, "users", result.authorId);
-      const docSnap = await getDoc(docRef);
-      if (docSnap.exists()) {
-        const authorName = docSnap.data().username as string;
-        const authorAvatar = docSnap.data().photoURL as string;
+      const userSnap = await getUserData(result.authorId);
+      if (userSnap.exists()) {
+        const authorName = userSnap.data().username as string;
+        const authorAvatar = userSnap.data().photoURL as string;
         results[index].authorName = authorName;
         results[index].authorAvatar = authorAvatar;
       }
