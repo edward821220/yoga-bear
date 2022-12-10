@@ -7,7 +7,7 @@ import parse from "html-react-parser";
 import Head from "next/head";
 import { getUserData, getVideoCourse } from "../../../../utils/firestore";
 import { AuthContext } from "../../../../contexts/authContext";
-import VideoPlayer from "../../../../components/videoPlayer";
+import VideoPlayer from "../../../../components/videoCourses/videoPlayer";
 import Play from "../../../../../public/play.png";
 import Avatar from "../../../../../public/member.png";
 import Star from "../../../../../public/star.png";

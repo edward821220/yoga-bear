@@ -9,7 +9,7 @@ import { SetterOrUpdater, useRecoilState } from "recoil";
 import { getVideoCourse, getUserData, updateCartItem } from "../../../utils/firestore";
 import { AuthContext } from "../../../contexts/authContext";
 import { orderQtyState, showMemberModalState } from "../../../utils/recoil";
-import VideoPlayer from "../../../components/videoPlayer";
+import VideoPlayer from "../../../components/videoCourses/videoPlayer";
 import Lock from "../../../../public/lock.png";
 import Play from "../../../../public/play.png";
 import Avatar from "../../../../public/member.png";
