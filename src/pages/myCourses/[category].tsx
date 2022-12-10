@@ -4,10 +4,10 @@ import Head from "next/head";
 import Link from "next/link";
 import { useRouter } from "next/router";
 import { AuthContext } from "../../contexts/authContext";
-import MyVideoCourses from "../../components/videoCourses/myVideoCourses";
-import LaunchedVideoCourses from "../../components/videoCourses/launchedVideoCourses";
-import LaunchVideoCourse from "../../components/videoCourses/launchVideoCourse";
-import BeTeacher from "../../components/videoCourses/beTeacher";
+import MyVideoCourses from "../../components/myCourses/myVideoCourses";
+import LaunchedVideoCourses from "../../components/myCourses/launchedVideoCourses";
+import LaunchVideoCourse from "../../components/myCourses/launchVideoCourse";
+import BeTeacher from "../../components/myCourses/beTeacher";
 import ToggleButton from "../../components/toggleButton";
 import Calendar from "../../components/calendar/calendar";
 
