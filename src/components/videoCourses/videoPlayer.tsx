@@ -2,15 +2,15 @@ import { useState, useRef } from "react";
 import styled from "styled-components";
 import Image from "next/image";
 import { FullScreen, useFullScreenHandle } from "react-full-screen";
-import Play from "../../public/play.png";
-import Pause from "../../public/pause.png";
-import Forward from "../../public/forward.png";
-import Rewind from "../../public/rewind.png";
-import Voice from "../../public/voice.png";
-import Mute from "../../public/mute.png";
-import Speed from "../../public/speed.png";
-import FullScreenIcon from "../../public/full-screen.png";
-import FullWindow from "../../public/full-window.png";
+import Play from "../../../public/play.png";
+import Pause from "../../../public/pause.png";
+import Forward from "../../../public/forward.png";
+import Rewind from "../../../public/rewind.png";
+import Voice from "../../../public/voice.png";
+import Mute from "../../../public/mute.png";
+import Speed from "../../../public/speed.png";
+import FullScreenIcon from "../../../public/full-screen.png";
+import FullWindow from "../../../public/full-window.png";
 
 const VideoContainer = styled.div<{ isFullScreen: boolean; isFullWindow: boolean }>`
   position: ${(props) => (props.isFullWindow ? "fixed" : "relative")};

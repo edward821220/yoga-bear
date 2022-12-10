@@ -5,7 +5,7 @@ import { Reset } from "styled-reset";
 import React from "react";
 import { RecoilRoot } from "recoil";
 import ErrorBoundary from "../components/errorBoundary";
-import Header from "../components/header";
+import Header from "../components/header/header";
 import { AuthContextProvider } from "../contexts/authContext";
 import type { AppProps } from "next/app";
 
