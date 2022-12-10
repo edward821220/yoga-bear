@@ -46,7 +46,7 @@ const CheckBox = styled.input`
 `;
 function ToggleButton({ state }: { state: boolean }) {
   return (
-    <CheckBoxWrapper>
+    <CheckBoxWrapper data-testid="check-box">
       <CheckBox id="checkbox" type="checkbox" checked={state} onChange={() => {}} />
       <CheckBoxLabel htmlFor="checkbox" />
     </CheckBoxWrapper>
