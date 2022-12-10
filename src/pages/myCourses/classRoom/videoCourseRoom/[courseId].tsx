@@ -457,17 +457,7 @@ interface ChapterInterface {
   units: { id: number; title: string; video: string }[];
 }
 
-function VideoPlayer({
-  handleSwitch,
-  chapters,
-  selectChapter,
-  selectUnit,
-}: {
-  handleSwitch: () => void;
-  chapters: ChapterInterface[];
-  selectChapter: number;
-  selectUnit: number;
-}) {
+function VideoPlayer({ handleSwitch, src }: { handleSwitch: () => void; src: string }) {
   const handle = useFullScreenHandle();
   const videoRef = useRef<HTMLVideoElement>(null);
   const timeoutRef = useRef<NodeJS.Timeout>();
@@ -569,7 +559,7 @@ function VideoPlayer({
         }}
       >
         <Video
-          src={chapters[selectChapter].units[selectUnit].video}
+          src={src}
           autoPlay
           isFullScreen={isFullScreen}
           isFullWindow={isFullWindow}
@@ -760,7 +750,7 @@ function VideoPlayer({
           </ToolBar>
         )}
       </VideoContainer>
-      <SecondVideo src={chapters[selectChapter].units[selectUnit].video} ref={secondVideoRef} crossOrigin="anonymous" />
+      <SecondVideo src={src} ref={secondVideoRef} crossOrigin="anonymous" />
     </FullScreen>
   );
 }
@@ -969,9 +959,7 @@ function VideoRoom({ courseId, courseData }: { courseId: string; courseData: Cou
             <CourseRoom>
               <VideoPlayer
                 handleSwitch={handleSwitch}
-                chapters={courseData?.chapters}
-                selectChapter={selectChapter}
-                selectUnit={selectUnit}
+                src={courseData.chapters[selectChapter].units[selectUnit].video}
               />
               <ChapterSelector>
                 <SubTitle>課程章節</SubTitle>

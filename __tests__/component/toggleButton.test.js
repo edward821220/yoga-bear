@@ -1,9 +1,9 @@
 import { render, screen } from "@testing-library/react";
-import ToggleButton from "../src/components/toggleButton";
+import ToggleButton from "../../src/components/toggleButton";
 
 /* eslint-disable */
-describe("modal component", () => {
-  test("renders a modal", () => {
+describe("toggleButton component", () => {
+  test("renders a toggleButton", () => {
     render(<ToggleButton />);
 
     const toggleButton = screen.getByTestId("check-box", {
