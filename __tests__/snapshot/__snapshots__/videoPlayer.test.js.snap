@@ -1,0 +1,28 @@
+// Jest Snapshot v1, https://goo.gl/fbAQLP
+
+exports[`Jest Snapshot testing suite Matches DOM Snapshot 1`] = `
+<div
+  className="fullscreen"
+>
+  <div
+    className="sc-bcXHqe jpzefr"
+    onKeyDown={[Function]}
+    onMouseMove={[Function]}
+    onMouseOut={[Function]}
+    onMouseOver={[Function]}
+  >
+    <video
+      autoPlay={true}
+      className="sc-gswNZR jLZYSS"
+      data-testid="video"
+      onClick={[Function]}
+      onEnded={[Function]}
+      onTimeUpdate={[Function]}
+    />
+  </div>
+  <video
+    className="sc-hBxehG hVIPgj"
+    crossOrigin="anonymous"
+  />
+</div>
+`;
