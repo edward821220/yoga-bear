@@ -5,6 +5,7 @@ import Image from "next/image";
 import Link from "next/link";
 import parse from "html-react-parser";
 import { getUserData, getLaunchedVideoCourses } from "../../../utils/firestore";
+import { averageScore } from "../../../utils/compute";
 import Calendar from "../../../components/calendar/calendar";
 import Avatar from "../../../../public/member.png";
 import Star from "../../../../public/star.png";
@@ -294,9 +295,7 @@ function LaunchedVideoCourses({ uid }: { uid: string }) {
                 <StarIcons>
                   {Array.from(
                     {
-                      length: Math.floor(
-                        course.reviews.reduce((acc, cur) => acc + cur.score, 0) / course.reviews.length
-                      ),
+                      length: Math.floor(averageScore(course.reviews)),
                     },
                     (v, i) => i + 1
                   ).map((starIndex) => (
@@ -304,16 +303,14 @@ function LaunchedVideoCourses({ uid }: { uid: string }) {
                       <Image src={Star} alt="star" fill sizes="contain" />
                     </CourseStarWrapper>
                   ))}
-                  {(course.reviews.reduce((acc, cur) => acc + cur.score, 0) / course.reviews.length) % 1 !== 0 && (
+                  {averageScore(course.reviews) % 1 !== 0 && (
                     <CourseStarWrapper>
                       <Image src={HalfStar} alt="star" fill sizes="contain" />
                     </CourseStarWrapper>
                   )}
                 </StarIcons>
                 <CourseReviewsInfo>
-                  {(course.reviews.reduce((acc, cur) => acc + cur.score, 0) / course.reviews.length || 0).toFixed(1) ||
-                    0}
-                  分 ，{course?.reviews?.length || 0}則評論
+                  {(averageScore(course.reviews) || 0).toFixed(1) || 0}分 ，{course?.reviews?.length || 0}則評論
                 </CourseReviewsInfo>
               </CourseScore>
             ) : (
@@ -401,18 +398,12 @@ export default function Reserve({ teacherId, teacherData }: { teacherId: string;
         {teacherData?.reviews && (
           <Reviews>
             <ScoreContainer>
-              <Average>
-                {(
-                  teacherData.reviews.reduce((acc, cur) => acc + cur.score, 0) / teacherData.reviews.length || 0
-                ).toFixed(1) || 0}
-              </Average>
+              <Average>{(averageScore(teacherData.reviews) || 0).toFixed(1) || 0}</Average>
               <ReviewsInfo>
                 <StarIcons>
                   {Array.from(
                     {
-                      length: Math.floor(
-                        teacherData.reviews.reduce((acc, cur) => acc + cur.score, 0) / teacherData.reviews.length
-                      ),
+                      length: Math.floor(averageScore(teacherData.reviews)),
                     },
                     (v, i) => i + 1
                   ).map((starIndex) => (
@@ -420,8 +411,7 @@ export default function Reserve({ teacherId, teacherData }: { teacherId: string;
                       <Image src={Star} alt="star" fill sizes="contain" />
                     </StarWrapper>
                   ))}
-                  {(teacherData.reviews.reduce((acc, cur) => acc + cur.score, 0) / teacherData.reviews.length) % 1 !==
-                    0 && (
+                  {averageScore(teacherData.reviews) % 1 !== 0 && (
                     <StarWrapper>
                       <Image src={HalfStar} alt="star" fill sizes="contain" />
                     </StarWrapper>

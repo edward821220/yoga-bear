@@ -5,6 +5,7 @@ import Link from "next/link";
 import Swal from "sweetalert2";
 import produce from "immer";
 import { addVideoCourseReview, getMyVideoCourses, getUserData } from "../../utils/firestore";
+import { averageScore } from "../../utils/compute";
 import Modal from "../modal";
 import Star from "../../../public/star.png";
 import HalfStar from "../../../public/star-half.png";
@@ -192,9 +193,7 @@ function MyVideoCourses({ uid }: { uid: string }) {
                 <StarIcons>
                   {Array.from(
                     {
-                      length: Math.floor(
-                        course.reviews.reduce((acc, cur) => acc + cur.score, 0) / course.reviews.length
-                      ),
+                      length: Math.floor(averageScore(course.reviews)),
                     },
                     (v, i) => i + 1
                   ).map((starIndex) => (
@@ -202,16 +201,14 @@ function MyVideoCourses({ uid }: { uid: string }) {
                       <Image src={Star} alt="star" fill sizes="contain" />
                     </CourseStarWrapper>
                   ))}
-                  {(course.reviews.reduce((acc, cur) => acc + cur.score, 0) / course.reviews.length) % 1 !== 0 && (
+                  {averageScore(course.reviews) % 1 !== 0 && (
                     <CourseStarWrapper>
                       <Image src={HalfStar} alt="star" fill sizes="contain" />
                     </CourseStarWrapper>
                   )}
                 </StarIcons>
                 <CourseReviewsInfo>
-                  {(course.reviews.reduce((acc, cur) => acc + cur.score, 0) / course.reviews.length || 0).toFixed(1) ||
-                    0}
-                  分 ，{course?.reviews?.length || 0}則評論
+                  {(averageScore(course.reviews) || 0).toFixed(1)}分 ，{course?.reviews?.length || 0}則評論
                 </CourseReviewsInfo>
               </CourseScore>
             ) : (

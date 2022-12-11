@@ -4,6 +4,7 @@ import { useRouter } from "next/router";
 import Swal from "sweetalert2";
 import parse from "html-react-parser";
 import { SetterOrUpdater } from "recoil";
+import { averageScore } from "../../utils/compute";
 import Avatar from "../../../public/member.png";
 import Star from "../../../public/star.png";
 import HalfStar from "../../../public/star-half.png";
@@ -195,17 +196,12 @@ function CourseDetail({ isLogin, setShowMemberModal, courseData, teacherData, re
       </About>
       <SubTitle>課程評價</SubTitle>
       <ScoreContainer>
-        <Average>
-          {(courseData.reviews.reduce((acc, cur) => acc + cur.score, 0) / courseData.reviews.length || 0).toFixed(1) ||
-            0}
-        </Average>
+        <Average>{(averageScore(courseData.reviews) || 0).toFixed(1) || 0}</Average>
         <ReviewsInfo>
           <StarIcons>
             {Array.from(
               {
-                length: Math.floor(
-                  courseData.reviews.reduce((acc, cur) => acc + cur.score, 0) / courseData.reviews.length
-                ),
+                length: Math.floor(averageScore(courseData.reviews)),
               },
               (v, i) => i + 1
             ).map((starIndex) => (
@@ -213,7 +209,7 @@ function CourseDetail({ isLogin, setShowMemberModal, courseData, teacherData, re
                 <Image src={Star} alt="star" fill sizes="contain" />
               </StarWrapper>
             ))}
-            {(courseData.reviews.reduce((acc, cur) => acc + cur.score, 0) / courseData.reviews.length) % 1 !== 0 && (
+            {averageScore(courseData.reviews) % 1 !== 0 && (
               <StarWrapper>
                 <Image src={HalfStar} alt="star" fill sizes="contain" />
               </StarWrapper>
