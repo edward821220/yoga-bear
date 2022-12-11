@@ -1,6 +1,6 @@
 import { render, screen } from "@testing-library/react";
 import { ThemeProvider } from "styled-components";
-import VideoPlayer from "../../src/components/videoCourses/videoPlayer";
+import VideoPlayer from "../../src/components/videoCourse/videoPlayer";
 
 const theme = {
   colors: {
