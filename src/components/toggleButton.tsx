@@ -44,12 +44,17 @@ const CheckBox = styled.input`
     }
   }
 `;
-function ToggleButton({ state }: { state: boolean }) {
+function ToggleButton({ state, onClick }: { state: boolean; onClick?(): void }) {
   return (
-    <CheckBoxWrapper data-testid="check-box">
+    <CheckBoxWrapper data-testid="check-box" onClick={onClick}>
       <CheckBox id="checkbox" type="checkbox" checked={state} onChange={() => {}} />
       <CheckBoxLabel htmlFor="checkbox" />
     </CheckBoxWrapper>
   );
 }
+
+ToggleButton.defaultProps = {
+  onClick: () => {},
+};
+
 export default ToggleButton;
