@@ -3,13 +3,11 @@
 exports[`Jest Snapshot testing suite Matches DOM Snapshot 1`] = `
 <div
   className="sc-bcXHqe zqhWb"
-  data-testid="check-box"
-  onClick={[Function]}
 >
   <input
     className="sc-dkrFOg LQqKO"
+    data-testid="check-box"
     id="checkbox"
-    onChange={[Function]}
     type="checkbox"
   />
   <label

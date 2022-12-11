@@ -92,6 +92,16 @@ function MyCourses() {
     }
   }, [category]);
 
+  const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const target = e.target as HTMLInputElement;
+    const check = target.checked;
+    setTeacherAuthority(check);
+    if (teacherAuthority === false) {
+      router.push("/myCourses/launchedVideoCourses");
+    } else {
+      router.push("/myCourses/videoCourses");
+    }
+  };
   return (
     <>
       <Head>{typeof category === "string" && <title>{routeTitle[category]} - Yoga Bear</title>}</Head>
@@ -100,19 +110,8 @@ function MyCourses() {
           {userData.identity === "teacher" && (
             <BarSection>
               <BarTitle>學生</BarTitle>
-              <ToggleButtonLabel
-                onChange={(e: React.FormEvent<HTMLLabelElement>) => {
-                  const target = e.target as HTMLInputElement;
-                  const check = target.checked;
-                  setTeacherAuthority(check);
-                  if (teacherAuthority === false) {
-                    router.push("/myCourses/launchedVideoCourses");
-                  } else {
-                    router.push("/myCourses/videoCourses");
-                  }
-                }}
-              >
-                <ToggleButton state={teacherAuthority} />
+              <ToggleButtonLabel>
+                <ToggleButton state={teacherAuthority} onChange={handleChange} />
               </ToggleButtonLabel>
               <BarTitle>老師</BarTitle>
             </BarSection>

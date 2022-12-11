@@ -4,14 +4,14 @@ import ToggleButton from "../../src/components/toggleButton";
 /* eslint-disable */
 describe("toggleButton component", () => {
   test("renders a toggleButton", () => {
-    const handleClick = jest.fn();
-    render(<ToggleButton onClick={handleClick} />);
+    const handleChange = jest.fn();
+    render(<ToggleButton onChange={handleChange} />);
 
     const toggleButton = screen.getByTestId("check-box", {
       name: /testing next\.js applications/i,
     });
     fireEvent.click(toggleButton);
     expect(toggleButton).toBeInTheDocument();
-    expect(handleClick).toHaveBeenCalledTimes(1);
+    expect(handleChange).toHaveBeenCalledTimes(1);
   });
 });
