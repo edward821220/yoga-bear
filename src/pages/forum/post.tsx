@@ -1,4 +1,4 @@
-import React, { useState, useContext } from "react";
+import { useState, useContext } from "react";
 import styled from "styled-components";
 import Swal from "sweetalert2";
 import Head from "next/head";
