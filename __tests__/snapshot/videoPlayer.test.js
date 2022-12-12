@@ -15,13 +15,11 @@ const theme = {
   },
 };
 /* eslint-disable */
-describe("Jest Snapshot testing suite", () => {
-  test("Matches DOM Snapshot", () => {
-    const tree = create(
-      <ThemeProvider theme={theme}>
-        <VideoPlayer />
-      </ThemeProvider>
-    ).toJSON();
-    expect(tree).toMatchSnapshot();
-  });
+test("Matches DOM Snapshot", () => {
+  const tree = create(
+    <ThemeProvider theme={theme}>
+      <VideoPlayer />
+    </ThemeProvider>
+  ).toJSON();
+  expect(tree).toMatchSnapshot();
 });
