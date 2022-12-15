@@ -12,6 +12,7 @@ password: jeany123
 Yoga Bear is a C2C platform that matches yoga instructors with those interested in learning yoga.  
 You can take yoga courses online, offline, or through videos.
 [Demo Video](https://drive.google.com/file/d/1-i_b_hHjgJBYPsL0q9M4yLUWrf2o1are/view?usp=share_link)
+![img](https://i.imgur.com/bFbe4Sd.png)
 
 ## Techniques
 
@@ -25,7 +26,7 @@ You can take yoga courses online, offline, or through videos.
 - Provided a calendar with reserving, reviewing, and joining room functions integrated for users to schedule their online and offline courses by [React-Scheduler](https://devexpress.github.io/devextreme-reactive/react/scheduler/) and [Material-UI](https://mui.com/).
 - Used [EmailJS](https://www.emailjs.com/) to send confirmation mail after buying or reserving courses.
 - Wrote some unit tests, integration tests (for React functional components), and snapshot tests by [Jest](https://jestjs.io/) with [React-Testing-Library](https://testing-library.com/docs/react-testing-library/intro/).
-- Managed global states by [Recoil](https://recoiljs.org/) and treated nested states as immutable via Immer.
+- Managed global states by [Recoil](https://recoiljs.org/) and treated nested states as immutable via [Immer](https://immerjs.github.io/immer/).
 - Used [ESLint](https://eslint.org/) [(Airbnb config)](https://www.npmjs.com/package/eslint-config-airbnb) to lint my code.
 
 ![img](https://i.imgur.com/1ruwn00.png)
@@ -39,8 +40,46 @@ You can take yoga courses online, offline, or through videos.
 #### Member System
 
 Users can sign up and login by email and select their identities (teacher or student).
+![img](https://i.imgur.com/oSua5gf.png)
 
 #### Payment System
 
 Users can input a fake credit card to top-up bear money.
 Bear money can reserve online, offline courses or buy video courses.
+![img](https://i.imgur.com/24dO2T6.png)
+
+#### Browse All Video Courses
+
+Users can browse all video courses and buy the course they like.
+![img](https://i.imgur.com/GebeAg7.png)
+
+#### Browse All Teachers
+
+Users can browse all teachers and reserve their courses.
+![img](https://i.imgur.com/VLY8C18.png)
+
+#### Calendar
+
+Students can use calendar to reserve and review online, offline courses and enter the video-call room.
+Teachers cna use calendar to arrange their online, offline courses and enter the video-call room.
+![img](https://i.imgur.com/3VIyYpK.png)
+
+#### MyCourses
+
+Uses can browse all courses they bought and all courses they reserved on myCourses page.
+![img](https://i.imgur.com/IKejd0g.png)
+
+#### Video Course Room
+
+Users can enter the video course room which they have bought.
+![img](https://i.imgur.com/Bok1yWJ.png)
+
+#### Video-Call Course Room
+
+Users can enter the video-call course room which they have reserved.
+![img](https://i.imgur.com/S0eB7Km.png)
+
+#### Forum
+
+Users can post articles, leave messages, and click the like button on forum page.
+![img](https://i.imgur.com/VXxDfKq.png)
