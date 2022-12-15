@@ -21,7 +21,7 @@ You can take yoga courses online, offline, or through videos.
 - Implemented group video chat with Next.js [serverless function](https://vercel.com/docs/concepts/functions/serverless-functions), [Pusher.js](https://pusher.com/) (WebSockets server library), and [WebRTC](https://webrtc.org/).
 - Made a customized video player for the course room. (included window full screen, full screen, thumbnail on time-progress-bar, forward, rewind, speed control, and voice control functions.)
 - Enabled users to launch video courses and upload course covers, member avatars, and article pictures through [Firebase Cloud Storage](https://firebase.google.com/products/storage).
-- Compressed images (<1MB) before users uploaded to improve loading speed and reduce storage costs with [browser-image-compression](https://www.npmjs.com/package/browser-image-compression).
+- Compressed images (< 1 MB) before users uploaded to improve loading speed and reduce storage costs with [browser-image-compression](https://www.npmjs.com/package/browser-image-compression).
 - Integrated a text editor which can upload images with [React-Quill](https://www.npmjs.com/package/react-quill) and [Firebase Cloud Storage](https://firebase.google.com/products/storage).
 - Used [Firebase Firestore](https://firebase.google.com/products/firestore) for data management (included users, courses, and articles data.).
 - Provided a calendar with reserving, reviewing, and joining room functions integrated for users to schedule their online and offline courses by [React-Scheduler](https://devexpress.github.io/devextreme-reactive/react/scheduler/) and [Material-UI](https://mui.com/).
@@ -40,7 +40,7 @@ You can take yoga courses online, offline, or through videos.
 
 ### Member System
 
-Users can sign up and login by email and select their identities (teacher or student).
+Users can sign up and log in by email and select their identities (teacher or student).
 ![img](https://i.imgur.com/oSua5gf.png)
 
 ### Payment System
@@ -65,9 +65,14 @@ Students can use calendar to reserve and review online, offline courses and ente
 Teachers cna use calendar to arrange their online, offline courses and enter the video-call room.
 ![img](https://i.imgur.com/3VIyYpK.png)
 
+### Launch Video Courses
+
+Teachers can launch video courses.
+![img](https://i.imgur.com/TcoK7co.png)
+
 ### MyCourses
 
-Uses can browse all courses they bought and all courses they reserved on myCourses page.
+Users can browse all courses they bought and all courses they reserved on myCourses page.
 ![img](https://i.imgur.com/IKejd0g.png)
 
 ### Video Course Room
@@ -84,3 +89,4 @@ Users can enter the video-call course room which they have reserved.
 
 Users can post articles, leave messages, and click the like button on forum page.
 ![img](https://i.imgur.com/VXxDfKq.png)
+![img](https://i.imgur.com/ptPaNxT.png)
