@@ -1,5 +1,7 @@
 # Yoga Bear
 
+![img](https://i.imgur.com/9x54LPX.png)
+
 #### [Website URL](https://yoga-bear.vercel.app/)
 
 ##### Test Account :
