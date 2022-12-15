@@ -4,8 +4,9 @@
 
 ##### Test Account :
 
-email: jeany@gmail.com  
-password: jeany123
+| email           | password |
+| --------------- | -------- |
+| jeany@gmail.com | jeany123 |
 
 ## Intro
 
