@@ -32,7 +32,7 @@ You can take yoga courses online, offline, or through videos.
 
 ![img](https://i.imgur.com/1ruwn00.png)
 
-## Sitemap
+## Functional Map
 
 ![img](https://i.imgur.com/JBTmfIi.png)
 
