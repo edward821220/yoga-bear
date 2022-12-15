@@ -72,9 +72,9 @@ Teachers cna use calendar to arrange their online, offline courses and enter the
 Teachers can launch video courses.
 ![img](https://i.imgur.com/TcoK7co.png)
 
-### MyCourses
+### My Courses
 
-Users can browse all courses they bought and all courses they reserved on myCourses page.
+Users can browse all courses they bought and all courses they reserved on my courses page.
 ![img](https://i.imgur.com/IKejd0g.png)
 
 ### Video Course Room
@@ -91,4 +91,5 @@ Users can enter the video-call course room which they have reserved.
 
 Users can post articles, leave messages, and click the like button on forum page.
 ![img](https://i.imgur.com/VXxDfKq.png)
+![img](https://i.imgur.com/WhdJYEI.png)
 ![img](https://i.imgur.com/ptPaNxT.png)
