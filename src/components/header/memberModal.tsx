@@ -159,8 +159,8 @@ function MemberModal({ setOrderQty, setShowMemberModal, isLogin, userData, setBe
   const [isUploading, setIsUploading] = useState(false);
   const [errorMessage, setErrorMessage] = useState("");
   const [loginData, setLoginData] = useState<Record<string, string>>({
-    email: "",
-    password: "",
+    email: "jeany@gmail.com",
+    password: "jeany123",
   });
   const [signupData, setSignupData] = useState<Record<string, string>>({
     username: "",

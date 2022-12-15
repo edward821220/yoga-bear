@@ -4,7 +4,7 @@
 
 ##### Test Account :
 
-email: jeany@gmail.com
+email: jeany@gmail.com  
 password: jeany123
 
 ## Intro
@@ -44,7 +44,7 @@ Users can sign up and login by email and select their identities (teacher or stu
 
 #### Payment System
 
-Users can input a fake credit card to top-up bear money.
+Users can input a fake credit card to top-up bear money.  
 Bear money can reserve online, offline courses or buy video courses.
 ![img](https://i.imgur.com/24dO2T6.png)
 
@@ -60,7 +60,7 @@ Users can browse all teachers and reserve their courses.
 
 #### Calendar
 
-Students can use calendar to reserve and review online, offline courses and enter the video-call room.
+Students can use calendar to reserve and review online, offline courses and enter the video-call room.  
 Teachers cna use calendar to arrange their online, offline courses and enter the video-call room.
 ![img](https://i.imgur.com/3VIyYpK.png)
 
