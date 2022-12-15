@@ -32,7 +32,7 @@ You can take yoga courses online, offline, or through videos.
 - Managed global states by [Recoil](https://recoiljs.org/) and treated nested states as immutable via [Immer](https://immerjs.github.io/immer/).
 - Used [ESLint](https://eslint.org/) [(Airbnb config)](https://www.npmjs.com/package/eslint-config-airbnb) to lint my code.
 
-![img](https://i.imgur.com/RK04jgW.png)
+![img](https://i.imgur.com/jyxHbtJ.png)
 
 ## Functional Map
 
