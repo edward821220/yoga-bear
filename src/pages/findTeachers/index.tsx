@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useContext } from "react";
+import { useState, useEffect, useContext } from "react";
 import styled from "styled-components";
 import parse from "html-react-parser";
 import Swal from "sweetalert2";
@@ -9,6 +9,7 @@ import produce from "immer";
 import { useRecoilState } from "recoil";
 import { AuthContext } from "../../contexts/authContext";
 import { getTeachersList } from "../../utils/firestore";
+import { averageScore } from "../../utils/compute";
 import { showMemberModalState } from "../../utils/recoil";
 import StarIcon from "../../../public/star.png";
 import HalfStar from "../../../public/star-half.png";
@@ -254,10 +255,8 @@ function FindTeachers({ results }: { results: TeacherInterface[] }) {
       setTeachersList(
         produce((draft) =>
           draft.sort((a, b) => {
-            const scoreA =
-              a?.reviews?.length > 0 ? a.reviews.reduce((acc, cur) => acc + cur.score, 0) / a.reviews.length : 0;
-            const scoreB =
-              b?.reviews?.length > 0 ? b.reviews.reduce((acc, cur) => acc + cur.score, 0) / b.reviews.length : 0;
+            const scoreA = a?.reviews?.length > 0 ? averageScore(a.reviews) : 0;
+            const scoreB = b?.reviews?.length > 0 ? averageScore(b.reviews) : 0;
             if (scoreA < scoreB) {
               return 1;
             }
@@ -372,9 +371,7 @@ function FindTeachers({ results }: { results: TeacherInterface[] }) {
                       <StarIcons>
                         {Array.from(
                           {
-                            length: Math.floor(
-                              teacher.reviews.reduce((acc, cur) => acc + cur.score, 0) / teacher.reviews.length
-                            ),
+                            length: Math.floor(averageScore(teacher.reviews)),
                           },
                           (v, i) => i + 1
                         ).map((starIndex) => (
@@ -382,18 +379,14 @@ function FindTeachers({ results }: { results: TeacherInterface[] }) {
                             <Image src={StarIcon} alt="star" fill sizes="contain" />
                           </StarWrapper>
                         ))}
-                        {(teacher.reviews.reduce((acc, cur) => acc + cur.score, 0) / teacher.reviews.length) % 1 !==
-                          0 && (
+                        {averageScore(teacher.reviews) % 1 !== 0 && (
                           <StarWrapper>
                             <Image src={HalfStar} alt="star" fill sizes="contain" />
                           </StarWrapper>
                         )}
                       </StarIcons>
                       <TeacherReviewsInfo>
-                        {(
-                          teacher.reviews.reduce((acc, cur) => acc + cur.score, 0) / teacher.reviews.length || 0
-                        ).toFixed(1) || 0}
-                        分 ，{teacher?.reviews?.length || 0}則評論
+                        {(averageScore(teacher.reviews) || 0).toFixed(1) || 0}分 ，{teacher?.reviews?.length || 0}則評論
                       </TeacherReviewsInfo>
                     </TeacherScore>
                   ) : (

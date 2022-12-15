@@ -1,34 +1,95 @@
-This is a [Next.js](https://nextjs.org/) project bootstrapped with [`create-next-app`](https://github.com/vercel/next.js/tree/canary/packages/create-next-app).
+# Yoga Bear
 
-## Getting Started
+![img](https://i.imgur.com/9x54LPX.png)
 
-First, run the development server:
+#### [Website URL](https://yoga-bear.vercel.app/)
 
-```bash
-npm run dev
-# or
-yarn dev
-```
+##### Test Account :
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+| email           | password |
+| --------------- | -------- |
+| jeany@gmail.com | jeany123 |
 
-You can start editing the page by modifying `pages/index.tsx`. The page auto-updates as you edit the file.
+## Intro
 
-[API routes](https://nextjs.org/docs/api-routes/introduction) can be accessed on [http://localhost:3000/api/hello](http://localhost:3000/api/hello). This endpoint can be edited in `pages/api/hello.ts`.
+Yoga Bear is a C2C platform that matches yoga instructors with those interested in learning yoga.  
+You can take yoga courses online, offline, or through videos.  
+[Demo Video](https://drive.google.com/file/d/1-i_b_hHjgJBYPsL0q9M4yLUWrf2o1are/view?usp=share_link)
+![img](https://i.imgur.com/bFbe4Sd.png)
 
-The `pages/api` directory is mapped to `/api/*`. Files in this directory are treated as [API routes](https://nextjs.org/docs/api-routes/introduction) instead of React pages.
+## Techniques
 
-## Learn More
+- Built the website by [Next.js](https://nextjs.org/) with [TypeScript](https://www.typescriptlang.org/) and [styled-components](https://styled-components.com/). (applied SSG, SSR, and CSR on different pages).
+- Implemented group video chat with Next.js [serverless function](https://vercel.com/docs/concepts/functions/serverless-functions), [Pusher.js](https://pusher.com/) (WebSockets server library), and [WebRTC](https://webrtc.org/).
+- Made a customized video player for the course room. (included window full screen, full screen, thumbnail on time-progress-bar, forward, rewind, speed control, and voice control functions.)
+- Enabled users to launch video courses and upload course covers, member avatars, and article pictures through [Firebase Cloud Storage](https://firebase.google.com/products/storage).
+- Compressed images (< 1 MB) before users uploaded to improve loading speed and reduce storage costs with [browser-image-compression](https://www.npmjs.com/package/browser-image-compression).
+- Integrated a text editor which can upload images with [React-Quill](https://www.npmjs.com/package/react-quill) and [Firebase Cloud Storage](https://firebase.google.com/products/storage).
+- Used [Firebase Firestore](https://firebase.google.com/products/firestore) for data management (included users, courses, and articles data.).
+- Provided a calendar with reserving, reviewing, and joining room functions integrated for users to schedule their online and offline courses by [React-Scheduler](https://devexpress.github.io/devextreme-reactive/react/scheduler/) and [Material-UI](https://mui.com/).
+- Used [EmailJS](https://www.emailjs.com/) to send confirmation mail after buying or reserving courses.
+- Wrote some unit tests, integration tests (for React functional components), and snapshot tests by [Jest](https://jestjs.io/) with [React-Testing-Library](https://testing-library.com/docs/react-testing-library/intro/).
+- Managed global states by [Recoil](https://recoiljs.org/) and treated nested states as immutable via [Immer](https://immerjs.github.io/immer/).
+- Used [ESLint](https://eslint.org/) [(Airbnb config)](https://www.npmjs.com/package/eslint-config-airbnb) to lint my code.
 
-To learn more about Next.js, take a look at the following resources:
+![img](https://i.imgur.com/jyxHbtJ.png)
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+## Functional Map
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js/) - your feedback and contributions are welcome!
+![img](https://i.imgur.com/JBTmfIi.png)
 
-## Deploy on Vercel
+## Features
 
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
+### Member System
 
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/deployment) for more details.
+Users can sign up and log in by email and select their identities (teacher or student).
+![img](https://i.imgur.com/oSua5gf.png)
+
+### Payment System
+
+Users can input a fake credit card to top-up bear money.  
+Bear money can reserve online, offline courses or buy video courses.
+![img](https://i.imgur.com/24dO2T6.png)
+
+### Browse All Video Courses
+
+Users can browse all video courses and buy the course they like.
+![img](https://i.imgur.com/GebeAg7.png)
+
+### Browse All Teachers
+
+Users can browse all teachers and reserve their courses.
+![img](https://i.imgur.com/VLY8C18.png)
+
+### Calendar
+
+Students can use calendar to reserve and review online, offline courses and enter the video-call room.  
+Teachers cna use calendar to arrange their online, offline courses and enter the video-call room.
+![img](https://i.imgur.com/3VIyYpK.png)
+
+### Launch Video Courses
+
+Teachers can launch video courses.
+![img](https://i.imgur.com/TcoK7co.png)
+
+### My Courses
+
+Users can browse all courses they bought and all courses they reserved on my courses page.
+![img](https://i.imgur.com/IKejd0g.png)
+
+### Video Course Room
+
+Users can enter the video course room which they have bought.
+![img](https://i.imgur.com/Bok1yWJ.png)
+
+### Video-Call Course Room
+
+Users can enter the video-call course room which they have reserved.
+![img](https://i.imgur.com/S0eB7Km.png)
+
+### Forum
+
+Users can post articles, leave messages, and click the like button on forum page.
+![img](https://i.imgur.com/VXxDfKq.png)
+![img](https://i.imgur.com/WhdJYEI.png)
+![img](https://i.imgur.com/ptPaNxT.png)

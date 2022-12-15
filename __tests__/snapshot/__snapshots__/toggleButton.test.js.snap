@@ -1,0 +1,18 @@
+// Jest Snapshot v1, https://goo.gl/fbAQLP
+
+exports[`Matches DOM Snapshot 1`] = `
+<div
+  className="sc-bcXHqe zqhWb"
+>
+  <input
+    className="sc-dkrFOg LQqKO"
+    data-testid="check-box"
+    id="checkbox"
+    type="checkbox"
+  />
+  <label
+    className="sc-gswNZR iyRvYP"
+    htmlFor="checkbox"
+  />
+</div>
+`;

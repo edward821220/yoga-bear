@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from "react";
+import { useState, useEffect } from "react";
 import styled from "styled-components";
 import { useRouter } from "next/router";
 import Head from "next/head";
@@ -6,6 +6,7 @@ import Link from "next/link";
 import Image from "next/image";
 import produce from "immer";
 import { getCoursesList } from "../../utils/firestore";
+import { averageScore } from "../../utils/compute";
 import StarIcon from "../../../public/star.png";
 import HalfStar from "../../../public/star-half.png";
 
@@ -204,10 +205,8 @@ function VideoCourses({ results }: { results: CourseInterface[] }) {
       setCoursesList(
         produce((draft) =>
           draft.sort((a, b) => {
-            const scoreA =
-              a?.reviews?.length > 0 ? a.reviews.reduce((acc, cur) => acc + cur.score, 0) / a.reviews.length : 0;
-            const scoreB =
-              b?.reviews?.length > 0 ? b.reviews.reduce((acc, cur) => acc + cur.score, 0) / b.reviews.length : 0;
+            const scoreA = a?.reviews?.length > 0 ? averageScore(a.reviews) : 0;
+            const scoreB = b?.reviews?.length > 0 ? averageScore(b.reviews) : 0;
             if (scoreA < scoreB) {
               return 1;
             }
@@ -322,9 +321,7 @@ function VideoCourses({ results }: { results: CourseInterface[] }) {
                       <StarIcons>
                         {Array.from(
                           {
-                            length: Math.floor(
-                              course.reviews.reduce((acc, cur) => acc + cur.score, 0) / course.reviews.length
-                            ),
+                            length: Math.floor(averageScore(course.reviews)),
                           },
                           (v, i) => i + 1
                         ).map((starIndex) => (
@@ -332,18 +329,14 @@ function VideoCourses({ results }: { results: CourseInterface[] }) {
                             <Image src={StarIcon} alt="star" fill sizes="contain" />
                           </StarWrapper>
                         ))}
-                        {(course.reviews.reduce((acc, cur) => acc + cur.score, 0) / course.reviews.length) % 1 !==
-                          0 && (
+                        {averageScore(course.reviews) % 1 !== 0 && (
                           <StarWrapper>
                             <Image src={HalfStar} alt="star" fill sizes="contain" />
                           </StarWrapper>
                         )}
                       </StarIcons>
                       <CourseReviewsInfo>
-                        {(course.reviews.reduce((acc, cur) => acc + cur.score, 0) / course.reviews.length || 0).toFixed(
-                          1
-                        ) || 0}
-                        分 ，{course?.reviews?.length || 0}則評論
+                        {averageScore(course.reviews).toFixed(1) || 0}分 ，{course?.reviews?.length || 0}則評論
                       </CourseReviewsInfo>
                     </CourseScore>
                   ) : (

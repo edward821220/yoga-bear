@@ -1,4 +1,3 @@
-import React from "react";
 import styled from "styled-components";
 
 const CheckBoxWrapper = styled.div`
@@ -44,12 +43,13 @@ const CheckBox = styled.input`
     }
   }
 `;
-function ToggleButton({ state }: { state: boolean }) {
+function ToggleButton({ state, onChange }: { state: boolean; onChange: React.ChangeEventHandler<HTMLInputElement> }) {
   return (
     <CheckBoxWrapper>
-      <CheckBox id="checkbox" type="checkbox" checked={state} onChange={() => {}} />
+      <CheckBox data-testid="check-box" id="checkbox" type="checkbox" checked={state} onChange={onChange} />
       <CheckBoxLabel htmlFor="checkbox" />
     </CheckBoxWrapper>
   );
 }
+
 export default ToggleButton;

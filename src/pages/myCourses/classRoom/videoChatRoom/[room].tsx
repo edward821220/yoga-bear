@@ -1,4 +1,4 @@
-import React, { useState, useRef, useEffect, useContext } from "react";
+import { useState, useRef, useEffect, useContext } from "react";
 import Pusher, { Members, PresenceChannel } from "pusher-js";
 import Head from "next/head";
 import { useRouter } from "next/router";

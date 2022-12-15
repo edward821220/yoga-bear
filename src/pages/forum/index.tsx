@@ -1,5 +1,5 @@
 import Image from "next/image";
-import React, { useContext } from "react";
+import { useContext } from "react";
 import styled from "styled-components";
 import Swal from "sweetalert2";
 import parse from "html-react-parser";
