@@ -17,7 +17,7 @@ You can take yoga courses online, offline, or through videos.
 
 ## Techniques
 
-- Built the website by [Next.js](https://nextjs.org/) with [TypeScript](https://www.typescriptlang.org/). (applied SSG, SSR, and CSR on different pages).
+- Built the website by [Next.js](https://nextjs.org/) with [TypeScript](https://www.typescriptlang.org/) and [styled-components](https://styled-components.com/). (applied SSG, SSR, and CSR on different pages).
 - Implemented group video chat with Next.js [serverless function](https://vercel.com/docs/concepts/functions/serverless-functions), [Pusher.js](https://pusher.com/) (WebSockets server library), and [WebRTC](https://webrtc.org/).
 - Made a customized video player for the course room. (included window full screen, full screen, thumbnail on time-progress-bar, forward, rewind, speed control, and voice control functions.)
 - Enabled users to launch video courses and upload course covers, member avatars, and article pictures through [Firebase Cloud Storage](https://firebase.google.com/products/storage).
