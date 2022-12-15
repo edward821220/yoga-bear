@@ -37,49 +37,49 @@ You can take yoga courses online, offline, or through videos.
 
 ## Features
 
-#### Member System
+### Member System
 
 Users can sign up and login by email and select their identities (teacher or student).
 ![img](https://i.imgur.com/oSua5gf.png)
 
-#### Payment System
+### Payment System
 
 Users can input a fake credit card to top-up bear money.  
 Bear money can reserve online, offline courses or buy video courses.
 ![img](https://i.imgur.com/24dO2T6.png)
 
-#### Browse All Video Courses
+### Browse All Video Courses
 
 Users can browse all video courses and buy the course they like.
 ![img](https://i.imgur.com/GebeAg7.png)
 
-#### Browse All Teachers
+### Browse All Teachers
 
 Users can browse all teachers and reserve their courses.
 ![img](https://i.imgur.com/VLY8C18.png)
 
-#### Calendar
+### Calendar
 
 Students can use calendar to reserve and review online, offline courses and enter the video-call room.  
 Teachers cna use calendar to arrange their online, offline courses and enter the video-call room.
 ![img](https://i.imgur.com/3VIyYpK.png)
 
-#### MyCourses
+### MyCourses
 
 Uses can browse all courses they bought and all courses they reserved on myCourses page.
 ![img](https://i.imgur.com/IKejd0g.png)
 
-#### Video Course Room
+### Video Course Room
 
 Users can enter the video course room which they have bought.
 ![img](https://i.imgur.com/Bok1yWJ.png)
 
-#### Video-Call Course Room
+### Video-Call Course Room
 
 Users can enter the video-call course room which they have reserved.
 ![img](https://i.imgur.com/S0eB7Km.png)
 
-#### Forum
+### Forum
 
 Users can post articles, leave messages, and click the like button on forum page.
 ![img](https://i.imgur.com/VXxDfKq.png)
