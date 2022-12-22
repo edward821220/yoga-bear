@@ -6,7 +6,7 @@ import Head from "next/head";
 import Image from "next/image";
 import { useRouter } from "next/router";
 import produce from "immer";
-import { useRecoilState } from "recoil";
+import { useSetRecoilState } from "recoil";
 import { AuthContext } from "../../contexts/authContext";
 import { getTeachersList } from "../../utils/firestore";
 import { averageScore } from "../../utils/compute";
@@ -203,8 +203,7 @@ function FindTeachers({ results }: { results: TeacherInterface[] }) {
   const router = useRouter();
   const { keywords } = router.query;
   const { isLogin } = useContext(AuthContext);
-  // eslint-disable-next-line @typescript-eslint/no-unused-vars
-  const [showMemberModal, setShowMemberModal] = useRecoilState(showMemberModalState);
+  const setShowMemberModal = useSetRecoilState(showMemberModalState);
   const [teachersList, setTeachersList] = useState(results);
   const [showMore, setShowMore] = useState<string>();
   const [selectSort, setSelectSort] = useState("comment");

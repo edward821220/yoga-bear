@@ -4,7 +4,7 @@ import Head from "next/head";
 import { useRouter } from "next/router";
 import styled from "styled-components";
 import Swal from "sweetalert2";
-import { useRecoilState } from "recoil";
+import { useSetRecoilState } from "recoil";
 import { getVideoCourse, getUserData, updateCartItem } from "../../../utils/firestore";
 import { AuthContext } from "../../../contexts/authContext";
 import { orderQtyState, showMemberModalState } from "../../../utils/recoil";
@@ -192,10 +192,8 @@ function CourseInfo({ courseId, courseData }: { courseId: string; courseData: Co
   const [teacherData, setTeacherData] = useState<Record<string, string>>();
   const [reviewsUsersData, setReviewsUsersData] = useState<{ index: number; username: string; avatar: string }[]>([]);
   const { isLogin, userData } = useContext(AuthContext);
-  /* eslint-disable @typescript-eslint/no-unused-vars */
-  const [orderQty, setOrderQty] = useRecoilState(orderQtyState);
-  const [showMemberModal, setShowMemberModal] = useRecoilState(showMemberModalState);
-  /* eslint-enable @typescript-eslint/no-unused-vars */
+  const setOrderQty = useSetRecoilState(orderQtyState);
+  const setShowMemberModal = useSetRecoilState(showMemberModalState);
 
   useEffect(() => {
     const getBoughtCourses = async () => {
