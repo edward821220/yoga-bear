@@ -1,6 +1,5 @@
 import styled from "styled-components";
 import { createPortal } from "react-dom";
-import React from "react";
 import Image from "next/image";
 import closeIcon from "../../public/close.png";
 

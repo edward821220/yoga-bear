@@ -4,7 +4,7 @@ import Swal from "sweetalert2";
 import Head from "next/head";
 import Image from "next/image";
 import { useRouter } from "next/router";
-import { useRecoilState } from "recoil";
+import { useSetRecoilState } from "recoil";
 import { Swiper, SwiperSlide } from "swiper/react";
 import { Pagination, Navigation } from "swiper";
 import { AuthContext } from "../contexts/authContext";
@@ -280,8 +280,7 @@ export default function Home({
   const { isLogin } = useContext(AuthContext);
   const [keywords, setKeywords] = useState("");
   const [category, setCategory] = useState("course");
-  // eslint-disable-next-line @typescript-eslint/no-unused-vars
-  const [showMemberModal, setShowMemberModal] = useRecoilState(showMemberModalState);
+  const setShowMemberModal = useSetRecoilState(showMemberModalState);
   return (
     <>
       <Head>

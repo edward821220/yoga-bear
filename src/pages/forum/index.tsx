@@ -5,7 +5,7 @@ import Swal from "sweetalert2";
 import parse from "html-react-parser";
 import Head from "next/head";
 import { useRouter } from "next/router";
-import { useRecoilState } from "recoil";
+import { useSetRecoilState } from "recoil";
 import BannerPic from "../../../public/banner0.jpeg";
 import LikeIcon from "../../../public/like.png";
 import MessageIcon from "../../../public/message.png";
@@ -203,8 +203,7 @@ interface PostInterface {
 
 function Forum({ posts }: { posts: PostInterface[] }) {
   const router = useRouter();
-  // eslint-disable-next-line @typescript-eslint/no-unused-vars
-  const [showMemberModal, setShowMemberModal] = useRecoilState(showMemberModalState);
+  const setShowMemberModal = useSetRecoilState(showMemberModalState);
   const { isLogin } = useContext(AuthContext);
 
   return (
