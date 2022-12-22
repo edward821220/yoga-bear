@@ -196,6 +196,10 @@ function MemberModal({ setOrderQty, setShowMemberModal, isLogin, userData, setBe
       setErrorMessage("請輸入用戶名");
       return;
     }
+    if (signupData.username.trim().length > 10) {
+      setErrorMessage("用戶名不能超過10個字唷！");
+      return;
+    }
     if (!signupData.email.match(isValidEmail)) {
       setErrorMessage("請輸入正確的電子郵件格式");
       return;
@@ -217,6 +221,10 @@ function MemberModal({ setOrderQty, setShowMemberModal, isLogin, userData, setBe
     const res: string = await signup(signupData.email, signupData.password, signupData.identity, signupData.username);
     if (res === "Firebase: Error (auth/email-already-in-use).") {
       setErrorMessage("帳號已經有人使用囉！");
+      return;
+    }
+    if (res.includes("Firebase")) {
+      setErrorMessage("不安全的密碼或其他錯誤！");
       return;
     }
     const uid = res;
