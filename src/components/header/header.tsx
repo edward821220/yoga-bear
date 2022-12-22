@@ -70,6 +70,9 @@ const HeaderLink = styled.li`
   line-height: 40px;
   width: 80px;
   text-align: center;
+  &:hover {
+    border-bottom: 1px solid ${(props) => props.theme.colors.color2};
+  }
   a {
     color: ${(props) => props.theme.colors.color2};
   }
