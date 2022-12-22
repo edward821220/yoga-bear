@@ -614,6 +614,7 @@ export default function Calendar({ category, userData, teacherId }: ICalendarPro
           {category === "reserveCalendar" && <AppointmentTooltip headerComponent={ReserveHeader} showOpenButton />}
           <ConfirmationDialog />
           <AppointmentForm
+            readOnly={category !== "teacherCalendar"}
             basicLayoutComponent={category === "teacherCalendar" ? TeacherLayout : StudentLayout}
             textEditorComponent={TextEditor}
           />
