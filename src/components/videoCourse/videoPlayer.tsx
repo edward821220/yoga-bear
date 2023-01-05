@@ -23,8 +23,8 @@ const VideoContainer = styled.div<{ isFullScreen: boolean; isFullWindow: boolean
   @media screen and (max-width: 1188px) {
     margin-bottom: 20px;
   }
-  @media screen and (max-width: 760px) {
-    width: ${(props) => (props.isFullScreen || props.isFullWindow ? "100vw" : "98vw")};
+  @media screen and (max-width: 770px) {
+    width: ${(props) => (props.isFullScreen || props.isFullWindow ? "100vw" : "96vw")};
   }
   @media screen and (max-width: 600px) {
     height: ${(props) => (props.isFullScreen || props.isFullWindow ? "100vh" : "300px")};
@@ -39,8 +39,8 @@ const Video = styled.video<{ isFullScreen: boolean; showToolBar: boolean; isFull
   height: ${(props) => (props.isFullScreen || props.isFullWindow ? "100vh" : "417px")};
   margin-bottom: 20px;
   cursor: ${(props) => props.showToolBar === false && "none"};
-  @media screen and (max-width: 760px) {
-    width: ${(props) => (props.isFullScreen || props.isFullWindow ? "100vw" : "98vw")};
+  @media screen and (max-width: 770px) {
+    width: ${(props) => (props.isFullScreen || props.isFullWindow ? "100vw" : "96vw")};
   }
   @media screen and (max-width: 600px) {
     height: ${(props) => (props.isFullScreen || props.isFullWindow ? "100vh" : "300px")};
