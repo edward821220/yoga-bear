@@ -52,6 +52,8 @@ import ReserveButton from "../../../public/reserve.png";
 import ReviewButton from "../../../public/review.png";
 import EmptyStar from "../../../public/star-empty.png";
 import Star from "../../../public/star.png";
+import ContentButton from "../../../public/content.png";
+import ClassDetailModal from "./classDetailModal";
 import resources from "./resources";
 
 const SwitcherWrapper = styled.div`
@@ -197,58 +199,6 @@ function TeacherLayout({ onFieldChange, appointmentData, ...restProps }: Appoint
   );
 }
 
-function StudentLayout({ onFieldChange, appointmentData, ...restProps }: AppointmentForm.BasicLayoutProps) {
-  return (
-    <AppointmentForm.BasicLayout
-      appointmentData={appointmentData}
-      onFieldChange={onFieldChange}
-      {...restProps}
-      readOnly
-    >
-      <AppointmentForm.Label text="課程人數" type="titleLabel" />
-      <AppointmentForm.TextEditor
-        value={Number(appointmentData.maximum) || 1}
-        onValueChange={() => {}}
-        placeholder="請輸入人數上限"
-        type="ordinaryTextEditor"
-        readOnly
-      />
-      <AppointmentForm.Label text="課程價格" type="titleLabel" />
-      <AppointmentForm.TextEditor
-        value={Number(appointmentData.price) || 0}
-        onValueChange={() => {}}
-        placeholder="請輸入課程價格"
-        type="ordinaryTextEditor"
-        readOnly
-      />
-      <AppointmentForm.Label text="課程說明" type="titleLabel" />
-      <AppointmentForm.TextEditor
-        value={appointmentData.description as string}
-        onValueChange={() => {}}
-        placeholder="請輸入課程內容（若是實體課請填寫上課地點）"
-        type="ordinaryTextEditor"
-        readOnly
-      />
-      <AppointmentForm.Label text="注意事項" type="titleLabel" />
-      <AppointmentForm.TextEditor
-        value={appointmentData.precaution as string}
-        onValueChange={() => {}}
-        placeholder="請輸入注意事項"
-        type="ordinaryTextEditor"
-        readOnly
-      />
-      <AppointmentForm.Label text="開課老師" type="titleLabel" />
-      <AppointmentForm.TextEditor
-        value={appointmentData.teacherName as string}
-        onValueChange={() => {}}
-        placeholder="開課老師"
-        type="ordinaryTextEditor"
-        readOnly
-      />
-    </AppointmentForm.BasicLayout>
-  );
-}
-
 function ExternalViewSwitcher({
   currentViewName,
   onChange,
@@ -295,11 +245,16 @@ function TeacherHeader({ appointmentData, ...restProps }: AppointmentTooltip.Hea
 function StudentHeader({ appointmentData, ...restProps }: AppointmentTooltip.HeaderProps) {
   const router = useRouter();
   const [showReviewModal, setShowReviewModal] = useState(false);
+  const [showClassDetailModal, setShowClassDetailModal] = useState(false);
   const [score, setScore] = useState(0);
   const [comments, setComments] = useState("");
   const { userData } = useContext(AuthContext);
   const isEnded = Date.now() > Date.parse(appointmentData?.endDate as string);
-  const handleClose = () => {
+
+  const handleCloseDetail = () => {
+    setShowClassDetailModal(false);
+  };
+  const handleCloseReview = () => {
     setScore(0);
     setComments("");
     setShowReviewModal(false);
@@ -307,6 +262,16 @@ function StudentHeader({ appointmentData, ...restProps }: AppointmentTooltip.Hea
 
   return (
     <AppointmentTooltip.Header {...restProps} appointmentData={appointmentData}>
+      <ButtonWrapper>
+        <Image
+          src={ContentButton}
+          alt="content-btn"
+          width={30}
+          onClick={() => {
+            setShowClassDetailModal(true);
+          }}
+        />
+      </ButtonWrapper>
       {isEnded || (
         <ButtonWrapper>
           <Image
@@ -334,8 +299,9 @@ function StudentHeader({ appointmentData, ...restProps }: AppointmentTooltip.Hea
           />
         </ButtonWrapper>
       )}
+      {showClassDetailModal && <ClassDetailModal handleClose={handleCloseDetail} appointmentData={appointmentData} />}
       {showReviewModal && (
-        <Modal handleClose={handleClose}>
+        <Modal handleClose={handleCloseReview}>
           <ReviewForm>
             <ReviewLabel>
               {Array.from({ length: 5 }, (v, i) => i + 1).map((starIndex) => (
@@ -407,10 +373,25 @@ function ReserveHeader({ appointmentData, ...restProps }: AppointmentTooltip.Hea
   const { userData } = useContext(AuthContext);
   const { email } = userData;
   const [bearMoney, setBearMoney] = useRecoilState(bearMoneyState);
+  const [showClassDetailModal, setShowClassDetailModal] = useState(false);
+
   const isEnded = Date.now() > Date.parse(appointmentData?.endDate as string);
   const maximum = Number(appointmentData?.maximum) || 1;
+  const handleCloseDetail = () => {
+    setShowClassDetailModal(false);
+  };
   return (
     <AppointmentTooltip.Header {...restProps} appointmentData={appointmentData}>
+      <ButtonWrapper>
+        <Image
+          src={ContentButton}
+          alt="content-btn"
+          width={30}
+          onClick={() => {
+            setShowClassDetailModal(true);
+          }}
+        />
+      </ButtonWrapper>
       {isEnded || (
         <ReserveButtonWrapper>
           <Image
@@ -478,6 +459,7 @@ function ReserveHeader({ appointmentData, ...restProps }: AppointmentTooltip.Hea
           />
         </ReserveButtonWrapper>
       )}
+      {showClassDetailModal && <ClassDetailModal handleClose={handleCloseDetail} appointmentData={appointmentData} />}
     </AppointmentTooltip.Header>
   );
 }
@@ -610,14 +592,12 @@ export default function Calendar({ category, userData, teacherId }: ICalendarPro
           <TodayButton />
           <Appointments />
           {category === "teacherCalendar" && <AppointmentTooltip headerComponent={TeacherHeader} showOpenButton />}
-          {category === "studentCalendar" && <AppointmentTooltip headerComponent={StudentHeader} showOpenButton />}
-          {category === "reserveCalendar" && <AppointmentTooltip headerComponent={ReserveHeader} showOpenButton />}
+          {category === "studentCalendar" && <AppointmentTooltip headerComponent={StudentHeader} />}
+          {category === "reserveCalendar" && <AppointmentTooltip headerComponent={ReserveHeader} />}
           <ConfirmationDialog />
-          <AppointmentForm
-            readOnly={category !== "teacherCalendar"}
-            basicLayoutComponent={category === "teacherCalendar" ? TeacherLayout : StudentLayout}
-            textEditorComponent={TextEditor}
-          />
+          {category === "teacherCalendar" && (
+            <AppointmentForm basicLayoutComponent={TeacherLayout} textEditorComponent={TextEditor} />
+          )}
           <Resources data={resources} mainResourceName="課程難度" />
           <AllDayPanel />
           {category === "teacherCalendar" && <DragDropProvider />}
